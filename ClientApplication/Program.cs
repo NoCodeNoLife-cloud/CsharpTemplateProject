@@ -2,18 +2,17 @@
 
 namespace ClientApplication;
 
+/// <summary>
+/// Contains the main entry point of the application
+/// </summary>
 internal static class Program
 {
+    /// <summary>
+    /// Entry point of the application
+    /// </summary>
+    /// <param name="args">Command line arguments passed to the application</param>
     private static void Main(string[] args)
     {
-        var loggingService = LoggingServiceImpl.Instance;
-
-        loggingService.LogInformation("Application started");
-        loggingService.LogWarning("This is a warning message");
-        loggingService.LogError("An error occurred", new Exception("Test exception"));
-        loggingService.LogDebug("This is a debug message");
-        loggingService.LogCritical("This is a critical message");
-
-        Console.WriteLine("INFO Testing completed. Check log outputs above.");
+        LoggingServiceImpl.InstanceVal.LogDebug("INFO Testing completed. Check log outputs above.");
     }
 }

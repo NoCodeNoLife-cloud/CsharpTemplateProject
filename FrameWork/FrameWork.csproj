@@ -5,7 +5,16 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>CommonFramwork</RootNamespace>
+        <RootNamespace>CommonFramework</RootNamespace>
     </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="AspectCore.Core" Version="2.4.0" />
+      <PackageReference Include="AspectCore.Extensions.DependencyInjection" Version="2.4.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Log\Log.csproj" />
+    </ItemGroup>
 
 </Project>

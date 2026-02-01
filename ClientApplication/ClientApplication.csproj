@@ -9,5 +9,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Log\Log.csproj" />
+        <ProjectReference Include="..\FrameWork\FrameWork.csproj" />
     </ItemGroup>
 </Project>
