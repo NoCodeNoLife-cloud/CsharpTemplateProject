@@ -1,6 +1,6 @@
 ﻿using LoggingService.Services;
 
-namespace ClientApplication;
+namespace ClientApplication.Launch;
 
 /// <summary>
 /// Contains the main entry point of the application
