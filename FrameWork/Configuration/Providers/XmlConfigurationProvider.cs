@@ -66,16 +66,35 @@ public sealed class XmlConfigurationProvider : IConfigurationProvider
         foreach (XmlNode childNode in node.ChildNodes)
         {
             if (childNode.NodeType != XmlNodeType.Element) continue;
+            
             var key = string.IsNullOrEmpty(prefix) ? childNode.Name : $"{prefix}.{childNode.Name}";
 
+            // 处理具有属性的节点（如 <setting name="Environment" value="Development" />）
+            if (childNode.Attributes != null && childNode.Attributes.Count > 0)
+            {
+                // 如果有 name 和 value 属性，使用它们构建键值对
+                var nameAttr = childNode.Attributes["name"];
+                var valueAttr = childNode.Attributes["value"];
+                
+                if (nameAttr != null && valueAttr != null)
+                {
+                    var fullKey = string.IsNullOrEmpty(prefix) ? nameAttr.Value : $"{prefix}.{nameAttr.Value}";
+                    configDict[fullKey] = valueAttr.Value;
+                    continue;
+                }
+            }
+
+            // 处理有文本内容的节点
             if (childNode is { HasChildNodes: true, FirstChild.NodeType: XmlNodeType.Text })
             {
                 configDict[key] = childNode.InnerText;
             }
+            // 处理有子节点的节点（递归）
             else if (childNode.HasChildNodes)
             {
                 ParseXmlNode(childNode, configDict, key);
             }
+            // 处理空节点
             else
             {
                 configDict[key] = "";

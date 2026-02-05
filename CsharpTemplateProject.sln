@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameWork", "FrameWork\Fram
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Log", "Log\Log.csproj", "{50BCC16B-DB7A-4777-A7ED-1BFD1D7378AF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ci", "Ci\Ci.csproj", "{F1C8609F-1479-4E08-88FB-255F4CEFAAE1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{50BCC16B-DB7A-4777-A7ED-1BFD1D7378AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{50BCC16B-DB7A-4777-A7ED-1BFD1D7378AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{50BCC16B-DB7A-4777-A7ED-1BFD1D7378AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1C8609F-1479-4E08-88FB-255F4CEFAAE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1C8609F-1479-4E08-88FB-255F4CEFAAE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1C8609F-1479-4E08-88FB-255F4CEFAAE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1C8609F-1479-4E08-88FB-255F4CEFAAE1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

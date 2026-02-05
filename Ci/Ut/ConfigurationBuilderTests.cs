@@ -1,0 +1,259 @@
+using CommonFramework.Configuration;
+using CommonFramework.Configuration.Interfaces;
+using CommonFramework.Configuration.Services;
+using FluentAssertions;
+using Moq;
+using Xunit;
+
+namespace Ci.Ut;
+
+public class ConfigurationBuilderTests : IDisposable
+{
+    private readonly Mock<IConfigurationProvider> _mockProvider;
+    private readonly List<string> _createdFiles;
+
+    public ConfigurationBuilderTests()
+    {
+        _mockProvider = new Mock<IConfigurationProvider>();
+        _mockProvider.Setup(p => p.Name).Returns("TestProvider");
+        _createdFiles = new List<string>();
+        
+        // Create necessary configuration files before tests begin
+        CreateTestConfigurationFiles();
+    }
+
+    [Fact]
+    public void CreateDefault_Should_Return_ConfigurationBuilder_Instance()
+    {
+        // Act
+        var builder = ConfigurationBuilder.CreateDefault();
+
+        // Assert
+        builder.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void AddProvider_With_Valid_Provider_Should_Return_Builder_Instance()
+    {
+        // Arrange
+        var builder = ConfigurationBuilder.CreateDefault();
+
+        // Act
+        var result = builder.AddProvider(_mockProvider.Object);
+
+        // Assert
+        result.Should().BeSameAs(builder);
+    }
+
+    [Fact]
+    public void AddProvider_With_Null_Provider_Should_Throw_ArgumentNullException()
+    {
+        // Arrange
+        var builder = ConfigurationBuilder.CreateDefault();
+
+        // Act
+        Action act = () => builder.AddProvider(null!);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void LoadFrom_With_Valid_Source_Should_Return_Builder_Instance()
+    {
+        // Arrange
+        var builder = ConfigurationBuilder.CreateDefault();
+        const string source = "test.json";
+
+        // Act
+        var result = builder.LoadFrom(source);
+
+        // Assert
+        result.Should().BeSameAs(builder);
+    }
+
+    [Fact]
+    public void LoadFrom_With_Empty_Source_Should_Throw_ArgumentException()
+    {
+        // Arrange
+        var builder = ConfigurationBuilder.CreateDefault();
+
+        // Act
+        Action act = () => builder.LoadFrom("");
+
+        // Assert
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void LoadFrom_With_Multiple_Sources_Should_Return_Builder_Instance()
+    {
+        // Arrange
+        var builder = ConfigurationBuilder.CreateDefault();
+        var sources = new[] { "config1.json", "config2.xml", "config3.yaml" };
+
+        // Act
+        var result = builder.LoadFrom(sources);
+
+        // Assert
+        result.Should().BeSameAs(builder);
+    }
+
+    [Fact]
+    public void LoadFrom_With_Multiple_Sources_Containing_Empty_Should_Throw_ArgumentException()
+    {
+        // Arrange
+        var builder = ConfigurationBuilder.CreateDefault();
+        var sources = new[] { "config1.json", "", "config3.yaml" };
+
+        // Act
+        Action act = () => builder.LoadFrom(sources);
+
+        // Assert
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void Build_Should_Return_ConfigurationService_Instance()
+    {
+        // Arrange
+        var builder = ConfigurationBuilder.CreateDefault();
+
+        // Act
+        var result = builder.Build();
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeAssignableTo<IConfigurationService>();
+    }
+
+    [Fact]
+    public void Fluent_Api_Chain_Should_Work_Correctly()
+    {
+        // Arrange
+        const string source = "test.json";
+
+        // Act
+        var result = ConfigurationBuilder.CreateDefault()
+            .AddProvider(_mockProvider.Object)
+            .LoadFrom(source)
+            .Build();
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeAssignableTo<IConfigurationService>();
+    }
+
+    [Fact]
+    public void Multiple_LoadFrom_Calls_Should_Accumulate_Sources()
+    {
+        // Arrange
+        var configService = ConfigurationServiceImpl.InstanceVal;
+        
+        // Use pre-created test files
+        var jsonFile = "config1.json";
+        var xmlFile = "config2.xml";
+
+        // Act
+        var result = ConfigurationBuilder.CreateDefault()
+            .LoadFrom(jsonFile)
+            .LoadFrom(xmlFile)
+            .Build();
+
+        // Assert
+        result.ContainsKey("AppName").Should().BeTrue();
+        result.ContainsKey("appSettings.Environment").Should().BeTrue();
+        result.ContainsKey("appSettings.MaxRetries").Should().BeTrue();
+    }
+
+    [Fact]
+    public void Xml_Configuration_Should_Generate_Correct_Key_Structure()
+    {
+        // Arrange
+        var xmlFile = "config2.xml";
+
+        // Act
+        var result = ConfigurationBuilder.CreateDefault()
+            .LoadFrom(xmlFile)
+            .Build();
+
+        // Assert - Verify correct key structure generated by XML configuration
+        result.ContainsKey("appSettings.Environment").Should().BeTrue();
+        result.ContainsKey("appSettings.MaxRetries").Should().BeTrue();
+        
+        // Verify values are correct
+        result.GetValue<string>("appSettings.Environment").Should().Be("Development");
+        result.GetValue<string>("appSettings.MaxRetries").Should().Be("3");
+    }
+
+    /// <summary>
+    /// Creates necessary configuration files before tests begin
+    /// </summary>
+    private void CreateTestConfigurationFiles()
+    {
+        // 创建用于Fluent_Api_Chain测试的test.json文件
+        const string testJsonContent = @"{
+            ""AppName"": ""TestApp"",
+            ""Version"": ""1.0.0"",
+            ""Port"": 8080
+        }";
+        var testJsonFile = "test.json";
+        File.WriteAllText(testJsonFile, testJsonContent);
+        _createdFiles.Add(testJsonFile);
+
+        // Create JSON test file
+        const string jsonContent = @"{
+            ""AppName"": ""TestApp"",
+            ""Version"": ""1.0.0"",
+            ""Port"": 8080
+        }";
+        var jsonFile = "config1.json";
+        File.WriteAllText(jsonFile, jsonContent);
+        _createdFiles.Add(jsonFile);
+
+        // Create XML test file
+        const string xmlContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <appSettings>
+        <setting name=""Environment"" value=""Development"" />
+        <setting name=""MaxRetries"" value=""3"" />
+    </appSettings>
+</configuration>";
+        var xmlFile = "config2.xml";
+        File.WriteAllText(xmlFile, xmlContent);
+        _createdFiles.Add(xmlFile);
+
+        // Create YAML test file
+        const string yamlContent = @"
+Database:
+  ConnectionString: Server=localhost;Database=testdb
+  Timeout: 30
+";
+        var yamlFile = "config3.yaml";
+        File.WriteAllText(yamlFile, yamlContent);
+        _createdFiles.Add(yamlFile);
+    }
+
+    /// <summary>
+    /// Implements IDisposable interface to automatically clean up created files after tests
+    /// </summary>
+    public void Dispose()
+    {
+        // Clean up all created test files
+        foreach (var file in _createdFiles)
+        {
+            if (File.Exists(file))
+            {
+                try
+                {
+                    File.Delete(file);
+                }
+                catch (Exception ex)
+                {
+                    // Log deletion failure but don't interrupt test execution
+                    Console.WriteLine($"Warning: Unable to delete test file {file}: {ex.Message}");
+                }
+            }
+        }
+    }
+}

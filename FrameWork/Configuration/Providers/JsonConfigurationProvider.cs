@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using CommonFramework.Configuration.Exceptions;
 using CommonFramework.Configuration.Interfaces;
 
@@ -36,9 +37,42 @@ public sealed class JsonConfigurationProvider : IConfigurationProvider
         ValidateFileExists(source);
 
         var jsonContent = File.ReadAllText(source);
-        var jsonObject = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonContent);
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            Converters = { new ObjectToInferredTypesConverter() }
+        };
 
-        return jsonObject ?? new Dictionary<string, object>();
+        var jsonObject = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonContent, options);
+        return FlattenJsonObject(jsonObject ?? new Dictionary<string, object>());
+    }
+
+    /// <summary>
+    /// Recursively flatten JSON object
+    /// </summary>
+    private static Dictionary<string, object> FlattenJsonObject(Dictionary<string, object> jsonObject, string prefix = "")
+    {
+        var result = new Dictionary<string, object>();
+
+        foreach (var kvp in jsonObject)
+        {
+            var key = string.IsNullOrEmpty(prefix) ? kvp.Key : $"{prefix}.{kvp.Key}";
+
+            if (kvp.Value is Dictionary<string, object> nestedDict)
+            {
+                var flattened = FlattenJsonObject(nestedDict, key);
+                foreach (var nestedKvp in flattened)
+                {
+                    result[nestedKvp.Key] = nestedKvp.Value;
+                }
+            }
+            else
+            {
+                result[key] = kvp.Value;
+            }
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -50,5 +84,31 @@ public sealed class JsonConfigurationProvider : IConfigurationProvider
     {
         if (!File.Exists(source))
             throw new ConfigurationFileNotFoundException(source);
+    }
+}
+
+/// <summary>
+/// Custom converter to deserialize JSON to object types instead of JsonElement
+/// </summary>
+public class ObjectToInferredTypesConverter : JsonConverter<object>
+{
+    public override object? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        return reader.TokenType switch
+        {
+            JsonTokenType.True => true,
+            JsonTokenType.False => false,
+            JsonTokenType.Number when reader.TryGetInt32(out var intValue) => intValue,
+            JsonTokenType.Number => reader.GetDouble(),
+            JsonTokenType.String => reader.GetString(),
+            JsonTokenType.StartObject => JsonSerializer.Deserialize<Dictionary<string, object>>(ref reader, options),
+            JsonTokenType.StartArray => JsonSerializer.Deserialize<List<object>>(ref reader, options),
+            _ => JsonDocument.ParseValue(ref reader).RootElement.Clone()
+        };
+    }
+
+    public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
+    {
+        JsonSerializer.Serialize(writer, value, value.GetType(), options);
     }
 }
