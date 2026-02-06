@@ -1,21 +1,13 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using LoggingService.Enums;
 using LoggingService.Services;
 using Xunit;
-using Xunit.Abstractions;
 
-namespace Ci.Ut;
+namespace Tests.LoggingTests;
 
 public class LoggingServiceTests
 {
-    private readonly LoggingServiceImpl _loggingService;
-    private readonly ITestOutputHelper _output;
-
-    public LoggingServiceTests(ITestOutputHelper output)
-    {
-        _loggingService = LoggingServiceImpl.InstanceVal;
-        _output = output;
-    }
+    private readonly LoggingServiceImpl _loggingService = LoggingServiceImpl.InstanceVal;
 
     [Fact]
     public void Singleton_Instance_Should_Return_Same_Instance()

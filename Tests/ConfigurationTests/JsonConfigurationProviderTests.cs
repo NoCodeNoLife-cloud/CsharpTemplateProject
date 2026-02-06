@@ -1,20 +1,15 @@
-﻿using CommonFramework.Configuration.Exceptions;
+using CommonFramework.Configuration.Exceptions;
 using CommonFramework.Configuration.Providers;
 using FluentAssertions;
 using Xunit;
 
-namespace Ci.Ut;
+namespace Tests.ConfigurationTests;
 
 public class JsonConfigurationProviderTests : IDisposable
 {
-    private readonly JsonConfigurationProvider _provider;
-    private readonly List<string> _createdFiles;
-
-    public JsonConfigurationProviderTests()
-    {
-        _provider = new JsonConfigurationProvider();
-        _createdFiles = new List<string>();
-    }
+    private readonly JsonConfigurationProvider _provider = new();
+    private readonly List<string> _createdFiles = new();
+    private readonly string _testFilePrefix = $"json-test-{Guid.NewGuid():N}-";
 
     [Fact]
     public void Name_Should_Return_JSON()
@@ -52,7 +47,7 @@ public class JsonConfigurationProviderTests : IDisposable
             ""Port"": 8080,
             ""Debug"": true
         }";
-        var fileName = Path.GetRandomFileName() + ".json";
+        var fileName = $"{_testFilePrefix}{Path.GetRandomFileName()}.json";
         File.WriteAllText(fileName, jsonContent);
         _createdFiles.Add(fileName);
 
@@ -76,7 +71,7 @@ public class JsonConfigurationProviderTests : IDisposable
                 ""Timeout"": 30
             }
         }";
-        var fileName = Path.GetRandomFileName() + ".json";
+        var fileName = $"{_testFilePrefix}{Path.GetRandomFileName()}.json";
         File.WriteAllText(fileName, jsonContent);
         _createdFiles.Add(fileName);
 
@@ -99,7 +94,7 @@ public class JsonConfigurationProviderTests : IDisposable
     public void LoadConfiguration_With_Invalid_Json_Should_Throw_JsonException()
     {
         const string invalidJson = @"{ invalid json }";
-        var fileName = Path.GetRandomFileName() + ".json";
+        var fileName = $"{_testFilePrefix}{Path.GetRandomFileName()}.json";
         File.WriteAllText(fileName, invalidJson);
         _createdFiles.Add(fileName);
 
@@ -109,19 +104,33 @@ public class JsonConfigurationProviderTests : IDisposable
 
     public void Dispose()
     {
-        foreach (var file in _createdFiles)
+        Console.WriteLine($"Starting to clean up JSON Provider test files...");
+        var deletedCount = 0;
+        var failedCount = 0;
+
+        foreach (var file in _createdFiles.ToList())
         {
             if (File.Exists(file))
             {
                 try
                 {
                     File.Delete(file);
+                    _createdFiles.Remove(file);
+                    deletedCount++;
+                    Console.WriteLine($"Deleted JSON test file: {file}");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"警告: 无法删除测试文件 {file}: {ex.Message}");
+                    failedCount++;
+                    Console.WriteLine($"Warning: Unable to delete JSON test file {file}: {ex.Message}");
                 }
             }
+            else
+            {
+                _createdFiles.Remove(file);
+            }
         }
+
+        Console.WriteLine($"JSON Provider cleanup completed: Deleted {deletedCount} files, failed {failedCount}");
     }
 }

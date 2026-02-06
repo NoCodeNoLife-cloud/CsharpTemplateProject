@@ -8,6 +8,7 @@
         <!-- Add test project identifier -->
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
+        <RootNamespace>Tests</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -29,6 +30,10 @@
     <ItemGroup>
         <ProjectReference Include="..\FrameWork\FrameWork.csproj" />
         <ProjectReference Include="..\Log\Log.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+      <Folder Include="FrameworkTests\AopTests\" />
+      <Folder Include="FrameworkTests\AttributeTests\" />
     </ItemGroup>
 
 </Project>

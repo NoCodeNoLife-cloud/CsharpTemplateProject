@@ -1,21 +1,15 @@
-﻿using CommonFramework.Configuration.Interfaces;
+using CommonFramework.Configuration.Interfaces;
 using CommonFramework.Configuration.Services;
 using FluentAssertions;
 using Moq;
 using Xunit;
 
-namespace Ci.Ut;
+namespace Tests.ConfigurationTests;
 
 public class ConfigurationServiceTests
 {
-    private readonly ConfigurationServiceImpl _configService;
-    private readonly Mock<IConfigurationProvider> _mockProvider;
-
-    public ConfigurationServiceTests()
-    {
-        _configService = ConfigurationServiceImpl.InstanceVal;
-        _mockProvider = new Mock<IConfigurationProvider>();
-    }
+    private readonly ConfigurationServiceImpl _configService = ConfigurationServiceImpl.InstanceVal;
+    private readonly Mock<IConfigurationProvider> _mockProvider = new();
 
     [Fact]
     public void Singleton_Instance_Should_Return_Same_Instance()
@@ -94,7 +88,7 @@ public class ConfigurationServiceTests
         _configService.SetValue("Key2", "Value2");
 
         // Act
-        var keys = _configService.GetAllKeys();
+        var keys = _configService.GetAllKeys().ToList();
 
         // Assert
         keys.Should().Contain("Key1");

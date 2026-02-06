@@ -1,20 +1,15 @@
-﻿using CommonFramework.Configuration.Exceptions;
+using CommonFramework.Configuration.Exceptions;
 using CommonFramework.Configuration.Providers;
 using FluentAssertions;
 using Xunit;
 
-namespace Ci.Ut;
+namespace Tests.ConfigurationTests;
 
 public class XmlConfigurationProviderTests : IDisposable
 {
-    private readonly XmlConfigurationProvider _provider;
-    private readonly List<string> _createdFiles;
-
-    public XmlConfigurationProviderTests()
-    {
-        _provider = new XmlConfigurationProvider();
-        _createdFiles = new List<string>();
-    }
+    private readonly XmlConfigurationProvider _provider = new();
+    private readonly List<string> _createdFiles = new();
+    private readonly string _testFilePrefix = $"xml-test-{Guid.NewGuid():N}-";
 
     [Fact]
     public void Name_Should_Return_XML()
@@ -54,7 +49,7 @@ public class XmlConfigurationProviderTests : IDisposable
         <setting name=""EnableLogging"" value=""true"" />
     </appSettings>
 </configuration>";
-        var fileName = Path.GetRandomFileName() + ".xml";
+        var fileName = $"{_testFilePrefix}{Path.GetRandomFileName()}.xml";
         File.WriteAllText(fileName, xmlContent);
         _createdFiles.Add(fileName);
 
@@ -70,7 +65,7 @@ public class XmlConfigurationProviderTests : IDisposable
     <Version>1.0.0</Version>
     <Port>8080</Port>
 </config>";
-        var fileName = Path.GetRandomFileName() + ".xml";
+        var fileName = $"{_testFilePrefix}{Path.GetRandomFileName()}.xml";
         File.WriteAllText(fileName, xmlContent);
         _createdFiles.Add(fileName);
 
@@ -92,7 +87,7 @@ public class XmlConfigurationProviderTests : IDisposable
         </connection>
     </database>
 </configuration>";
-        var fileName = Path.GetRandomFileName() + ".xml";
+        var fileName = $"{_testFilePrefix}{Path.GetRandomFileName()}.xml";
         File.WriteAllText(fileName, xmlContent);
         _createdFiles.Add(fileName);
 
@@ -113,7 +108,7 @@ public class XmlConfigurationProviderTests : IDisposable
     public void LoadConfiguration_With_Invalid_Xml_Should_Throw_XmlException()
     {
         const string invalidXml = @"<invalid xml>";
-        var fileName = Path.GetRandomFileName() + ".xml";
+        var fileName = $"{_testFilePrefix}{Path.GetRandomFileName()}.xml";
         File.WriteAllText(fileName, invalidXml);
         _createdFiles.Add(fileName);
 
@@ -123,19 +118,33 @@ public class XmlConfigurationProviderTests : IDisposable
 
     public void Dispose()
     {
-        foreach (var file in _createdFiles)
+        Console.WriteLine($"Starting to clean up XML Provider test files...");
+        var deletedCount = 0;
+        var failedCount = 0;
+
+        foreach (var file in _createdFiles.ToList())
         {
             if (File.Exists(file))
             {
                 try
                 {
                     File.Delete(file);
+                    _createdFiles.Remove(file);
+                    deletedCount++;
+                    Console.WriteLine($"Deleted XML test file: {file}");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"警告: 无法删除测试文件 {file}: {ex.Message}");
+                    failedCount++;
+                    Console.WriteLine($"Warning: Unable to delete XML test file {file}: {ex.Message}");
                 }
             }
+            else
+            {
+                _createdFiles.Remove(file);
+            }
         }
+
+        Console.WriteLine($"XML Provider cleanup completed: Deleted {deletedCount} files, failed {failedCount}");
     }
 }

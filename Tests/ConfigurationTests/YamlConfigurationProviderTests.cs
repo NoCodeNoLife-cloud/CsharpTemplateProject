@@ -1,20 +1,15 @@
-﻿using CommonFramework.Configuration.Exceptions;
+using CommonFramework.Configuration.Exceptions;
 using CommonFramework.Configuration.Providers;
 using FluentAssertions;
 using Xunit;
 
-namespace Ci.Ut;
+namespace Tests.ConfigurationTests;
 
 public class YamlConfigurationProviderTests : IDisposable
 {
-    private readonly YamlConfigurationProvider _provider;
-    private readonly List<string> _createdFiles;
-
-    public YamlConfigurationProviderTests()
-    {
-        _provider = new YamlConfigurationProvider();
-        _createdFiles = new List<string>();
-    }
+    private readonly YamlConfigurationProvider _provider = new();
+    private readonly List<string> _createdFiles = new();
+    private readonly string _testFilePrefix = $"yaml-test-{Guid.NewGuid():N}-";
 
     [Fact]
     public void Name_Should_Return_YAML()
@@ -53,7 +48,7 @@ Version: 1.0.0
 Port: 8080
 Debug: true
 ";
-        var fileName = Path.GetRandomFileName() + ".yaml";
+        var fileName = $"{_testFilePrefix}{Path.GetRandomFileName()}.yaml";
         File.WriteAllText(fileName, yamlContent);
         _createdFiles.Add(fileName);
 
@@ -74,7 +69,7 @@ Database:
   ConnectionString: Server=localhost;Database=testdb
   Timeout: 30
 ";
-        var fileName = Path.GetRandomFileName() + ".yaml";
+        var fileName = $"{_testFilePrefix}{Path.GetRandomFileName()}.yaml";
         File.WriteAllText(fileName, yamlContent);
         _createdFiles.Add(fileName);
 
@@ -94,7 +89,7 @@ Servers:
   - server2.local
   - server3.local
 ";
-        var fileName = Path.GetRandomFileName() + ".yaml";
+        var fileName = $"{_testFilePrefix}{Path.GetRandomFileName()}.yaml";
         File.WriteAllText(fileName, yamlContent);
         _createdFiles.Add(fileName);
 
@@ -114,19 +109,33 @@ Servers:
 
     public void Dispose()
     {
-        foreach (var file in _createdFiles)
+        Console.WriteLine($"Starting to clean up YAML Provider test files...");
+        var deletedCount = 0;
+        var failedCount = 0;
+
+        foreach (var file in _createdFiles.ToList())
         {
             if (File.Exists(file))
             {
                 try
                 {
                     File.Delete(file);
+                    _createdFiles.Remove(file);
+                    deletedCount++;
+                    Console.WriteLine($"Deleted YAML test file: {file}");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"警告: 无法删除测试文件 {file}: {ex.Message}");
+                    failedCount++;
+                    Console.WriteLine($"Warning: Unable to delete YAML test file {file}: {ex.Message}");
                 }
             }
+            else
+            {
+                _createdFiles.Remove(file);
+            }
         }
+
+        Console.WriteLine($"YAML Provider cleanup completed: Deleted {deletedCount} files, failed {failedCount}");
     }
 }
