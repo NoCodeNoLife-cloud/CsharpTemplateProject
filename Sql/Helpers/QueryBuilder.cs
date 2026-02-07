@@ -14,7 +14,7 @@ public class QueryBuilder
     private readonly StringBuilder _groupByClause = new();
     private readonly StringBuilder _havingClause = new();
     private readonly StringBuilder _joinClauses = new();
-    private readonly List<string> _parameters = new();
+    private readonly List<string> _parameters = [];
     private int _limit = -1;
     private int _offset = -1;
     private bool _distinct;

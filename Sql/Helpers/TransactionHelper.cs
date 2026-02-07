@@ -10,8 +10,8 @@ public class TransactionHelper : IDisposable
 {
     private readonly DatabaseConnectionManager _connectionManager;
     private MySqlTransaction? _transaction;
-    private bool _disposed = false;
-    private bool _completed = false;
+    private bool _disposed;
+    private bool _completed;
 
     /// <summary>
     /// Initializes a new instance of the TransactionHelper class
@@ -234,8 +234,7 @@ public class TransactionHelper : IDisposable
     /// <exception cref="TransactionException">Thrown when transaction operation fails</exception>
     public async Task ExecuteInTransactionAsync(Func<Task> action)
     {
-        if (action == null)
-            throw new ArgumentNullException(nameof(action));
+        ArgumentNullException.ThrowIfNull(action);
 
         await BeginTransactionAsync().ConfigureAwait(false);
         try
@@ -319,7 +318,7 @@ public class TransactionHelper : IDisposable
                 }
 
                 _transaction?.Dispose();
-                _connectionManager?.Dispose();
+                _connectionManager.Dispose();
             }
             catch
             {
