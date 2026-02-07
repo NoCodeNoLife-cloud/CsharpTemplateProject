@@ -17,7 +17,7 @@ public class QueryBuilder
     private readonly List<string> _parameters = new();
     private int _limit = -1;
     private int _offset = -1;
-    private bool _distinct = false;
+    private bool _distinct;
 
     /// <summary>
     /// Adds SELECT clause
@@ -139,14 +139,7 @@ public class QueryBuilder
         if (string.IsNullOrWhiteSpace(condition))
             throw new ArgumentException("Condition cannot be null or empty", nameof(condition));
 
-        if (_whereClause.Length > 0)
-        {
-            _whereClause.Append(" AND ");
-        }
-        else
-        {
-            _whereClause.Append(" WHERE ");
-        }
+        _whereClause.Append(_whereClause.Length > 0 ? " AND " : " WHERE ");
 
         _whereClause.Append(condition);
         AddParameters(parameters);
@@ -164,14 +157,7 @@ public class QueryBuilder
         if (string.IsNullOrWhiteSpace(condition))
             throw new ArgumentException("Condition cannot be null or empty", nameof(condition));
 
-        if (_whereClause.Length > 0)
-        {
-            _whereClause.Append(" OR ");
-        }
-        else
-        {
-            _whereClause.Append(" WHERE ");
-        }
+        _whereClause.Append(_whereClause.Length > 0 ? " OR " : " WHERE ");
 
         _whereClause.Append(condition);
         AddParameters(parameters);
@@ -309,13 +295,11 @@ public class QueryBuilder
             query.Append(_orderByClause);
 
         // Add LIMIT and OFFSET
-        if (_limit >= 0)
+        if (_limit < 0) return query.ToString().Trim();
+        query.Append($" LIMIT {_limit}");
+        if (_offset >= 0)
         {
-            query.Append($" LIMIT {_limit}");
-            if (_offset >= 0)
-            {
-                query.Append($" OFFSET {_offset}");
-            }
+            query.Append($" OFFSET {_offset}");
         }
 
         return query.ToString().Trim();
@@ -404,14 +388,7 @@ public class QueryBuilder
     /// <param name="parameters">Parameter values</param>
     private void AppendWhereClause(string condition, object[] parameters)
     {
-        if (_whereClause.Length > 0)
-        {
-            _whereClause.Append(" AND ");
-        }
-        else
-        {
-            _whereClause.Append(" WHERE ");
-        }
+        _whereClause.Append(_whereClause.Length > 0 ? " AND " : " WHERE ");
 
         _whereClause.Append(condition);
         AddParameters(parameters);
@@ -423,12 +400,9 @@ public class QueryBuilder
     /// <param name="parameters">Parameter values array</param>
     private void AddParameters(object[] parameters)
     {
-        if (parameters != null)
+        foreach (var param in parameters)
         {
-            foreach (var param in parameters)
-            {
-                _parameters.Add(param?.ToString() ?? "NULL");
-            }
+            _parameters.Add(param.ToString() ?? "NULL");
         }
     }
 

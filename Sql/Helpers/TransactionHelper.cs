@@ -260,8 +260,7 @@ public class TransactionHelper : IDisposable
     /// <exception cref="TransactionException">Thrown when transaction operation fails</exception>
     public TResult ExecuteInTransaction<TResult>(Func<TResult> func)
     {
-        if (func == null)
-            throw new ArgumentNullException(nameof(func));
+        ArgumentNullException.ThrowIfNull(func);
 
         BeginTransaction();
         try
@@ -287,8 +286,7 @@ public class TransactionHelper : IDisposable
     /// <exception cref="TransactionException">Thrown when transaction operation fails</exception>
     public async Task<TResult> ExecuteInTransactionAsync<TResult>(Func<Task<TResult>> func)
     {
-        if (func == null)
-            throw new ArgumentNullException(nameof(func));
+        ArgumentNullException.ThrowIfNull(func);
 
         await BeginTransactionAsync().ConfigureAwait(false);
         try
@@ -310,28 +308,26 @@ public class TransactionHelper : IDisposable
     /// <param name="disposing">Whether managed resources are being disposed</param>
     protected virtual void Dispose(bool disposing)
     {
-        if (!_disposed)
+        if (_disposed) return;
+        if (disposing)
         {
-            if (disposing)
+            try
             {
-                try
+                if (_transaction != null && !_completed)
                 {
-                    if (_transaction != null && !_completed)
-                    {
-                        _transaction.Rollback();
-                    }
+                    _transaction.Rollback();
+                }
 
-                    _transaction?.Dispose();
-                    _connectionManager?.Dispose();
-                }
-                catch
-                {
-                    // Ignore exceptions during cleanup
-                }
+                _transaction?.Dispose();
+                _connectionManager?.Dispose();
             }
-
-            _disposed = true;
+            catch
+            {
+                // Ignore exceptions during cleanup
+            }
         }
+
+        _disposed = true;
     }
 
     /// <summary>

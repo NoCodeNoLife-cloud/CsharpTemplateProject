@@ -7,11 +7,11 @@ namespace Sql.Helpers;
 /// Database connection manager
 /// Manages database connections and provides connection utilities
 /// </summary>
-public class DatabaseConnectionManager : IDisposable
+public sealed class DatabaseConnectionManager : IDisposable
 {
     private readonly string _connectionString;
     private MySqlConnection? _connection;
-    private bool _disposed = false;
+    private bool _disposed;
 
     /// <summary>
     /// Initializes a new instance of the DatabaseConnectionManager class
@@ -21,7 +21,7 @@ public class DatabaseConnectionManager : IDisposable
     /// <exception cref="ArgumentException">Thrown when connection string is null or empty</exception>
     public DatabaseConnectionManager(string connectionString)
     {
-        _connectionString = string.IsNullOrWhiteSpace(connectionString) 
+        _connectionString = string.IsNullOrWhiteSpace(connectionString)
             ? throw new ArgumentException("Connection string cannot be null or empty.", nameof(connectionString))
             : connectionString;
     }
@@ -41,6 +41,7 @@ public class DatabaseConnectionManager : IDisposable
                 _connection = new MySqlConnection(_connectionString);
                 _connection.Open();
             }
+
             return _connection;
         }
         catch (MySqlException ex)
@@ -64,6 +65,7 @@ public class DatabaseConnectionManager : IDisposable
                 _connection = new MySqlConnection(_connectionString);
                 await _connection.OpenAsync().ConfigureAwait(false);
             }
+
             return _connection;
         }
         catch (MySqlException ex)
@@ -100,7 +102,7 @@ public class DatabaseConnectionManager : IDisposable
     {
         try
         {
-            using var connection = new MySqlConnection(_connectionString);
+            await using var connection = new MySqlConnection(_connectionString);
             await connection.OpenAsync().ConfigureAwait(false);
             return await connection.PingAsync().ConfigureAwait(false);
         }
@@ -153,7 +155,7 @@ public class DatabaseConnectionManager : IDisposable
     /// Performs cleanup operations
     /// </summary>
     /// <param name="disposing">Whether managed resources are being disposed</param>
-    protected virtual void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
         if (!_disposed)
         {
@@ -170,6 +172,7 @@ public class DatabaseConnectionManager : IDisposable
                     // Ignore exceptions during cleanup
                 }
             }
+
             _disposed = true;
         }
     }
