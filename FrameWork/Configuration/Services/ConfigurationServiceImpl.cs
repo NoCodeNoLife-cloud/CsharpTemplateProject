@@ -48,16 +48,13 @@ public class ConfigurationServiceImpl : IConfigurationService
     /// <param name="provider">Configuration provider instance</param>
     public void RegisterProvider(IConfigurationProvider provider)
     {
-        if (provider == null)
-            throw new ArgumentNullException(nameof(provider));
+        ArgumentNullException.ThrowIfNull(provider);
 
         lock (_lockObject)
         {
-            if (!_providers.Any(p => p.Name.Equals(provider.Name, StringComparison.OrdinalIgnoreCase)))
-            {
-                _providers.Add(provider);
-                LoggingServiceImpl.InstanceVal.LogDebug($"Registered configuration provider: {provider.Name}");
-            }
+            if (_providers.Any(p => p.Name.Equals(provider.Name, StringComparison.OrdinalIgnoreCase))) return;
+            _providers.Add(provider);
+            LoggingServiceImpl.InstanceVal.LogDebug($"Registered configuration provider: {provider.Name}");
         }
     }
 
@@ -153,7 +150,7 @@ public class ConfigurationServiceImpl : IConfigurationService
     /// <typeparam name="T">Target type</typeparam>
     /// <param name="value">Original value</param>
     /// <returns>Converted value</returns>
-    private T? ConvertValue<T>(object value)
+    private static T? ConvertValue<T>(object value)
     {
         if (value is T directValue)
             return directValue;

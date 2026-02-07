@@ -2,7 +2,6 @@ using CommonFramework.Configuration;
 using CommonFramework.Configuration.Interfaces;
 using FluentAssertions;
 using Xunit;
-using System.Threading;
 
 namespace Tests.ConfigurationTests;
 
@@ -13,12 +12,12 @@ public class ConfigurationIntegrationTests : IDisposable
 
     public ConfigurationIntegrationTests()
     {
-        _createdFiles = new List<string>();
+        _createdFiles = [];
         _testFilePrefix = $"integration-test-{Guid.NewGuid():N}-";
-        
+
         // Ensure complete test isolation by refreshing configuration cache
         ForceConfigurationRefresh();
-        
+
         CreateTestConfigurationFiles();
     }
 
@@ -45,7 +44,7 @@ public class ConfigurationIntegrationTests : IDisposable
     {
         // Ensure clean state for this specific test
         ForceConfigurationRefresh();
-        
+
         // Use pre-created test file with prefix
         var fileName = $"{_testFilePrefix}integration-test.xml";
 
@@ -69,7 +68,7 @@ public class ConfigurationIntegrationTests : IDisposable
     {
         // Ensure clean state for this specific test
         ForceConfigurationRefresh();
-        
+
         // Use pre-created test files with prefix
         var jsonFile = $"{_testFilePrefix}multi-integration.json";
         var xmlFile = $"{_testFilePrefix}multi-integration.xml";
@@ -94,7 +93,7 @@ public class ConfigurationIntegrationTests : IDisposable
     {
         // Ensure clean state for this specific test
         ForceConfigurationRefresh();
-        
+
         // Use pre-created test file with prefix
         var fileName = $"{_testFilePrefix}conversion-integration.json";
 
@@ -114,7 +113,7 @@ public class ConfigurationIntegrationTests : IDisposable
     {
         // Ensure clean state for this specific test
         ForceConfigurationRefresh();
-        
+
         var customProvider = new InMemoryConfigurationProvider();
         customProvider.SetConfig("Custom.Key1", "custom-value-1");
         customProvider.SetConfig("Custom.Key2", 123);
@@ -203,13 +202,13 @@ public class ConfigurationIntegrationTests : IDisposable
     {
         const int maxRetries = 3;
         const int delayMs = 100;
-        
+
         for (int i = 0; i < maxRetries; i++)
         {
             try
             {
                 CommonFramework.ConfigurationServiceImpl.InstanceVal.Refresh();
-                
+
                 // Verify cache is actually cleared
                 var keys = CommonFramework.ConfigurationServiceImpl.InstanceVal.GetAllKeys().ToList();
                 if (keys.Count == 0)
@@ -217,20 +216,20 @@ public class ConfigurationIntegrationTests : IDisposable
                     Console.WriteLine($"Configuration cache successfully cleared on attempt {i + 1}");
                     return;
                 }
-                
+
                 Console.WriteLine($"Attempt {i + 1}: Cache still contains {keys.Count} keys, retrying...");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Attempt {i + 1}: Failed to refresh configuration: {ex.Message}");
             }
-            
+
             if (i < maxRetries - 1)
             {
                 Thread.Sleep(delayMs);
             }
         }
-        
+
         Console.WriteLine("Warning: Configuration refresh may not have completed successfully");
     }
 
@@ -282,12 +281,7 @@ public class InMemoryConfigurationProvider : IConfigurationProvider
 
     public Dictionary<string, object> LoadConfiguration(string source)
     {
-        if (source.StartsWith("memory://"))
-        {
-            return new Dictionary<string, object>(_configData);
-        }
-
-        return new Dictionary<string, object>();
+        return source.StartsWith("memory://") ? new Dictionary<string, object>(_configData) : new Dictionary<string, object>();
     }
 
     public bool CanHandleSource(string source)

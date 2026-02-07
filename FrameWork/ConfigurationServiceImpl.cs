@@ -51,11 +51,9 @@ public class ConfigurationServiceImpl : IConfigurationService
 
         lock (_lockObject)
         {
-            if (!_providers.Any(p => p.Name.Equals(provider.Name, StringComparison.OrdinalIgnoreCase)))
-            {
-                _providers.Add(provider);
-                LoggingServiceImpl.InstanceVal.LogDebug($"Registered configuration provider: {provider.Name}");
-            }
+            if (_providers.Any(p => p.Name.Equals(provider.Name, StringComparison.OrdinalIgnoreCase))) return;
+            _providers.Add(provider);
+            LoggingServiceImpl.InstanceVal.LogDebug($"Registered configuration provider: {provider.Name}");
         }
     }
 
