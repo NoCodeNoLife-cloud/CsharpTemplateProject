@@ -1,3 +1,4 @@
+using System.Text;
 using System.Xml;
 using CommonFramework.Configuration.Exceptions;
 using CommonFramework.Configuration.Interfaces;
@@ -36,7 +37,12 @@ public sealed class XmlConfigurationProvider : IConfigurationProvider
         ValidateFileExists(source);
 
         var doc = new XmlDocument();
-        doc.Load(source);
+
+        // Load XML with proper encoding handling for auto-generated files
+        using (var reader = new StreamReader(source, Encoding.UTF8, true))
+        {
+            doc.Load(reader);
+        }
 
         var configDict = new Dictionary<string, object>();
         if (doc.DocumentElement != null) ParseXmlNode(doc.DocumentElement, configDict, "");
@@ -66,38 +72,49 @@ public sealed class XmlConfigurationProvider : IConfigurationProvider
         foreach (XmlNode childNode in node.ChildNodes)
         {
             if (childNode.NodeType != XmlNodeType.Element) continue;
-            
-            var key = string.IsNullOrEmpty(prefix) ? childNode.Name : $"{prefix}.{childNode.Name}";
 
-            // 处理具有属性的节点（如 <setting name="Environment" value="Development" />）
-            if (childNode.Attributes != null && childNode.Attributes.Count > 0)
+            // Handle attribute-based configuration elements (<setting name="key" value="value" />)
+            if (childNode.Attributes != null && childNode.Attributes.Count >= 2)
             {
-                // 如果有 name 和 value 属性，使用它们构建键值对
                 var nameAttr = childNode.Attributes["name"];
                 var valueAttr = childNode.Attributes["value"];
                 
                 if (nameAttr != null && valueAttr != null)
                 {
-                    var fullKey = string.IsNullOrEmpty(prefix) ? nameAttr.Value : $"{prefix}.{nameAttr.Value}";
-                    configDict[fullKey] = valueAttr.Value;
+                    // Create the full key with proper hierarchy
+                    // For <appSettings><setting name="Environment" value="Integration" />, 
+                    // this should create "appSettings.Environment"
+                    var attributeName = nameAttr.Value;
+                    var attributeValue = valueAttr.Value;
+                    var fullKey = string.IsNullOrEmpty(prefix) ? attributeName : $"{prefix}.{attributeName}";
+                    configDict[fullKey] = attributeValue;
+                    
+                    // Skip further processing of this node since we've handled the attributes
                     continue;
                 }
             }
 
-            // 处理有文本内容的节点
-            if (childNode is { HasChildNodes: true, FirstChild.NodeType: XmlNodeType.Text })
+            // For regular elements, create the hierarchical key
+            var elementKey = string.IsNullOrEmpty(prefix) ? childNode.Name : $"{prefix}.{childNode.Name}";
+
+            // Process the node based on its content type
+            if (childNode.HasChildNodes)
             {
-                configDict[key] = childNode.InnerText;
+                // Text content node (<element>value</element>)
+                if (childNode.ChildNodes.Count == 1 && childNode.FirstChild.NodeType == XmlNodeType.Text)
+                {
+                    configDict[elementKey] = childNode.InnerText.Trim();
+                }
+                // Element with child nodes - recurse deeper
+                else
+                {
+                    ParseXmlNode(childNode, configDict, elementKey);
+                }
             }
-            // 处理有子节点的节点（递归）
-            else if (childNode.HasChildNodes)
-            {
-                ParseXmlNode(childNode, configDict, key);
-            }
-            // 处理空节点
             else
             {
-                configDict[key] = "";
+                // Empty element (<element />)
+                configDict[elementKey] = "";
             }
         }
     }

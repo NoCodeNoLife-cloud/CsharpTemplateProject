@@ -1,6 +1,7 @@
 using AspectCore.DynamicProxy;
 using LoggingService.Enums;
 using LoggingService.Services;
+using System.Runtime.CompilerServices;
 
 namespace CommonFramework.Attributes;
 
@@ -92,18 +93,22 @@ public class LogAttribute : AbstractInterceptorAttribute
     /// <param name="methodName">The formatted name of the method being executed.</param>
     /// <param name="methodInfo">The method information for parameter details.</param>
     /// <param name="context">The aspect context containing method parameters.</param>
-    private void LogMethodStart(string methodName, System.Reflection.MethodInfo methodInfo, AspectContext context)
+    /// <param name="filePath">The source file path of the calling method.</param>
+    /// <param name="lineNumber">The line number in the source file.</param>
+    private void LogMethodStart(string methodName, System.Reflection.MethodInfo methodInfo, AspectContext context,
+        [CallerFilePath] string filePath = "",
+        [CallerLineNumber] int lineNumber = 0)
     {
         string logMessage;
 
         if (LogParameters && context.Parameters.Length > 0)
         {
             var paramInfo = BuildParameterInfo(methodInfo, context.Parameters);
-            logMessage = $"Method {methodName} starts executing, Parameters: {paramInfo}";
+            logMessage = $"Method {methodName} starts executing at {filePath}:{lineNumber}, Parameters: {paramInfo}";
         }
         else
         {
-            logMessage = $"Method {methodName} starts executing";
+            logMessage = $"Method {methodName} starts executing at {filePath}:{lineNumber}";
         }
 
         LoggingServiceImpl.InstanceVal.Log(LogLevel, logMessage);
@@ -136,7 +141,11 @@ public class LogAttribute : AbstractInterceptorAttribute
     /// <param name="methodName">The formatted name of the executed method.</param>
     /// <param name="executionTime">The time elapsed during method execution.</param>
     /// <param name="context">The aspect context containing method return value.</param>
-    private void LogMethodSuccess(string methodName, TimeSpan executionTime, AspectContext context)
+    /// <param name="filePath">The source file path of the calling method.</param>
+    /// <param name="lineNumber">The line number in the source file.</param>
+    private void LogMethodSuccess(string methodName, TimeSpan executionTime, AspectContext context,
+        [CallerFilePath] string filePath = "",
+        [CallerLineNumber] int lineNumber = 0)
     {
         var returnValueInfo = "";
         if (LogReturnValue && context.ReturnValue != null)
@@ -144,7 +153,9 @@ public class LogAttribute : AbstractInterceptorAttribute
             returnValueInfo = $", Return value: {FormatValue(context.ReturnValue)}";
         }
 
-        var logMessage = LogExecutionTime ? $"Method {methodName} executed successfully, Execution time: {executionTime.TotalMilliseconds:F2} ms{returnValueInfo}" : $"Method {methodName} executed successfully{returnValueInfo}";
+        var logMessage = LogExecutionTime 
+            ? $"Method {methodName} executed successfully at {filePath}:{lineNumber}, Execution time: {executionTime.TotalMilliseconds:F2} ms{returnValueInfo}" 
+            : $"Method {methodName} executed successfully at {filePath}:{lineNumber}{returnValueInfo}";
 
         LoggingServiceImpl.InstanceVal.Log(LogLevel, logMessage);
     }
@@ -155,9 +166,15 @@ public class LogAttribute : AbstractInterceptorAttribute
     /// <param name="methodName">The formatted name of the failed method.</param>
     /// <param name="executionTime">The time elapsed before method execution failed.</param>
     /// <param name="ex">The exception that caused the method execution to fail.</param>
-    private void LogMethodFailure(string methodName, TimeSpan executionTime, Exception ex)
+    /// <param name="filePath">The source file path of the calling method.</param>
+    /// <param name="lineNumber">The line number in the source file.</param>
+    private void LogMethodFailure(string methodName, TimeSpan executionTime, Exception ex,
+        [CallerFilePath] string filePath = "",
+        [CallerLineNumber] int lineNumber = 0)
     {
-        var logMessage = LogExecutionTime ? $"Method {methodName} execution failed, Execution time: {executionTime.TotalMilliseconds:F2} ms, Error message: {ex.Message}" : $"Method {methodName} execution failed, Error message: {ex.Message}";
+        var logMessage = LogExecutionTime 
+            ? $"Method {methodName} execution failed at {filePath}:{lineNumber}, Execution time: {executionTime.TotalMilliseconds:F2} ms, Error message: {ex.Message}" 
+            : $"Method {methodName} execution failed at {filePath}:{lineNumber}, Error message: {ex.Message}";
 
         LoggingServiceImpl.InstanceVal.LogError(logMessage, ex);
     }

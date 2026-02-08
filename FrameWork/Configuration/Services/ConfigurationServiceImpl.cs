@@ -77,6 +77,12 @@ public class ConfigurationServiceImpl : IConfigurationService
             try
             {
                 var configData = provider.LoadConfiguration(source);
+                LoggingServiceImpl.InstanceVal.LogDebug($"Loaded {configData.Count} configuration entries from {source}");
+                foreach (var kvp in configData)
+                {
+                    LoggingServiceImpl.InstanceVal.LogDebug($"  Key: '{kvp.Key}', Value: '{kvp.Value}' ({kvp.Value?.GetType().Name})");
+                }
+                
                 MergeConfiguration(configData);
 
                 LoggingServiceImpl.InstanceVal.LogInformation($"Successfully loaded configuration from {provider.Name}: {source}");
@@ -106,10 +112,13 @@ public class ConfigurationServiceImpl : IConfigurationService
     /// <param name="newConfig">New configuration data</param>
     private void MergeConfiguration(Dictionary<string, object> newConfig)
     {
+        LoggingServiceImpl.InstanceVal.LogDebug($"Merging {newConfig.Count} configuration entries into cache");
         foreach (var kvp in newConfig)
         {
             _configurationCache[kvp.Key] = kvp.Value;
+            LoggingServiceImpl.InstanceVal.LogDebug($"  Added to cache: '{kvp.Key}' = '{kvp.Value}' ({kvp.Value?.GetType().Name})");
         }
+        LoggingServiceImpl.InstanceVal.LogDebug($"Cache now contains {_configurationCache.Count} entries");
     }
 
     /// <summary>
@@ -156,11 +165,12 @@ public class ConfigurationServiceImpl : IConfigurationService
             return directValue;
 
         var targetType = typeof(T);
+        var stringValue = value.ToString();
 
         // Handle nullable types
         if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
         {
-            if (string.IsNullOrEmpty(value.ToString()))
+            if (string.IsNullOrEmpty(stringValue))
                 return default(T);
 
             targetType = Nullable.GetUnderlyingType(targetType);
@@ -168,13 +178,39 @@ public class ConfigurationServiceImpl : IConfigurationService
 
         // String type direct conversion
         if (targetType == typeof(string))
-            return (T)(object)value.ToString()!;
+            return (T)(object)stringValue!;
+
+        // Handle numeric conversions from string with culture-invariant parsing
+        if (targetType == typeof(int) && int.TryParse(stringValue, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var intValue))
+            return (T)(object)intValue;
+        
+        if (targetType == typeof(double) && double.TryParse(stringValue, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var doubleValue))
+            return (T)(object)doubleValue;
+        
+        if (targetType == typeof(float) && float.TryParse(stringValue, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var floatValue))
+            return (T)(object)floatValue;
+        
+        if (targetType == typeof(decimal) && decimal.TryParse(stringValue, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var decimalValue))
+            return (T)(object)decimalValue;
+
+        // Boolean conversion with flexible parsing
+        if (targetType == typeof(bool))
+        {
+            if (bool.TryParse(stringValue, out var boolValue))
+                return (T)(object)boolValue;
+            
+            // Handle case-insensitive "true"/"false" strings
+            if (string.Equals(stringValue, "true", StringComparison.OrdinalIgnoreCase))
+                return (T)(object)true;
+            if (string.Equals(stringValue, "false", StringComparison.OrdinalIgnoreCase))
+                return (T)(object)false;
+        }
 
         // Enum type
         if (targetType is { IsEnum: true })
-            return (T)Enum.Parse(targetType, value.ToString() ?? throw new InvalidOperationException(), true);
+            return (T)Enum.Parse(targetType, stringValue ?? throw new InvalidOperationException(), true);
 
-        // Other types use Convert.ChangeType
+        // Other types use Convert.ChangeType as fallback
         return (T)Convert.ChangeType(value, targetType ?? throw new InvalidOperationException());
     }
 
