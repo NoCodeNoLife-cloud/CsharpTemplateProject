@@ -18,7 +18,7 @@ public class ConfigurationServiceImpl : IConfigurationService
 
     private ConfigurationServiceImpl()
     {
-        _providers = new List<IConfigurationProvider>();
+        _providers = [];
         _configurationCache = new Dictionary<string, object>();
 
         // Register all built-in providers by default
@@ -80,9 +80,9 @@ public class ConfigurationServiceImpl : IConfigurationService
                 LoggingServiceImpl.InstanceVal.LogDebug($"Loaded {configData.Count} configuration entries from {source}");
                 foreach (var kvp in configData)
                 {
-                    LoggingServiceImpl.InstanceVal.LogDebug($"  Key: '{kvp.Key}', Value: '{kvp.Value}' ({kvp.Value?.GetType().Name})");
+                    LoggingServiceImpl.InstanceVal.LogDebug($"  Key: '{kvp.Key}', Value: '{kvp.Value}' ({kvp.Value.GetType().Name})");
                 }
-                
+
                 MergeConfiguration(configData);
 
                 LoggingServiceImpl.InstanceVal.LogInformation($"Successfully loaded configuration from {provider.Name}: {source}");
@@ -116,8 +116,9 @@ public class ConfigurationServiceImpl : IConfigurationService
         foreach (var kvp in newConfig)
         {
             _configurationCache[kvp.Key] = kvp.Value;
-            LoggingServiceImpl.InstanceVal.LogDebug($"  Added to cache: '{kvp.Key}' = '{kvp.Value}' ({kvp.Value?.GetType().Name})");
+            LoggingServiceImpl.InstanceVal.LogDebug($"  Added to cache: '{kvp.Key}' = '{kvp.Value}' ({kvp.Value.GetType().Name})");
         }
+
         LoggingServiceImpl.InstanceVal.LogDebug($"Cache now contains {_configurationCache.Count} entries");
     }
 
@@ -183,13 +184,13 @@ public class ConfigurationServiceImpl : IConfigurationService
         // Handle numeric conversions from string with culture-invariant parsing
         if (targetType == typeof(int) && int.TryParse(stringValue, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var intValue))
             return (T)(object)intValue;
-        
+
         if (targetType == typeof(double) && double.TryParse(stringValue, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var doubleValue))
             return (T)(object)doubleValue;
-        
+
         if (targetType == typeof(float) && float.TryParse(stringValue, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var floatValue))
             return (T)(object)floatValue;
-        
+
         if (targetType == typeof(decimal) && decimal.TryParse(stringValue, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var decimalValue))
             return (T)(object)decimalValue;
 
@@ -198,7 +199,7 @@ public class ConfigurationServiceImpl : IConfigurationService
         {
             if (bool.TryParse(stringValue, out var boolValue))
                 return (T)(object)boolValue;
-            
+
             // Handle case-insensitive "true"/"false" strings
             if (string.Equals(stringValue, "true", StringComparison.OrdinalIgnoreCase))
                 return (T)(object)true;
@@ -270,53 +271,4 @@ public class ConfigurationServiceImpl : IConfigurationService
             return _configurationCache.ContainsKey(key);
         }
     }
-
-    #region Private Helper Methods
-
-    /// <summary>
-    /// Validates that the provider is not null
-    /// </summary>
-    /// <param name="provider">The provider to validate</param>
-    /// <exception cref="ArgumentNullException">Thrown when provider is null</exception>
-    private static void _validateProviderNotNull(IConfigurationProvider provider)
-    {
-        if (provider == null)
-            throw new ArgumentNullException(nameof(provider), "Configuration provider cannot be null");
-    }
-
-    /// <summary>
-    /// Validates that the source is not empty
-    /// </summary>
-    /// <param name="source">The source to validate</param>
-    /// <exception cref="ArgumentException">Thrown when source is null or whitespace</exception>
-    private static void _validateSourceNotEmpty(string source)
-    {
-        if (string.IsNullOrWhiteSpace(source))
-            throw new ArgumentException("Configuration source path cannot be empty", nameof(source));
-    }
-
-    /// <summary>
-    /// Validates that the key is not empty
-    /// </summary>
-    /// <param name="key">The key to validate</param>
-    /// <exception cref="ArgumentException">Thrown when key is null or whitespace</exception>
-    private static void _validateKeyNotEmpty(string key)
-    {
-        if (string.IsNullOrWhiteSpace(key))
-            throw new ArgumentException("Configuration key cannot be empty", nameof(key));
-    }
-
-    /// <summary>
-    /// Validates that a suitable provider was found
-    /// </summary>
-    /// <param name="provider">The provider to validate</param>
-    /// <param name="source">The source that was being processed</param>
-    /// <exception cref="InvalidOperationException">Thrown when no suitable provider is found</exception>
-    private static void _validateProviderFound(IConfigurationProvider provider, string source)
-    {
-        if (provider == null)
-            throw new InvalidOperationException($"ConfigurationServiceImpl.FindSuitableProvider: No suitable provider found for configuration source '{source}'");
-    }
-
-    #endregion
 }
