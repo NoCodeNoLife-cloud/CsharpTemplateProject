@@ -123,6 +123,7 @@ public class QueryBuilder
     {
         if (string.IsNullOrWhiteSpace(condition))
             throw new ArgumentException("Condition cannot be null or empty", nameof(condition));
+        ArgumentNullException.ThrowIfNull(parameters);
 
         AppendWhereClause(condition, parameters);
         return this;
@@ -342,13 +343,13 @@ public class QueryBuilder
     {
         var clone = new QueryBuilder();
 
-        clone._selectClause.Append(_selectClause.ToString());
-        clone._fromClause.Append(_fromClause.ToString());
-        clone._whereClause.Append(_whereClause.ToString());
-        clone._orderByClause.Append(_orderByClause.ToString());
-        clone._groupByClause.Append(_groupByClause.ToString());
-        clone._havingClause.Append(_havingClause.ToString());
-        clone._joinClauses.Append(_joinClauses.ToString());
+        clone._selectClause.Append(_selectClause);
+        clone._fromClause.Append(_fromClause);
+        clone._whereClause.Append(_whereClause);
+        clone._orderByClause.Append(_orderByClause);
+        clone._groupByClause.Append(_groupByClause);
+        clone._havingClause.Append(_havingClause);
+        clone._joinClauses.Append(_joinClauses);
         clone._parameters.AddRange(_parameters);
         clone._limit = _limit;
         clone._offset = _offset;
