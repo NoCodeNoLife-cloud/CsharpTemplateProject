@@ -1,7 +1,7 @@
 ﻿using CommonFramework.Configuration.Interfaces;
 using LoggingService.Services;
 
-namespace CommonFramework;
+namespace CommonFramework.Configuration;
 
 /// <summary>
 /// Unified configuration service implementation
@@ -17,7 +17,7 @@ public class ConfigurationServiceImpl : IConfigurationService
     private ConfigurationServiceImpl()
     {
         _providers = [];
-        _configurationCache = new();
+        _configurationCache = new Dictionary<string, object>();
 
         // Register all built-in providers by default
         RegisterBuiltInProviders();
@@ -33,9 +33,9 @@ public class ConfigurationServiceImpl : IConfigurationService
     /// </summary>
     private void RegisterBuiltInProviders()
     {
-        RegisterProvider(new Configuration.Providers.JsonConfigurationProvider());
-        RegisterProvider(new Configuration.Providers.XmlConfigurationProvider());
-        RegisterProvider(new Configuration.Providers.YamlConfigurationProvider());
+        RegisterProvider(new Providers.JsonConfigurationProvider());
+        RegisterProvider(new Providers.XmlConfigurationProvider());
+        RegisterProvider(new Providers.YamlConfigurationProvider());
 
         LoggingServiceImpl.InstanceVal.LogDebug("Registered built-in configuration providers: JSON, XML, YAML");
     }

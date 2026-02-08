@@ -1,4 +1,4 @@
-﻿using LoggingService.Services;
+using LoggingService.Services;
 
 namespace ClientApplication.App;
 
@@ -14,5 +14,7 @@ internal static class Program
     private static void Main(string[] args)
     {
         LoggingServiceImpl.InstanceVal.LogDebug("INFO Testing completed. Check log outputs above.");
+        
+        Console.WriteLine("ClientApplication/App/Program.cs:1");
     }
 }

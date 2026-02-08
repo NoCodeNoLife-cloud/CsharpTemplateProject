@@ -1,4 +1,4 @@
-﻿using LoggingService.Enums;
+using LoggingService.Enums;
 using LoggingService.Interfaces;
 
 namespace LoggingService.Services;
@@ -134,14 +134,24 @@ public class LoggingServiceImpl : ILoggingService
     }
 
     /// <summary>
-    /// Gets caller method information from the call stack
+    /// Gets caller method information from the call stack including line number
     /// </summary>
-    /// <returns>Formatted string containing class name and method name of the caller</returns>
+    /// <returns>Formatted string containing class name, method name and line number of the caller</returns>
     private static string GetCallerInfo()
     {
-        var stackFrame = new System.Diagnostics.StackTrace(3).GetFrame(0);
+        var stackTrace = new System.Diagnostics.StackTrace(true);
+        var stackFrame = stackTrace.GetFrame(3); // Skip current method, WriteColoredLog, and the calling log method
+        
         if (stackFrame == null) return "Unknown";
+        
         var method = stackFrame.GetMethod();
-        return $"{method?.DeclaringType?.Name}.{method?.Name}";
+        var fileName = stackFrame.GetFileName();
+        var lineNumber = stackFrame.GetFileLineNumber();
+        
+        var className = method?.DeclaringType?.Name ?? "UnknownClass";
+        var methodName = method?.Name ?? "UnknownMethod";
+        var lineInfo = lineNumber > 0 ? $":{lineNumber}" : "";
+        
+        return $"{className}.{methodName}{lineInfo}";
     }
 }
