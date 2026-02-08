@@ -31,6 +31,6 @@
     <ItemGroup>
         <ProjectReference Include="..\FrameWork\FrameWork.csproj"/>
         <ProjectReference Include="..\Log\Log.csproj"/>
-        <ProjectReference Include="..\Sql\Sql.csproj" />
+        <ProjectReference Include="..\Sql\Sql.csproj"/>
     </ItemGroup>
 </Project>

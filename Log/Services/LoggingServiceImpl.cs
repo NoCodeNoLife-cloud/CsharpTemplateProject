@@ -136,7 +136,7 @@ public class LoggingServiceImpl : ILoggingService
     /// <summary>
     /// Gets caller method information from the call stack including line number
     /// </summary>
-    /// <returns>Formatted string containing class name, method name and line number of the caller</returns>
+    /// <returns>Formatted string containing file path and line number in format 'at ClientApplication/App/Program.cs(2)'</returns>
     private static string GetCallerInfo()
     {
         var stackTrace = new System.Diagnostics.StackTrace(true);
@@ -144,14 +144,25 @@ public class LoggingServiceImpl : ILoggingService
         
         if (stackFrame == null) return "Unknown";
         
-        var method = stackFrame.GetMethod();
         var fileName = stackFrame.GetFileName();
         var lineNumber = stackFrame.GetFileLineNumber();
         
-        var className = method?.DeclaringType?.Name ?? "UnknownClass";
-        var methodName = method?.Name ?? "UnknownMethod";
-        var lineInfo = lineNumber > 0 ? $":{lineNumber}" : "";
+        if (string.IsNullOrEmpty(fileName))
+            return "Unknown";
         
-        return $"{className}.{methodName}{lineInfo}";
+        // Convert full file path to relative path from workspace root
+        var workspaceRoot = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+        var relativePath = fileName;
+        
+        // Extract the relevant part of the path (remove full system path)
+        var pathSegments = fileName.Split(System.IO.Path.DirectorySeparatorChar);
+        if (pathSegments.Length >= 2)
+        {
+            // Take the last two segments to form a relative path like ClientApplication/App/Program.cs
+            var startIndex = Math.Max(0, pathSegments.Length - 3);
+            relativePath = string.Join(System.IO.Path.DirectorySeparatorChar.ToString(), pathSegments.Skip(startIndex));
+        }
+        
+        return lineNumber > 0 ? $"at {relativePath}({lineNumber})" : $"at {relativePath}";
     }
 }
