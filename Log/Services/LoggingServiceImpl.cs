@@ -141,28 +141,26 @@ public class LoggingServiceImpl : ILoggingService
     {
         var stackTrace = new System.Diagnostics.StackTrace(true);
         var stackFrame = stackTrace.GetFrame(3); // Skip current method, WriteColoredLog, and the calling log method
-        
+
         if (stackFrame == null) return "Unknown";
-        
+
         var fileName = stackFrame.GetFileName();
         var lineNumber = stackFrame.GetFileLineNumber();
-        
+
         if (string.IsNullOrEmpty(fileName))
             return "Unknown";
-        
+
         // Convert full file path to relative path from workspace root
-        var workspaceRoot = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+        Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         var relativePath = fileName;
-        
+
         // Extract the relevant part of the path (remove full system path)
-        var pathSegments = fileName.Split(System.IO.Path.DirectorySeparatorChar);
-        if (pathSegments.Length >= 2)
-        {
-            // Take the last two segments to form a relative path like ClientApplication/App/Program.cs
-            var startIndex = Math.Max(0, pathSegments.Length - 3);
-            relativePath = string.Join(System.IO.Path.DirectorySeparatorChar.ToString(), pathSegments.Skip(startIndex));
-        }
-        
+        var pathSegments = fileName.Split(Path.DirectorySeparatorChar);
+        if (pathSegments.Length < 2) return lineNumber > 0 ? $"at {relativePath}({lineNumber})" : $"at {relativePath}";
+        // Take the last two segments to form a relative path like ClientApplication/App/Program.cs
+        var startIndex = Math.Max(0, pathSegments.Length - 3);
+        relativePath = string.Join(Path.DirectorySeparatorChar.ToString(), pathSegments.Skip(startIndex));
+
         return lineNumber > 0 ? $"at {relativePath}({lineNumber})" : $"at {relativePath}";
     }
 }
