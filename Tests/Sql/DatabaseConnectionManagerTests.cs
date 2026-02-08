@@ -1,76 +1,14 @@
-﻿using MySqlConnector;
-using Sql.Helpers;
+﻿using Sql.Helpers;
 
 namespace Tests.Sql;
 
-public class DatabaseConnectionManagerTests : IDisposable
+public class DatabaseConnectionManagerTests : DatabaseTestBase
 {
-    private readonly DatabaseConnectionManager _connectionManager;
-    private bool _databaseCreated;
-
-    public DatabaseConnectionManagerTests()
-    {
-        SetupTestDatabase();
-        _connectionManager = new DatabaseConnectionManager(DatabaseParam.TestConnectionString);
-    }
-
-    private void SetupTestDatabase()
-    {
-        try
-        {
-            // Connect to MySQL server without specifying database
-            using var connection = new MySqlConnection(DatabaseParam.AdminConnectionString);
-            connection.Open();
-
-            // Check if test database exists
-            using var cmd = new MySqlCommand($"SHOW DATABASES LIKE '{DatabaseParam.TestDatabaseName}'", connection);
-            var result = cmd.ExecuteScalar();
-
-            if (result != null) return;
-            // Create test database
-            using var createCmd = new MySqlCommand($"CREATE DATABASE {DatabaseParam.TestDatabaseName}", connection);
-            createCmd.ExecuteNonQuery();
-            _databaseCreated = true;
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Failed to setup test database: {ex.Message}", ex);
-        }
-    }
-
-    private void CleanupTestDatabase()
-    {
-        if (!_databaseCreated) return;
-
-        try
-        {
-            // Connect to MySQL server without specifying database
-            using var connection = new MySqlConnection(DatabaseParam.AdminConnectionString);
-            connection.Open();
-
-            // Drop test database
-            using var cmd = new MySqlCommand($"DROP DATABASE IF EXISTS {DatabaseParam.TestDatabaseName}", connection);
-            cmd.ExecuteNonQuery();
-        }
-        catch (Exception ex)
-        {
-            // Log the error but don't throw in cleanup
-            Console.WriteLine($"Warning: Failed to cleanup test database: {ex.Message}");
-        }
-    }
-
-    public void Dispose()
-    {
-        _connectionManager.Dispose();
-        CleanupTestDatabase();
-        GC.SuppressFinalize(this);
-    }
-
     [Fact]
     public void Constructor_WithValidConnectionString_ShouldInitializeSuccessfully()
     {
         // Act
-        var manager = new DatabaseConnectionManager(DatabaseParam.TestConnectionString);
+        var manager = new DatabaseConnectionManager(TestConnectionString);
 
         // Assert
         manager.Should().NotBeNull();
@@ -95,11 +33,11 @@ public class DatabaseConnectionManagerTests : IDisposable
     public async Task GetConnectionAsync_WithValidConnectionString_ShouldReturnConnection()
     {
         // Act
-        var result = await _connectionManager.GetConnectionAsync();
+        var result = await ConnectionManager!.GetConnectionAsync();
 
         // Assert
         result.Should().NotBeNull();
-        result.ConnectionString.Should().Contain($"Database={DatabaseParam.TestDatabaseName}");
+        result.ConnectionString.Should().Contain($"Database={TestDatabaseName}");
         result.ConnectionString.Should().Contain($"Server={DatabaseParam.AdminServer}");
     }
 
@@ -107,11 +45,11 @@ public class DatabaseConnectionManagerTests : IDisposable
     public void GetConnection_WithValidConnectionString_ShouldReturnConnection()
     {
         // Act
-        var result = _connectionManager.GetConnection();
+        var result = ConnectionManager!.GetConnection();
 
         // Assert
         result.Should().NotBeNull();
-        result.ConnectionString.Should().Contain($"Database={DatabaseParam.TestDatabaseName}");
+        result.ConnectionString.Should().Contain($"Database={TestDatabaseName}");
         result.ConnectionString.Should().Contain($"Server={DatabaseParam.AdminServer}");
     }
 
@@ -119,7 +57,7 @@ public class DatabaseConnectionManagerTests : IDisposable
     public void IsConnectionAvailable_WithValidConnectionString_ShouldReturnTrue()
     {
         // Act
-        var result = _connectionManager.IsConnectionAvailable();
+        var result = ConnectionManager!.IsConnectionAvailable();
 
         // Assert
         result.Should().BeTrue();
@@ -129,7 +67,7 @@ public class DatabaseConnectionManagerTests : IDisposable
     public async Task IsConnectionAvailableAsync_WithValidConnectionString_ShouldReturnTrue()
     {
         // Act
-        var result = await _connectionManager.IsConnectionAvailableAsync();
+        var result = await ConnectionManager!.IsConnectionAvailableAsync();
 
         // Assert
         result.Should().BeTrue();
@@ -167,7 +105,7 @@ public class DatabaseConnectionManagerTests : IDisposable
     public void CloseConnection_WhenCalled_ShouldNotThrowException()
     {
         // Act
-        var act = () => _connectionManager.CloseConnection();
+        var act = () => ConnectionManager!.CloseConnection();
 
         // Assert
         act.Should().NotThrow();
@@ -177,7 +115,7 @@ public class DatabaseConnectionManagerTests : IDisposable
     public async Task CloseConnectionAsync_WhenCalled_ShouldNotThrowException()
     {
         // Act
-        var act = async () => await _connectionManager.CloseConnectionAsync();
+        var act = async () => await ConnectionManager!.CloseConnectionAsync();
 
         // Assert
         await act.Should().NotThrowAsync();
@@ -187,7 +125,7 @@ public class DatabaseConnectionManagerTests : IDisposable
     public void Dispose_WhenCalled_ShouldNotThrowException()
     {
         // Arrange
-        var manager = new DatabaseConnectionManager(DatabaseParam.TestConnectionString);
+        var manager = new DatabaseConnectionManager(TestConnectionString);
 
         // Act
         var act = () => manager.Dispose();
@@ -200,7 +138,7 @@ public class DatabaseConnectionManagerTests : IDisposable
     public void Dispose_WhenCalledMultipleTimes_ShouldNotThrowException()
     {
         // Arrange
-        var manager = new DatabaseConnectionManager(DatabaseParam.TestConnectionString);
+        var manager = new DatabaseConnectionManager(TestConnectionString);
 
         // Act
         manager.Dispose();
@@ -214,8 +152,8 @@ public class DatabaseConnectionManagerTests : IDisposable
     public async Task MultipleCalls_GetConnectionAsync_ShouldReturnSameConnection()
     {
         // Act
-        var connection1 = await _connectionManager.GetConnectionAsync();
-        var connection2 = await _connectionManager.GetConnectionAsync();
+        var connection1 = await ConnectionManager!.GetConnectionAsync();
+        var connection2 = await ConnectionManager.GetConnectionAsync();
 
         // Assert
         connection1.Should().BeSameAs(connection2);
@@ -225,8 +163,8 @@ public class DatabaseConnectionManagerTests : IDisposable
     public void MultipleCalls_GetConnection_ShouldReturnSameConnection()
     {
         // Act
-        var connection1 = _connectionManager.GetConnection();
-        var connection2 = _connectionManager.GetConnection();
+        var connection1 = ConnectionManager!.GetConnection();
+        var connection2 = ConnectionManager.GetConnection();
 
         // Assert
         connection1.Should().BeSameAs(connection2);
@@ -236,7 +174,7 @@ public class DatabaseConnectionManagerTests : IDisposable
     public async Task Connection_StateAfterGetConnectionAsync_ShouldBeOpen()
     {
         // Act
-        var connection = await _connectionManager.GetConnectionAsync();
+        var connection = await ConnectionManager!.GetConnectionAsync();
 
         // Assert
         connection.State.Should().Be(System.Data.ConnectionState.Open);
@@ -246,7 +184,7 @@ public class DatabaseConnectionManagerTests : IDisposable
     public void Connection_StateAfterGetConnection_ShouldBeOpen()
     {
         // Act
-        var connection = _connectionManager.GetConnection();
+        var connection = ConnectionManager!.GetConnection();
 
         // Assert
         connection.State.Should().Be(System.Data.ConnectionState.Open);
@@ -256,11 +194,11 @@ public class DatabaseConnectionManagerTests : IDisposable
     public async Task GetConnectionAsync_AfterCloseConnection_ShouldReopenConnection()
     {
         // Arrange
-        await _connectionManager.GetConnectionAsync();
+        await ConnectionManager!.GetConnectionAsync();
 
         // Act
-        await _connectionManager.CloseConnectionAsync();
-        var newConnection = await _connectionManager.GetConnectionAsync();
+        await ConnectionManager.CloseConnectionAsync();
+        var newConnection = await ConnectionManager.GetConnectionAsync();
 
         // Assert
         newConnection.Should().NotBeNull();
@@ -271,11 +209,11 @@ public class DatabaseConnectionManagerTests : IDisposable
     public void GetConnection_AfterCloseConnection_ShouldReopenConnection()
     {
         // Arrange
-        _connectionManager.GetConnection();
+        ConnectionManager!.GetConnection();
 
         // Act
-        _connectionManager.CloseConnection();
-        var newConnection = _connectionManager.GetConnection();
+        ConnectionManager.CloseConnection();
+        var newConnection = ConnectionManager.GetConnection();
 
         // Assert
         newConnection.Should().NotBeNull();
