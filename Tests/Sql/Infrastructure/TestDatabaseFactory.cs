@@ -1,6 +1,6 @@
 ﻿using MySqlConnector;
 
-namespace Tests.Sql;
+namespace Tests.Sql.Infrastructure;
 
 /// <summary>
 /// Test database factory for creating isolated test databases

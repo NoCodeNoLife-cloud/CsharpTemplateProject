@@ -38,4 +38,9 @@
         <Using Include="Xunit"/>
         <Using Include="FluentAssertions"/>
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Sql\Features\Crud\" />
+      <Folder Include="Sql\Fixtures\" />
+    </ItemGroup>
 </Project>

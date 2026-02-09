@@ -1,6 +1,6 @@
 ﻿using Sql.Helpers;
 
-namespace Tests.Sql;
+namespace Tests.Sql.Features.Query;
 
 public class QueryBuilderTests
 {

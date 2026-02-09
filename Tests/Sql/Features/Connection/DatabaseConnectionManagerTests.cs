@@ -1,6 +1,7 @@
 ﻿using Sql.Helpers;
+using Tests.Sql.Infrastructure;
 
-namespace Tests.Sql;
+namespace Tests.Sql.Features.Connection;
 
 public class DatabaseConnectionManagerTests : DatabaseTestBase
 {

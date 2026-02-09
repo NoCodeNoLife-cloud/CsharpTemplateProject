@@ -1,4 +1,4 @@
-﻿namespace Tests.Sql;
+﻿namespace Tests.Sql.Infrastructure;
 
 /// <summary>
 /// Database configuration parameters for testing
