@@ -60,7 +60,7 @@ public sealed class ConfigurationConversionException : ConfigurationException
     private ConfigurationConversionException(SerializationInfo info, StreamingContext context)
     {
         Key = info.GetString(nameof(Key)) ?? string.Empty;
-        SourceType = Type.GetType((info.GetString(nameof(SourceType)) ?? typeof(object).FullName) ?? throw new InvalidOperationException());
-        TargetType = Type.GetType((info.GetString(nameof(TargetType)) ?? typeof(object).FullName) ?? throw new InvalidOperationException());
+        SourceType = Type.GetType(info.GetString(nameof(SourceType)) ?? typeof(object).FullName!);
+        TargetType = Type.GetType(info.GetString(nameof(TargetType)) ?? typeof(object).FullName!);
     }
 }

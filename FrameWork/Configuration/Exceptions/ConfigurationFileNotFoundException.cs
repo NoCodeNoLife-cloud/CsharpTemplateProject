@@ -39,8 +39,8 @@ public sealed class ConfigurationFileNotFoundException : ConfigurationException
     /// </summary>
     /// <param name="info">The SerializationInfo that holds the serialized object data</param>
     /// <param name="context">The StreamingContext that contains contextual information about the source or destination</param>
-    private ConfigurationFileNotFoundException(SerializationInfo? info, StreamingContext context)
+    private ConfigurationFileNotFoundException(SerializationInfo info, StreamingContext context)
     {
-        FilePath = info?.GetString(nameof(FilePath)) ?? string.Empty;
+        FilePath = info.GetString(nameof(FilePath)) ?? string.Empty;
     }
 }

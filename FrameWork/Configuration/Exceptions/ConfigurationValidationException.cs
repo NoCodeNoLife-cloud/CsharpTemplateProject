@@ -51,6 +51,6 @@ public sealed class ConfigurationValidationException : ConfigurationException
     private ConfigurationValidationException(SerializationInfo info, StreamingContext context)
     {
         Key = info.GetString(nameof(Key)) ?? string.Empty;
-        ExpectedType = Type.GetType((info.GetString(nameof(ExpectedType)) ?? typeof(object).FullName) ?? throw new InvalidOperationException());
+        ExpectedType = Type.GetType(info.GetString(nameof(ExpectedType)) ?? typeof(object).FullName!);
     }
 }
