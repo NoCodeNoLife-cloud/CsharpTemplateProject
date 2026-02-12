@@ -9,8 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="AspectCore.Core" Version="2.4.0" />
-      <PackageReference Include="AspectCore.Extensions.DependencyInjection" Version="2.4.0" />
+      <PackageReference Include="MrAdvice" Version="2.20.1" />
       <PackageReference Include="YamlDotNet" Version="16.3.0" />
     </ItemGroup>
 

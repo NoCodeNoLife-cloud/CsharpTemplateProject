@@ -40,6 +40,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Aop\" />
       <Folder Include="Sql\Features\Crud\" />
       <Folder Include="Sql\Fixtures\" />
     </ItemGroup>
