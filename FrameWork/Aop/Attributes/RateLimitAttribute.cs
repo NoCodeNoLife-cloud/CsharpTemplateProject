@@ -18,7 +18,7 @@ public class RateLimitAttribute : Attribute, IMethodAdvice
     public TimeSpan Period
     {
         get => TimeSpan.FromMilliseconds(PeriodMilliseconds);
-        set => PeriodMilliseconds = (int)value.TotalMilliseconds;
+        init => PeriodMilliseconds = (int)value.TotalMilliseconds;
     }
 
     public void Advise(MethodAdviceContext context)

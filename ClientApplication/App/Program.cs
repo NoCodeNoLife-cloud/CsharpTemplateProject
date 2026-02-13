@@ -1,5 +1,4 @@
 using CommonFramework.Aop.Attributes;
-using LoggingService.Services;
 
 namespace ClientApplication.App;
 

@@ -9,15 +9,9 @@ namespace CommonFramework.Aop.Attributes;
 /// Applied at compile-time for zero runtime impact
 /// </summary>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
-public class PerformanceMonitorAttribute : Attribute, IMethodAdvice
+public class PerformanceMonitorAttribute(int thresholdMilliseconds = 100) : Attribute, IMethodAdvice
 {
-    public TimeSpan Threshold { get; set; } = TimeSpan.FromMilliseconds(100);
-    
-    // 添加接受毫秒数的构造函数
-    public PerformanceMonitorAttribute(int thresholdMilliseconds = 100)
-    {
-        Threshold = TimeSpan.FromMilliseconds(thresholdMilliseconds);
-    }
+    public TimeSpan Threshold { get; set; } = TimeSpan.FromMilliseconds(thresholdMilliseconds);
 
     public void Advise(MethodAdviceContext context)
     {

@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using ArxOne.MrAdvice.Advice;
 using LoggingService.Enums;
 using LoggingService.Services;
@@ -17,6 +16,24 @@ public class LogAttribute : Attribute, IMethodAdvice
     public bool LogReturnValue { get; set; }
     public bool LogExecutionTime { get; set; }
 
+    // Thread-static field to track recently logged exceptions and avoid duplicates
+    [ThreadStatic] private static HashSet<Exception>? _recentlyLoggedExceptions;
+
+    private static HashSet<Exception> RecentlyLoggedExceptions
+    {
+        get
+        {
+            _recentlyLoggedExceptions ??= [];
+            return _recentlyLoggedExceptions;
+        }
+    }
+
+    // Clean up old exceptions to prevent memory leaks
+    private static void CleanupRecentlyLoggedExceptions()
+    {
+        _recentlyLoggedExceptions?.Clear();
+    }
+
     public void Advise(MethodAdviceContext context)
     {
         var methodName = $"{context.TargetType.Name}.{context.TargetMethod.Name}";
@@ -31,16 +48,23 @@ public class LogAttribute : Attribute, IMethodAdvice
         }
         catch (Exception ex)
         {
+            // Check if this exception was already logged in this call chain
+            if (!RecentlyLoggedExceptions.Contains(ex))
+            {
+                LogMethodExit(methodName, startTime, context, ex);
+                RecentlyLoggedExceptions.Add(ex);
+            }
+
             LogMethodExit(methodName, startTime, context, ex);
+            RecentlyLoggedExceptions.Add(ex);
+
             throw;
         }
     }
 
-    private void LogMethodEntry(string methodName, MethodAdviceContext context,
-        [CallerFilePath] string filePath = "",
-        [CallerLineNumber] int lineNumber = 0)
+    private void LogMethodEntry(string methodName, MethodAdviceContext context)
     {
-        var logMessage = BuildLogMessage(methodName, filePath, lineNumber, true);
+        var logMessage = BuildStartLogMessage(methodName);
 
         if (LogParameters && context.Arguments?.Count > 0)
         {
@@ -51,14 +75,14 @@ public class LogAttribute : Attribute, IMethodAdvice
         LoggingServiceImpl.InstanceVal.Log(LogLevel, logMessage);
     }
 
-    private void LogMethodExit(string methodName, DateTimeOffset startTime, MethodAdviceContext context, Exception? exception,
-        [CallerFilePath] string filePath = "",
-        [CallerLineNumber] int lineNumber = 0)
+    private void LogMethodExit(string methodName, DateTimeOffset startTime, MethodAdviceContext context, Exception? exception)
     {
         var executionTime = DateTimeOffset.Now - startTime;
         var isSuccess = exception == null;
 
-        var baseMessage = BuildLogMessage(methodName, filePath, lineNumber, isSuccess);
+        var baseMessage = isSuccess
+            ? BuildSuccessLogMessage(methodName)
+            : BuildFailureLogMessage(methodName);
         var timeInfo = LogExecutionTime ? $", Execution time: {executionTime.TotalMilliseconds:F2} ms" : string.Empty;
         var returnValueInfo = BuildReturnValueInfo(context);
         var errorMessage = exception != null ? $", Error message: {exception.Message}" : string.Empty;
@@ -72,13 +96,29 @@ public class LogAttribute : Attribute, IMethodAdvice
         else
         {
             LoggingServiceImpl.InstanceVal.LogError(logMessage, exception!);
+
+            // Clean up the exception tracking after logging the top-level method
+            // This ensures we don't accumulate exceptions indefinitely
+            if (context.TargetMethod.Name == "Main")
+            {
+                CleanupRecentlyLoggedExceptions();
+            }
         }
     }
 
-    private static string BuildLogMessage(string methodName, string filePath, int lineNumber, bool isSuccess)
+    private static string BuildStartLogMessage(string methodName)
     {
-        var status = isSuccess ? "executed successfully" : "execution failed";
-        return $"Method {methodName} {status} at {filePath}:{lineNumber}";
+        return $"Method {methodName} started execution";
+    }
+
+    private static string BuildSuccessLogMessage(string methodName)
+    {
+        return $"Method {methodName} executed successfully";
+    }
+
+    private static string BuildFailureLogMessage(string methodName)
+    {
+        return $"Method {methodName} execution failed";
     }
 
     private string BuildReturnValueInfo(MethodAdviceContext context)
