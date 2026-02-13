@@ -12,11 +12,17 @@ namespace CommonFramework.Aop.Attributes;
 public class PerformanceMonitorAttribute : Attribute, IMethodAdvice
 {
     public TimeSpan Threshold { get; set; } = TimeSpan.FromMilliseconds(100);
+    
+    // 添加接受毫秒数的构造函数
+    public PerformanceMonitorAttribute(int thresholdMilliseconds = 100)
+    {
+        Threshold = TimeSpan.FromMilliseconds(thresholdMilliseconds);
+    }
 
     public void Advise(MethodAdviceContext context)
     {
         var stopwatch = Stopwatch.StartNew();
-        context.Proceed(); // Execute the original method
+        context.Proceed();
         stopwatch.Stop();
 
         if (stopwatch.Elapsed <= Threshold) return;

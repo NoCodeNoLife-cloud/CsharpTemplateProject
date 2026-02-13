@@ -25,6 +25,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="MySqlConnector" Version="2.5.0"/>
+        <PackageReference Include="MrAdvice" Version="2.20.1" />
     </ItemGroup>
 
     <!-- Add references to projects under test -->
@@ -40,7 +41,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Aop\" />
       <Folder Include="Sql\Features\Crud\" />
       <Folder Include="Sql\Fixtures\" />
     </ItemGroup>

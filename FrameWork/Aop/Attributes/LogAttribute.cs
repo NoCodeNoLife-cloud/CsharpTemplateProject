@@ -75,7 +75,7 @@ public class LogAttribute : Attribute, IMethodAdvice
         }
     }
 
-    private string BuildLogMessage(string methodName, string filePath, int lineNumber, bool isSuccess)
+    private static string BuildLogMessage(string methodName, string filePath, int lineNumber, bool isSuccess)
     {
         var status = isSuccess ? "executed successfully" : "execution failed";
         return $"Method {methodName} {status} at {filePath}:{lineNumber}";

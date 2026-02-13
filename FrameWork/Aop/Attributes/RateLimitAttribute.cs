@@ -12,12 +12,19 @@ public class RateLimitAttribute : Attribute, IMethodAdvice
 {
     private static readonly ConcurrentDictionary<string, TokenBucket> TokenBuckets = new();
     public int MaxRequests { get; set; } = 100;
-    public TimeSpan Period { get; set; } = TimeSpan.FromMinutes(1);
+    public int PeriodMilliseconds { get; set; } = 60000; // 1 minute in milliseconds
+
+    // Convenience property to work with TimeSpan internally
+    public TimeSpan Period
+    {
+        get => TimeSpan.FromMilliseconds(PeriodMilliseconds);
+        set => PeriodMilliseconds = (int)value.TotalMilliseconds;
+    }
 
     public void Advise(MethodAdviceContext context)
     {
         var key = GetRateLimitKey(context);
-        var bucket = TokenBuckets.GetOrAdd(key, _ => new TokenBucket(MaxRequests, Period));
+        var bucket = TokenBuckets.GetOrAdd(key, _ => new TokenBucket(MaxRequests, TimeSpan.FromMilliseconds(PeriodMilliseconds)));
 
         if (!bucket.TryAcquirePermit())
         {
