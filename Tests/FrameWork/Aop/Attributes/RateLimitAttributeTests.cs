@@ -1,7 +1,7 @@
-﻿using CommonFramework.Aop.Attributes;
-using System.Reflection;
+﻿using System.Reflection;
+using CommonFramework.Aop.Attributes;
 
-namespace Tests.Aop;
+namespace Tests.FrameWork.Aop.Attributes;
 
 public class RateLimitAttributeTests
 {

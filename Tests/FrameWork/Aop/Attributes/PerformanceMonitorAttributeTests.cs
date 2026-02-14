@@ -1,8 +1,7 @@
-﻿using CommonFramework.Aop.Attributes;
-using Moq;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using CommonFramework.Aop.Attributes;
 
-namespace Tests.Aop;
+namespace Tests.FrameWork.Aop.Attributes;
 
 public class PerformanceMonitorAttributeTests
 {

@@ -12,9 +12,14 @@ namespace CommonFramework.Aop.Attributes;
 public class LogAttribute : Attribute, IMethodAdvice
 {
     public LogLevel LogLevel { get; set; }
-    public bool LogParameters { get; set; }
-    public bool LogReturnValue { get; set; }
-    public bool LogExecutionTime { get; set; }
+    
+    // Fine-grained logging control options
+    public bool LogMethodEntry { get; set; } = true;        // Method entry logging
+    public bool LogMethodExit { get; set; } = true;         // Method exit logging
+    public bool LogMethodException { get; set; } = true;    // Method exception logging
+    public bool LogParameters { get; set; }                 // Method parameters logging
+    public bool LogReturnValue { get; set; }                // Method return value logging
+    public bool LogExecutionTime { get; set; }              // Execution time logging
 
     // Thread-static field to track recently logged exceptions and avoid duplicates
     [ThreadStatic] private static HashSet<Exception>? _recentlyLoggedExceptions;
@@ -39,33 +44,40 @@ public class LogAttribute : Attribute, IMethodAdvice
         var methodName = $"{context.TargetType.Name}.{context.TargetMethod.Name}";
         var startTime = DateTimeOffset.Now;
 
-        LogMethodEntry(methodName, context);
+        // Log method entry
+        if (LogMethodEntry)
+        {
+            LogMethodEntryMessage(methodName, context);
+        }
 
         try
         {
             context.Proceed(); // Execute the original method
-            LogMethodExit(methodName, startTime, context, null);
+            
+            // Log successful method exit
+            if (LogMethodExit)
+            {
+                LogMethodExitMessage(methodName, startTime, context, null);
+            }
         }
         catch (Exception ex)
         {
-            // Check if this exception was already logged in this call chain
-            if (!RecentlyLoggedExceptions.Contains(ex))
+            // Log method exception (avoid duplicate logging)
+            if (LogMethodException && !RecentlyLoggedExceptions.Contains(ex))
             {
-                LogMethodExit(methodName, startTime, context, ex);
+                LogMethodExceptionMessage(methodName, startTime, context, ex);
                 RecentlyLoggedExceptions.Add(ex);
             }
-
-            LogMethodExit(methodName, startTime, context, ex);
-            RecentlyLoggedExceptions.Add(ex);
 
             throw;
         }
     }
 
-    private void LogMethodEntry(string methodName, MethodAdviceContext context)
+    private void LogMethodEntryMessage(string methodName, MethodAdviceContext context)
     {
         var logMessage = BuildStartLogMessage(methodName);
 
+        // Only log parameter information when parameter logging is enabled and parameters exist
         if (LogParameters && context.Arguments?.Count > 0)
         {
             var paramInfo = BuildParameterInfo(context.TargetMethod, context.Arguments.ToArray());
@@ -75,34 +87,42 @@ public class LogAttribute : Attribute, IMethodAdvice
         LoggingServiceImpl.InstanceVal.Log(LogLevel, logMessage);
     }
 
-    private void LogMethodExit(string methodName, DateTimeOffset startTime, MethodAdviceContext context, Exception? exception)
+    private void LogMethodExitMessage(string methodName, DateTimeOffset startTime, MethodAdviceContext context, Exception? exception)
     {
         var executionTime = DateTimeOffset.Now - startTime;
-        var isSuccess = exception == null;
-
-        var baseMessage = isSuccess
-            ? BuildSuccessLogMessage(methodName)
-            : BuildFailureLogMessage(methodName);
+        
+        var baseMessage = BuildSuccessLogMessage(methodName);
         var timeInfo = LogExecutionTime ? $", Execution time: {executionTime.TotalMilliseconds:F2} ms" : string.Empty;
         var returnValueInfo = BuildReturnValueInfo(context);
-        var errorMessage = exception != null ? $", Error message: {exception.Message}" : string.Empty;
 
-        var logMessage = $"{baseMessage}{timeInfo}{returnValueInfo}{errorMessage}";
+        var logMessage = $"{baseMessage}{timeInfo}{returnValueInfo}";
 
-        if (isSuccess)
+        LoggingServiceImpl.InstanceVal.Log(LogLevel, logMessage);
+
+        // Clean up exception tracking (when main method exits)
+        if (context.TargetMethod.Name == "Main")
         {
-            LoggingServiceImpl.InstanceVal.Log(LogLevel, logMessage);
+            CleanupRecentlyLoggedExceptions();
         }
-        else
-        {
-            LoggingServiceImpl.InstanceVal.LogError(logMessage, exception!);
+    }
 
-            // Clean up the exception tracking after logging the top-level method
-            // This ensures we don't accumulate exceptions indefinitely
-            if (context.TargetMethod.Name == "Main")
-            {
-                CleanupRecentlyLoggedExceptions();
-            }
+    private void LogMethodExceptionMessage(string methodName, DateTimeOffset startTime, MethodAdviceContext context, Exception exception)
+    {
+        var executionTime = DateTimeOffset.Now - startTime;
+        
+        var baseMessage = BuildFailureLogMessage(methodName);
+        var timeInfo = LogExecutionTime ? $", Execution time: {executionTime.TotalMilliseconds:F2} ms" : string.Empty;
+        var errorMessage = $", Error message: {exception.Message}";
+        var stackTraceInfo = $", Stack trace: {exception.StackTrace?.Split('\n')[0].Trim() ?? "N/A"}";
+
+        var logMessage = $"{baseMessage}{timeInfo}{errorMessage}{stackTraceInfo}";
+
+        LoggingServiceImpl.InstanceVal.LogError(logMessage, exception);
+
+        // Clean up exception tracking (when main method exits)
+        if (context.TargetMethod.Name == "Main")
+        {
+            CleanupRecentlyLoggedExceptions();
         }
     }
 
@@ -123,6 +143,7 @@ public class LogAttribute : Attribute, IMethodAdvice
 
     private string BuildReturnValueInfo(MethodAdviceContext context)
     {
+        // Only log when return value logging is enabled and return value exists
         if (!LogReturnValue || context.ReturnValue == null)
             return string.Empty;
 

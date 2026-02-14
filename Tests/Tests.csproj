@@ -30,6 +30,7 @@
 
     <!-- Add references to projects under test -->
     <ItemGroup>
+        <ProjectReference Include="..\ClientApplication\ClientApplication.csproj"/>
         <ProjectReference Include="..\FrameWork\FrameWork.csproj"/>
         <ProjectReference Include="..\Log\Log.csproj"/>
         <ProjectReference Include="..\Sql\Sql.csproj"/>
@@ -41,6 +42,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="FrameWork\" />
       <Folder Include="Sql\Features\Crud\" />
       <Folder Include="Sql\Fixtures\" />
     </ItemGroup>

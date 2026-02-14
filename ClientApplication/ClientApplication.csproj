@@ -10,10 +10,13 @@
     <ItemGroup>
         <ProjectReference Include="..\Log\Log.csproj"/>
         <ProjectReference Include="..\FrameWork\FrameWork.csproj"/>
-        <ProjectReference Include="..\Tests\Tests.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="MrAdvice" Version="2.20.1" />
+        <None Include="Resources\**" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MrAdvice" Version="2.20.1"/>
     </ItemGroup>
 </Project>
