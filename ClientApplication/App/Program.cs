@@ -13,7 +13,7 @@ internal static class Program
     /// <summary>
     /// Entry point of the application
     /// </summary>
-    [Log(LogLevel = LogLevel.Debug)]
+    [Log(LogLevel = LogLevel.Debug, LogMethodEntry = false)]
     private static void Main()
     {
         // Print Banner
@@ -32,7 +32,6 @@ internal static class Program
     {
         try
         {
-            const string bannerFileName = "Banner.txt";
             var bannerPath = EnvironmentPath.GetBannerPath();
             if (EnvironmentPath.IsBannerFileExists())
             {
@@ -41,24 +40,24 @@ internal static class Program
             }
             else
             {
-                Console.WriteLine("Banner file not found");
+                LoggingServiceImpl.InstanceVal.LogWarning("Banner file not found");
             }
         }
         catch (UnauthorizedAccessException ex)
         {
-            Console.WriteLine($"Access denied to banner file: {ex.Message}");
+            LoggingServiceImpl.InstanceVal.LogError($"Access denied to banner file: {ex.Message}", ex);
         }
         catch (DirectoryNotFoundException ex)
         {
-            Console.WriteLine($"Directory not found: {ex.Message}");
+            LoggingServiceImpl.InstanceVal.LogError($"Directory not found: {ex.Message}", ex);
         }
         catch (IOException ex)
         {
-            Console.WriteLine($"IO error reading banner file: {ex.Message}");
+            LoggingServiceImpl.InstanceVal.LogError($"IO error reading banner file: {ex.Message}", ex);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Unexpected error reading banner file: {ex.Message}");
+            LoggingServiceImpl.InstanceVal.LogError($"Unexpected error reading banner file: {ex.Message}", ex);
         }
     }
 }
