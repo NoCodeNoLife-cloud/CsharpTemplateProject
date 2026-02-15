@@ -1,4 +1,3 @@
-using System.IO;
 using System.Reflection;
 
 namespace ClientApplication.Config;
@@ -13,8 +12,6 @@ public static class EnvironmentPath
     /// Project root directory path
     /// </summary>
     public static string? ProjectRootDirectory { get; private set; }
-
-    public static string BannerPath => "Resources/Banner.txt";
 
     /// <summary>
     /// Static constructor, automatically executed when the class is first accessed
@@ -77,23 +74,5 @@ public static class EnvironmentPath
         }
 
         return null;
-    }
-
-    /// <summary>
-    /// Get Banner file path
-    /// </summary>
-    /// <returns>Complete path of Banner file</returns>
-    public static string GetBannerPath()
-    {
-        return Path.Combine(ProjectRootDirectory ?? throw new InvalidOperationException(), BannerPath);
-    }
-
-    /// <summary>
-    /// Check if Banner file exists
-    /// </summary>
-    /// <returns>Returns true if Banner file exists, otherwise false</returns>
-    public static bool IsBannerFileExists()
-    {
-        return File.Exists(GetBannerPath());
     }
 }
