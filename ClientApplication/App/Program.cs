@@ -17,13 +17,11 @@ internal static class Program
     private static void Main()
     {
         // Print Banner
-        Banner.PrintBanner();
+        Banner.Banner.PrintBanner();
 
         // Print project root directory using Framework logging service
         LoggingServiceImpl.InstanceVal.LogDebug($"Project Root Directory: {EnvironmentPath.ProjectRootDirectory}");
 
         // Application logic can be added here
     }
-
-
 }

@@ -1,4 +1,4 @@
-using ClientApplication.App;
+using ClientApplication.App.Banner;
 using Xunit;
 using FluentAssertions;
 
@@ -6,7 +6,7 @@ namespace Tests.ClientApplication.App;
 
 /// <summary>
 /// Banner class unit tests
-/// Tests banner path resolution and file existence checking functionality
+///  banner path resolution and file existence checking functionality
 /// </summary>
 public class BannerTests
 {
@@ -14,10 +14,10 @@ public class BannerTests
     public void BannerPath_Constant_ShouldReturnCorrectRelativePath()
     {
         // Act
-        var bannerPath = Banner.BannerPath;
+        const string bannerPath = Banner.BannerPath;
 
         // Assert
-        bannerPath.Should().Be("Resources/Banner.txt");
+        bannerPath.Should().Be("App/Banner/Banner.txt");
     }
 
     [Fact]
@@ -29,7 +29,8 @@ public class BannerTests
         // Assert
         fullPath.Should().NotBeNull();
         fullPath.Should().NotBeEmpty();
-        fullPath.Should().Contain("Resources");
+        fullPath.Should().Contain("App");
+        fullPath.Should().Contain("Banner");
         fullPath.Should().EndWith("Banner.txt");
     }
 

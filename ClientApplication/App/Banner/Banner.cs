@@ -1,7 +1,7 @@
 using LoggingService.Services;
 using ClientApplication.Config;
 
-namespace ClientApplication.App;
+namespace ClientApplication.App.Banner;
 
 /// <summary>
 /// Banner management class for handling application banner display
@@ -11,7 +11,7 @@ public static class Banner
     /// <summary>
     /// Banner file relative path
     /// </summary>
-    public const string BannerPath = "Resources/Banner.txt";
+    public const string BannerPath = "App/Banner/Banner.txt";
 
     /// <summary>
     /// Print application banner to console
@@ -36,7 +36,7 @@ public static class Banner
             LoggingServiceImpl.InstanceVal.LogError($"Access denied to banner file: {ex.Message}", ex);
         }
         catch (DirectoryNotFoundException ex)
-        {
+        { 
             LoggingServiceImpl.InstanceVal.LogError($"Directory not found: {ex.Message}", ex);
         }
         catch (IOException ex)

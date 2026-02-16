@@ -13,8 +13,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="Resources\**" CopyToOutputDirectory="PreserveNewest" />
-        <None Update="Resources\Banner.txt">
+        <None Include="App\Banner\**" CopyToOutputDirectory="PreserveNewest" />
+        <None Update="App\Banner\Banner.txt">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
