@@ -1,5 +1,6 @@
-﻿using Sql.Helpers;
+using Sql.Helpers;
 using Tests.Sql.Infrastructure;
+using ClientApplication.Config;
 
 namespace Tests.Sql.Features.Connection;
 

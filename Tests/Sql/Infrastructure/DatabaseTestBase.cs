@@ -65,7 +65,7 @@ public abstract class DatabaseTestBase : IAsyncLifetime
     {
         await using var connection = new MySqlConnection(TestConnectionString);
         await connection.OpenAsync();
-        using var cmd = new MySqlCommand(sql, connection);
+        await using var cmd = new MySqlCommand(sql, connection);
         await cmd.ExecuteNonQueryAsync();
     }
 
@@ -78,7 +78,7 @@ public abstract class DatabaseTestBase : IAsyncLifetime
     {
         await using var connection = new MySqlConnection(TestConnectionString);
         await connection.OpenAsync();
-        using var cmd = new MySqlCommand(sql, connection);
+        await using var cmd = new MySqlCommand(sql, connection);
         return await cmd.ExecuteScalarAsync();
     }
 }

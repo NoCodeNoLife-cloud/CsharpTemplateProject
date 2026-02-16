@@ -1,4 +1,5 @@
-﻿using MySqlConnector;
+using MySqlConnector;
+using ClientApplication.Config;
 
 namespace Tests.Sql.Infrastructure;
 
