@@ -28,44 +28,86 @@ internal static class Program
     [Obsolete("Obsolete")]
     private static async Task Main()
     {
-        // Print Banner
-        Banner.Banner.PrintBanner();
+        try
+        {
+            // Print enhanced Banner
+            Banner.Banner.PrintBanner();
 
-        // Print project root directory using Framework logging service
+            // Enhanced startup sequence
+            await InitializeApplicationAsync();
+
+            // Interactive user authentication
+            await InteractiveUserAuthenticationAsync();
+        }
+        catch (Exception ex)
+        {
+            ConsoleHelper.PrintError($"Application startup failed: {ex.Message}");
+            LoggingServiceImpl.InstanceVal.LogError($"Application startup failed: {ex.Message}", ex);
+            ConsoleHelper.WaitForInput("Press Enter to exit...");
+        }
+    }
+
+    /// <summary>
+    /// Initialize application components with progress indication
+    /// </summary>
+    private static async Task InitializeApplicationAsync()
+    {
+        ConsoleHelper.PrintHeader("System Initialization", ConsoleHelper.MessageType.Info);
+
+        // Progress tracking
+        int totalSteps = 4;
+        int currentStep = 0;
+
+        // Step 1: Environment setup
+        currentStep++;
+        ConsoleHelper.PrintProgress(currentStep, totalSteps, "Setting up environment...");
         LoggingServiceImpl.InstanceVal.LogDebug($"Project Root Directory: {EnvironmentPath.ProjectRootDirectory}");
+        await Task.Delay(500); // Simulate work
+        ConsoleHelper.PrintSuccess("Environment configured");
 
-        // Setup and verify database environment
+        // Step 2: Database setup
+        currentStep++;
+        ConsoleHelper.PrintProgress(currentStep, totalSteps, "Initializing database...");
         LoggingServiceImpl.InstanceVal.LogDebug("Starting database environment setup...");
         var databaseSetupSuccess = await DatabaseSetupUtility.SetupDemoDatabaseAsync();
+        await Task.Delay(800); // Simulate work
 
         if (databaseSetupSuccess)
         {
-            LoggingServiceImpl.InstanceVal.LogInformation("Database environment is ready for use.");
-
-            // Test the connection
-            var connectionTest = await DatabaseSetupUtility.TestDemoDatabaseConnectionAsync();
-            if (connectionTest)
-            {
-                LoggingServiceImpl.InstanceVal.LogInformation("Database connection test successful.");
-            }
-            else
-            {
-                LoggingServiceImpl.InstanceVal.LogWarning("Database connection test failed, but setup completed.");
-            }
+            ConsoleHelper.PrintSuccess("Database environment ready");
         }
         else
         {
-            LoggingServiceImpl.InstanceVal.LogError("Failed to setup database environment. Application may not function correctly.");
+            ConsoleHelper.PrintError("Database setup failed");
+            throw new InvalidOperationException("Failed to setup database environment");
         }
 
-        // Interactive user authentication
-        if (databaseSetupSuccess)
+        // Step 3: Connection test
+        currentStep++;
+        ConsoleHelper.PrintProgress(currentStep, totalSteps, "Testing database connection...");
+        var connectionTest = await DatabaseSetupUtility.TestDemoDatabaseConnectionAsync();
+        await Task.Delay(300); // Simulate work
+
+        if (connectionTest)
         {
-            LoggingServiceImpl.InstanceVal.LogDebug("Starting interactive user authentication...");
-            await InteractiveUserAuthenticationAsync();
+            ConsoleHelper.PrintSuccess("Database connection established");
+            LoggingServiceImpl.InstanceVal.LogInformation("Database connection test successful.");
+        }
+        else
+        {
+            ConsoleHelper.PrintWarning("Database connection test failed, but setup completed");
+            LoggingServiceImpl.InstanceVal.LogWarning("Database connection test failed, but setup completed.");
         }
 
-        // Application logic can be added here
+        // Step 4: Final initialization
+        currentStep++;
+        ConsoleHelper.PrintProgress(currentStep, totalSteps, "Finalizing setup...");
+        await Task.Delay(200); // Simulate work
+        ConsoleHelper.PrintSuccess("System initialization complete!");
+
+        ConsoleHelper.PrintSeparator();
+        ConsoleHelper.PrintHighlight("Application is ready for use!");
+        await Task.Delay(1000);
     }
 
     /// <summary>
@@ -78,14 +120,10 @@ internal static class Program
         {
             while (true)
             {
-                // Display menu
-                Console.WriteLine("\n=== User Authentication Menu ===");
-                Console.WriteLine("1. Login with existing account");
-                Console.WriteLine("2. Register new account");
-                Console.WriteLine("3. Exit");
-                Console.Write("Please select an option (1-3): ");
+                // Display enhanced menu
+                DisplayAuthenticationMenu();
 
-                var choice = Console.ReadLine();
+                var choice = GetUserMenuChoice();
 
                 switch (choice)
                 {
@@ -94,12 +132,17 @@ internal static class Program
                         return; // Exit after successful login
                     case "2":
                         await HandleUserRegistrationAsync();
+                        ConsoleHelper.WaitForInput("\nPress Enter to return to main menu...");
                         break; // Continue to show menu after registration
                     case "3":
-                        Console.WriteLine("Goodbye!");
+                        ConsoleHelper.PrintHeader("Thank You for Using Our Application", ConsoleHelper.MessageType.Success);
+                        ConsoleHelper.PrintInfo("Goodbye! Have a great day!");
+                        await ConsoleHelper.CountdownAsync(3, "Application closing in");
                         return;
                     default:
-                        Console.WriteLine("Invalid option. Please enter 1, 2, or 3.");
+                        ConsoleHelper.PrintError("Invalid option selected!");
+                        ConsoleHelper.PrintInfo("Please enter 1, 2, or 3.");
+                        ConsoleHelper.WaitForInput("Press Enter to continue...");
                         break;
                 }
             }
@@ -107,8 +150,63 @@ internal static class Program
         catch (Exception ex)
         {
             LoggingServiceImpl.InstanceVal.LogError($"Unexpected error during user authentication: {ex.Message}");
-            Console.WriteLine($"Unexpected error: {ex.Message}");
+            ConsoleHelper.PrintError($"Unexpected error: {ex.Message}");
+            ConsoleHelper.WaitForInput("Press Enter to exit...");
         }
+    }
+
+    /// <summary>
+    /// Displays the enhanced authentication menu
+    /// </summary>
+    private static void DisplayAuthenticationMenu()
+    {
+        ConsoleHelper.ClearScreenWithHeader("User Authentication Center");
+
+        ConsoleHelper.PrintHighlight("Please select an option below:");
+        ConsoleHelper.PrintSeparator(40);
+
+        ConsoleHelper.PrintPrompt("[1] ");
+        ConsoleHelper.PrintInfo("Login with existing account");
+
+        ConsoleHelper.PrintPrompt("[2] ");
+        ConsoleHelper.PrintInfo("Register new account");
+
+        ConsoleHelper.PrintPrompt("[3] ");
+        ConsoleHelper.PrintInfo("Exit application");
+
+        ConsoleHelper.PrintSeparator(40);
+    }
+
+    /// <summary>
+    /// Gets and validates user menu choice
+    /// </summary>
+    /// <returns>User's menu choice</returns>
+    private static string GetUserMenuChoice()
+    {
+        ConsoleHelper.PrintPrompt("Enter your choice (1-3): ");
+        var choice = Console.ReadLine()?.Trim();
+
+        // Validate input
+        if (string.IsNullOrEmpty(choice) || !IsValidMenuChoice(choice))
+        {
+            return "INVALID";
+        }
+
+        return choice;
+    }
+
+    /// <summary>
+    /// Validates if the menu choice is valid
+    /// </summary>
+    /// <param name="choice">User's choice</param>
+    /// <returns>True if valid, false otherwise</returns>
+    private static bool IsValidMenuChoice(string choice)
+    {
+        return choice switch
+        {
+            "1" or "2" or "3" => true,
+            _ => false
+        };
     }
 
     /// <summary>
@@ -119,8 +217,9 @@ internal static class Program
     {
         try
         {
-            Console.WriteLine("\n=== Login ===");
-            Console.WriteLine(LoginPrompt);
+            ConsoleHelper.ClearScreenWithHeader("Account Login");
+            ConsoleHelper.PrintInfo(LoginPrompt);
+            ConsoleHelper.PrintSeparator();
 
             // Get username with validation
             var username = GetUserInput(UsernameField, MinUsernameLength, MaxUsernameLength);
@@ -130,6 +229,9 @@ internal static class Program
             var password = GetPasswordInput();
             if (string.IsNullOrEmpty(password)) return;
 
+            // Show processing indicator
+            ConsoleHelper.PrintInfo("\nVerifying credentials...");
+
             // Query user in database
             LoggingServiceImpl.InstanceVal.LogDebug($"Verifying login information for user '{username}'...");
             var (success, userId, foundUsername) = await UserAuthenticationService.AuthenticateUserAsync(username, password);
@@ -137,28 +239,34 @@ internal static class Program
             if (success)
             {
                 LoggingServiceImpl.InstanceVal.LogInformation($"User authentication successful: ID={userId}, Username={foundUsername}");
-                Console.WriteLine($"Login successful! Welcome back, {foundUsername} (User ID: {userId})");
+                ConsoleHelper.PrintSuccess($"Login successful! Welcome back, {foundUsername}!");
+                ConsoleHelper.PrintHighlight($"User ID: {userId}");
+                ConsoleHelper.WaitForInput("\nPress Enter to continue to application...");
             }
             else
             {
                 LoggingServiceImpl.InstanceVal.LogWarning($"User authentication failed: Username '{username}' does not exist or password is incorrect");
-                Console.WriteLine($"Login failed! Username or password is incorrect.");
+                ConsoleHelper.PrintError("Login failed! Username or password is incorrect.");
+                ConsoleHelper.WaitForInput("\nPress Enter to return to menu...");
             }
         }
         catch (MySqlException dbEx)
         {
             LoggingServiceImpl.InstanceVal.LogError($"Database error during login: {dbEx.Message}");
-            Console.WriteLine($"Database connection error: {dbEx.Message}");
+            ConsoleHelper.PrintError($"Database connection error: {dbEx.Message}");
+            ConsoleHelper.WaitForInput("Press Enter to continue...");
         }
         catch (InvalidOperationException ioEx)
         {
             LoggingServiceImpl.InstanceVal.LogError($"Invalid operation during login: {ioEx.Message}");
-            Console.WriteLine($"Invalid operation: {ioEx.Message}");
+            ConsoleHelper.PrintError($"Invalid operation: {ioEx.Message}");
+            ConsoleHelper.WaitForInput("Press Enter to continue...");
         }
         catch (Exception ex)
         {
             LoggingServiceImpl.InstanceVal.LogError($"Unexpected error during user login: {ex.Message}");
-            Console.WriteLine($"Unexpected error: {ex.Message}");
+            ConsoleHelper.PrintError($"Unexpected error: {ex.Message}");
+            ConsoleHelper.WaitForInput("Press Enter to continue...");
         }
     }
 
@@ -170,8 +278,9 @@ internal static class Program
     {
         try
         {
-            Console.WriteLine("\n=== Registration ===");
-            Console.WriteLine("Please enter your registration information:");
+            ConsoleHelper.ClearScreenWithHeader("New Account Registration");
+            ConsoleHelper.PrintInfo("Please enter your registration information:");
+            ConsoleHelper.PrintSeparator();
 
             // Get username with validation
             var username = GetUserInput(UsernameField, MinUsernameLength, MaxUsernameLength);
@@ -182,14 +291,18 @@ internal static class Program
             if (string.IsNullOrEmpty(password)) return;
 
             // Confirm password
-            Console.Write("Confirm Password: ");
+            ConsoleHelper.PrintPrompt("Confirm Password: ");
             var confirmPassword = ReadPasswordSecurely();
 
             if (password != confirmPassword)
             {
-                Console.WriteLine("Passwords do not match!");
+                ConsoleHelper.PrintError("Passwords do not match!");
+                ConsoleHelper.WaitForInput("Press Enter to try again...");
                 return;
             }
+
+            // Show registration progress
+            ConsoleHelper.PrintInfo("\nCreating your account...");
 
             // Register user in database
             LoggingServiceImpl.InstanceVal.LogDebug($"Attempting to register new user '{username}'...");
@@ -198,29 +311,35 @@ internal static class Program
             if (success)
             {
                 LoggingServiceImpl.InstanceVal.LogInformation($"User registration successful: ID={userId}, Username={username}");
-                Console.WriteLine($"Registration successful! Your account has been created. (User ID: {userId})");
-                Console.WriteLine("You can now login with your new account.");
+                ConsoleHelper.PrintSuccess("Registration successful!");
+                ConsoleHelper.PrintHighlight($"Your account has been created. (User ID: {userId})");
+                ConsoleHelper.PrintInfo("You can now login with your new account.");
             }
             else
             {
                 LoggingServiceImpl.InstanceVal.LogWarning($"User registration failed: {errorMessage}");
-                Console.WriteLine($"Registration failed! {errorMessage}");
+                ConsoleHelper.PrintError($"Registration failed! {errorMessage}");
             }
+
+            ConsoleHelper.WaitForInput("\nPress Enter to continue...");
         }
         catch (MySqlException dbEx)
         {
             LoggingServiceImpl.InstanceVal.LogError($"Database error during registration: {dbEx.Message}");
-            Console.WriteLine($"Database connection error: {dbEx.Message}");
+            ConsoleHelper.PrintError($"Database connection error: {dbEx.Message}");
+            ConsoleHelper.WaitForInput("Press Enter to continue...");
         }
         catch (InvalidOperationException ioEx)
         {
             LoggingServiceImpl.InstanceVal.LogError($"Invalid operation during registration: {ioEx.Message}");
-            Console.WriteLine($"Invalid operation: {ioEx.Message}");
+            ConsoleHelper.PrintError($"Invalid operation: {ioEx.Message}");
+            ConsoleHelper.WaitForInput("Press Enter to continue...");
         }
         catch (Exception ex)
         {
             LoggingServiceImpl.InstanceVal.LogError($"Unexpected error during user registration: {ex.Message}");
-            Console.WriteLine($"Unexpected error: {ex.Message}");
+            ConsoleHelper.PrintError($"Unexpected error: {ex.Message}");
+            ConsoleHelper.WaitForInput("Press Enter to continue...");
         }
     }
 
@@ -235,23 +354,26 @@ internal static class Program
     {
         while (true)
         {
-            Console.Write($"{fieldName} ({minLength}-{maxLength} characters): ");
+            ConsoleHelper.PrintPrompt($"{fieldName} ({minLength}-{maxLength} characters): ");
             var input = Console.ReadLine();
 
             if (string.IsNullOrWhiteSpace(input))
             {
-                Console.WriteLine($"{fieldName} cannot be empty. Press Ctrl+C to exit.");
+                ConsoleHelper.PrintWarning($"{fieldName} cannot be empty.");
+                ConsoleHelper.PrintInfo("Press Ctrl+C to exit or try again.");
                 continue;
             }
 
             if (input.Length < minLength)
             {
-                Console.WriteLine($"{fieldName} must be at least {minLength} characters long.");
+                ConsoleHelper.PrintWarning($"{fieldName} must be at least {minLength} characters long.");
+                ConsoleHelper.PrintInfo($"Current length: {input.Length} characters");
                 continue;
             }
 
             if (input.Length <= maxLength) return input.Trim();
-            Console.WriteLine($"{fieldName} cannot exceed {maxLength} characters.");
+            ConsoleHelper.PrintWarning($"{fieldName} cannot exceed {maxLength} characters.");
+            ConsoleHelper.PrintInfo($"Current length: {input.Length} characters");
         }
     }
 
@@ -266,25 +388,28 @@ internal static class Program
 
         while (true)
         {
-            Console.Write($"{PasswordField} ({MinPasswordLength}-{MaxPasswordLength} characters): ");
+            ConsoleHelper.PrintPrompt($"{PasswordField} ({MinPasswordLength}-{MaxPasswordLength} characters): ");
             var password = ReadPasswordSecurely();
 
             if (string.IsNullOrEmpty(password))
             {
-                Console.WriteLine($"Password cannot be empty. Press Ctrl+C to exit.");
+                ConsoleHelper.PrintWarning("Password cannot be empty.");
+                ConsoleHelper.PrintInfo("Press Ctrl+C to exit or try again.");
                 continue;
             }
 
             switch (password.Length)
             {
                 case < minPasswordLength:
-                    Console.WriteLine($"Password must be at least {MinPasswordLength} characters long.");
+                    ConsoleHelper.PrintWarning($"Password must be at least {MinPasswordLength} characters long.");
+                    ConsoleHelper.PrintInfo($"Current length: {password.Length} characters");
                     continue;
-                case <= maxPasswordLength:
-                    return password;
+                case > maxPasswordLength:
+                    ConsoleHelper.PrintWarning($"Password cannot exceed {MaxPasswordLength} characters.");
+                    ConsoleHelper.PrintInfo($"Current length: {password.Length} characters");
+                    continue;
                 default:
-                    Console.WriteLine($"Password cannot exceed {MaxPasswordLength} characters.");
-                    break;
+                    return password;
             }
         }
     }
