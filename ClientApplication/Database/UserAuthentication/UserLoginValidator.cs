@@ -1,7 +1,4 @@
-using MySqlConnector;
-using ClientApplication.Database;
 using LoggingService.Services;
-using LoggingService.Enums;
 
 namespace ClientApplication.Database.UserAuthentication;
 

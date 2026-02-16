@@ -69,13 +69,57 @@ internal static class Program
     }
 
     /// <summary>
-    /// Interactive user authentication - prompts user for username and password with validation
+    /// Interactive user authentication - prompts user for login or registration choice
     /// </summary>
     [Obsolete("Obsolete")]
     private static async Task InteractiveUserAuthenticationAsync()
     {
         try
         {
+            while (true)
+            {
+                // Display menu
+                Console.WriteLine("\n=== User Authentication Menu ===");
+                Console.WriteLine("1. Login with existing account");
+                Console.WriteLine("2. Register new account");
+                Console.WriteLine("3. Exit");
+                Console.Write("Please select an option (1-3): ");
+
+                var choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        await HandleUserLoginAsync();
+                        return; // Exit after successful login
+                    case "2":
+                        await HandleUserRegistrationAsync();
+                        break; // Continue to show menu after registration
+                    case "3":
+                        Console.WriteLine("Goodbye!");
+                        return;
+                    default:
+                        Console.WriteLine("Invalid option. Please enter 1, 2, or 3.");
+                        break;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggingServiceImpl.InstanceVal.LogError($"Unexpected error during user authentication: {ex.Message}");
+            Console.WriteLine($"Unexpected error: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Handles user login process
+    /// </summary>
+    [Obsolete("Obsolete")]
+    private static async Task HandleUserLoginAsync()
+    {
+        try
+        {
+            Console.WriteLine("\n=== Login ===");
             Console.WriteLine(LoginPrompt);
 
             // Get username with validation
@@ -103,17 +147,79 @@ internal static class Program
         }
         catch (MySqlException dbEx)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Database error during authentication: {dbEx.Message}");
+            LoggingServiceImpl.InstanceVal.LogError($"Database error during login: {dbEx.Message}");
             Console.WriteLine($"Database connection error: {dbEx.Message}");
         }
         catch (InvalidOperationException ioEx)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Invalid operation during authentication: {ioEx.Message}");
+            LoggingServiceImpl.InstanceVal.LogError($"Invalid operation during login: {ioEx.Message}");
             Console.WriteLine($"Invalid operation: {ioEx.Message}");
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Unexpected error during user verification: {ex.Message}");
+            LoggingServiceImpl.InstanceVal.LogError($"Unexpected error during user login: {ex.Message}");
+            Console.WriteLine($"Unexpected error: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Handles user registration process
+    /// </summary>
+    [Obsolete("Obsolete")]
+    private static async Task HandleUserRegistrationAsync()
+    {
+        try
+        {
+            Console.WriteLine("\n=== Registration ===");
+            Console.WriteLine("Please enter your registration information:");
+
+            // Get username with validation
+            var username = GetUserInput(UsernameField, MinUsernameLength, MaxUsernameLength);
+            if (string.IsNullOrEmpty(username)) return;
+
+            // Get password with validation
+            var password = GetPasswordInput();
+            if (string.IsNullOrEmpty(password)) return;
+
+            // Confirm password
+            Console.Write("Confirm Password: ");
+            var confirmPassword = ReadPasswordSecurely();
+
+            if (password != confirmPassword)
+            {
+                Console.WriteLine("Passwords do not match!");
+                return;
+            }
+
+            // Register user in database
+            LoggingServiceImpl.InstanceVal.LogDebug($"Attempting to register new user '{username}'...");
+            var (success, userId, errorMessage) = await UserAuthenticationService.RegisterUserAsync(username, password);
+
+            if (success)
+            {
+                LoggingServiceImpl.InstanceVal.LogInformation($"User registration successful: ID={userId}, Username={username}");
+                Console.WriteLine($"Registration successful! Your account has been created. (User ID: {userId})");
+                Console.WriteLine("You can now login with your new account.");
+            }
+            else
+            {
+                LoggingServiceImpl.InstanceVal.LogWarning($"User registration failed: {errorMessage}");
+                Console.WriteLine($"Registration failed! {errorMessage}");
+            }
+        }
+        catch (MySqlException dbEx)
+        {
+            LoggingServiceImpl.InstanceVal.LogError($"Database error during registration: {dbEx.Message}");
+            Console.WriteLine($"Database connection error: {dbEx.Message}");
+        }
+        catch (InvalidOperationException ioEx)
+        {
+            LoggingServiceImpl.InstanceVal.LogError($"Invalid operation during registration: {ioEx.Message}");
+            Console.WriteLine($"Invalid operation: {ioEx.Message}");
+        }
+        catch (Exception ex)
+        {
+            LoggingServiceImpl.InstanceVal.LogError($"Unexpected error during user registration: {ex.Message}");
             Console.WriteLine($"Unexpected error: {ex.Message}");
         }
     }

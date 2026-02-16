@@ -116,4 +116,61 @@ public static class UserAuthenticationService
 
         return true;
     }
+
+    /// <summary>
+    /// Registers a new user with username and password
+    /// </summary>
+    /// <param name="username">Username for new account</param>
+    /// <param name="password">Password for new account</param>
+    /// <returns>Tuple containing (success, userId, errorMessage) - success indicates if registration was successful</returns>
+    [Obsolete("Obsolete")]
+    public static async Task<(bool success, int? userId, string? errorMessage)> RegisterUserAsync(string username, string password)
+    {
+        try
+        {
+            LoggingServiceImpl.InstanceVal.LogDebug($"Attempting to register new user '{username}'...");
+
+            // First check if username already exists
+            var (exists, _, _) = await AuthenticateUserAsync(username, "dummy_password_for_check");
+            if (exists)
+            {
+                LoggingServiceImpl.InstanceVal.LogWarning($"Registration failed: Username '{username}' already exists");
+                return (false, null, "Username already exists");
+            }
+
+            // Hash the password
+            var hashedPassword = HashPassword(password);
+
+            await using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
+            await connection.OpenAsync();
+
+            await using var cmd = new MySqlCommand(
+                "INSERT INTO `user` (username, password_hash) VALUES (@username, @passwordHash)", connection);
+            cmd.Parameters.AddWithValue("@username", username);
+            cmd.Parameters.AddWithValue("@passwordHash", hashedPassword);
+
+            var rowsAffected = await cmd.ExecuteNonQueryAsync();
+            
+            if (rowsAffected > 0)
+            {
+                // Get the newly created user ID
+                await using var getIdCmd = new MySqlCommand(
+                    "SELECT LAST_INSERT_ID()", connection);
+                var userId = Convert.ToInt32(await getIdCmd.ExecuteScalarAsync());
+                
+                LoggingServiceImpl.InstanceVal.LogInformation($"User registration successful: ID={userId}, Username={username}");
+                return (true, userId, null);
+            }
+            else
+            {
+                LoggingServiceImpl.InstanceVal.LogError($"Failed to insert user '{username}' into database");
+                return (false, null, "Failed to create user account");
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggingServiceImpl.InstanceVal.LogError($"Failed to register user '{username}': {ex.Message}");
+            return (false, null, $"Registration error: {ex.Message}");
+        }
+    }
 }
