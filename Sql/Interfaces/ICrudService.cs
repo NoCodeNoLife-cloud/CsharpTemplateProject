@@ -63,7 +63,7 @@ public interface ICrudService<T, TKey> where T : class where TKey : IEquatable<T
 
     /// <summary>
     /// Deletes an entity by its primary key
-    /// 删除实体
+    /// Delete entity
     /// </summary>
     /// <param name="id">Entity primary key</param>
     /// <returns>True if deletion was successful, false otherwise</returns>
