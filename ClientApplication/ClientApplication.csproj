@@ -10,6 +10,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Log\Log.csproj"/>
         <ProjectReference Include="..\FrameWork\FrameWork.csproj"/>
+        <ProjectReference Include="..\Sql\Sql.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
