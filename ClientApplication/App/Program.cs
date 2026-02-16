@@ -4,6 +4,7 @@ using LoggingService.Enums;
 using ClientApplication.Config;
 using ClientApplication.Database;
 using ClientApplication.Database.UserAuthentication;
+using MySqlConnector;
 
 namespace ClientApplication.App;
 
@@ -12,10 +13,19 @@ namespace ClientApplication.App;
 /// </summary>
 internal static class Program
 {
+    private const string LoginPrompt = "Please enter your login information:";
+    private const string UsernameField = "Username";
+    private const string PasswordField = "Password";
+    private const int MinUsernameLength = 3;
+    private const int MaxUsernameLength = 50;
+    private const int MinPasswordLength = 6;
+    private const int MaxPasswordLength = 100;
+
     /// <summary>
     /// Entry point of the application
     /// </summary>
     [Log(LogLevel = LogLevel.Debug, LogMethodEntry = false)]
+    [Obsolete("Obsolete")]
     private static async Task Main()
     {
         // Print Banner
@@ -27,11 +37,11 @@ internal static class Program
         // Setup and verify database environment
         LoggingServiceImpl.InstanceVal.LogDebug("Starting database environment setup...");
         var databaseSetupSuccess = await DatabaseSetupUtility.SetupDemoDatabaseAsync();
-        
+
         if (databaseSetupSuccess)
         {
             LoggingServiceImpl.InstanceVal.LogInformation("Database environment is ready for use.");
-            
+
             // Test the connection
             var connectionTest = await DatabaseSetupUtility.TestDemoDatabaseConnectionAsync();
             if (connectionTest)
@@ -59,64 +69,133 @@ internal static class Program
     }
 
     /// <summary>
-    /// Interactive user authentication - prompts user for username and password
+    /// Interactive user authentication - prompts user for username and password with validation
     /// </summary>
+    [Obsolete("Obsolete")]
     private static async Task InteractiveUserAuthenticationAsync()
     {
         try
         {
-            Console.WriteLine("\n=== User Authentication System ===");
-            Console.WriteLine("Please enter your login information:");
-                
-            // Get username
-            Console.Write("Username: ");
-            var username = Console.ReadLine();
-                
-            // Get password
-            Console.Write("Password: ");
-            var password = ReadPassword();
-                
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
-            {
-                LoggingServiceImpl.InstanceVal.LogWarning("Username or password cannot be empty");
-                Console.WriteLine("Error: Username or password cannot be empty!");
-                return;
-            }
-                
+            Console.WriteLine(LoginPrompt);
+
+            // Get username with validation
+            var username = GetUserInput(UsernameField, MinUsernameLength, MaxUsernameLength);
+            if (string.IsNullOrEmpty(username)) return;
+
+            // Get password with validation
+            var password = GetPasswordInput();
+            if (string.IsNullOrEmpty(password)) return;
+
             // Query user in database
             LoggingServiceImpl.InstanceVal.LogDebug($"Verifying login information for user '{username}'...");
             var (success, userId, foundUsername) = await UserAuthenticationService.AuthenticateUserAsync(username, password);
-                
+
             if (success)
             {
                 LoggingServiceImpl.InstanceVal.LogInformation($"User authentication successful: ID={userId}, Username={foundUsername}");
-                Console.WriteLine($"✅ Login successful! Welcome back, {foundUsername} (User ID: {userId})");
+                Console.WriteLine($"Login successful! Welcome back, {foundUsername} (User ID: {userId})");
             }
             else
             {
                 LoggingServiceImpl.InstanceVal.LogWarning($"User authentication failed: Username '{username}' does not exist or password is incorrect");
-                Console.WriteLine("❌ Login failed! Username or password is incorrect.");
+                Console.WriteLine($"Login failed! Username or password is incorrect.");
             }
+        }
+        catch (MySqlException dbEx)
+        {
+            LoggingServiceImpl.InstanceVal.LogError($"Database error during authentication: {dbEx.Message}");
+            Console.WriteLine($"Database connection error: {dbEx.Message}");
+        }
+        catch (InvalidOperationException ioEx)
+        {
+            LoggingServiceImpl.InstanceVal.LogError($"Invalid operation during authentication: {ioEx.Message}");
+            Console.WriteLine($"Invalid operation: {ioEx.Message}");
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Error occurred during user verification: {ex.Message}");
-            Console.WriteLine($"❌ Verification process error: {ex.Message}");
+            LoggingServiceImpl.InstanceVal.LogError($"Unexpected error during user verification: {ex.Message}");
+            Console.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
-        
+
     /// <summary>
-    /// Reads password from console without displaying it
+    /// Gets user input with validation
     /// </summary>
-    private static string ReadPassword()
+    /// <param name="fieldName">Name of the field for display</param>
+    /// <param name="minLength">Minimum length requirement</param>
+    /// <param name="maxLength">Maximum length requirement</param>
+    /// <returns>Validated input or null if canceled</returns>
+    private static string GetUserInput(string fieldName, int minLength, int maxLength)
+    {
+        while (true)
+        {
+            Console.Write($"{fieldName} ({minLength}-{maxLength} characters): ");
+            var input = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                Console.WriteLine($"{fieldName} cannot be empty. Press Ctrl+C to exit.");
+                continue;
+            }
+
+            if (input.Length < minLength)
+            {
+                Console.WriteLine($"{fieldName} must be at least {minLength} characters long.");
+                continue;
+            }
+
+            if (input.Length <= maxLength) return input.Trim();
+            Console.WriteLine($"{fieldName} cannot exceed {maxLength} characters.");
+        }
+    }
+
+    /// <summary>
+    /// Gets password input securely with validation
+    /// </summary>
+    /// <returns>Validated password or null if canceled</returns>
+    private static string GetPasswordInput()
+    {
+        const int minPasswordLength = 6;
+        const int maxPasswordLength = 100;
+
+        while (true)
+        {
+            Console.Write($"{PasswordField} ({MinPasswordLength}-{MaxPasswordLength} characters): ");
+            var password = ReadPasswordSecurely();
+
+            if (string.IsNullOrEmpty(password))
+            {
+                Console.WriteLine($"Password cannot be empty. Press Ctrl+C to exit.");
+                continue;
+            }
+
+            switch (password.Length)
+            {
+                case < minPasswordLength:
+                    Console.WriteLine($"Password must be at least {MinPasswordLength} characters long.");
+                    continue;
+                case <= maxPasswordLength:
+                    return password;
+                default:
+                    Console.WriteLine($"Password cannot exceed {MaxPasswordLength} characters.");
+                    break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Reads password from console securely without displaying it
+    /// </summary>
+    /// <returns>Password string</returns>
+    private static string ReadPasswordSecurely()
     {
         var password = new System.Text.StringBuilder();
         ConsoleKeyInfo key;
-            
+
         do
         {
             key = Console.ReadKey(true);
-                
+
             if (key.Key != ConsoleKey.Backspace && key.Key != ConsoleKey.Enter)
             {
                 password.Append(key.KeyChar);
@@ -127,9 +206,8 @@ internal static class Program
                 password.Remove(password.Length - 1, 1);
                 Console.Write("\b \b");
             }
-        }
-        while (key.Key != ConsoleKey.Enter);
-            
+        } while (key.Key != ConsoleKey.Enter);
+
         Console.WriteLine();
         return password.ToString();
     }

@@ -142,6 +142,7 @@ public static class DatabaseSetupUtility
 
     /// <summary>
     /// Ensures the user table exists in the demo database, creates it if necessary
+    /// Handles migration from old table structure if needed
     /// </summary>
     private static async Task<bool> EnsureUserTableExistsAsync()
     {
@@ -150,7 +151,19 @@ public static class DatabaseSetupUtility
             // Check if table already exists
             if (await CheckTableExistsAsync(DemoDatabaseName, "user"))
             {
-                LoggingServiceImpl.InstanceVal.LogDebug("User table already exists.");
+                LoggingServiceImpl.InstanceVal.LogDebug("User table already exists. Checking structure...");
+                
+                // Check if migration is needed
+                if (await NeedsTableMigrationAsync())
+                {
+                    LoggingServiceImpl.InstanceVal.LogDebug("Migrating user table structure from old format...");
+                    if (!await MigrateUserTableAsync())
+                    {
+                        LoggingServiceImpl.InstanceVal.LogError("Failed to migrate user table structure");
+                        return false;
+                    }
+                }
+                
                 return true;
             }
 
@@ -160,7 +173,7 @@ public static class DatabaseSetupUtility
                 CREATE TABLE `user` (
                     `id` INT AUTO_INCREMENT PRIMARY KEY,
                     `username` VARCHAR(50) NOT NULL,
-                    `password` VARCHAR(255) NOT NULL,
+                    `password_hash` VARCHAR(255) NOT NULL,
                     UNIQUE KEY `unique_username` (`username`),
                     INDEX `idx_username` (`username`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
@@ -171,7 +184,7 @@ public static class DatabaseSetupUtility
             await using var cmd = new MySqlCommand(createTableSql, connection);
             await cmd.ExecuteNonQueryAsync();
             
-            LoggingServiceImpl.InstanceVal.LogDebug("Successfully created user table with id, username, and password fields.");
+            LoggingServiceImpl.InstanceVal.LogDebug("Successfully created user table with id, username, and password_hash fields.");
             return true;
         }
         catch (Exception ex)
@@ -181,6 +194,86 @@ public static class DatabaseSetupUtility
         }
     }
 
+    /// <summary>
+    /// Checks if the user table needs migration from old structure
+    /// </summary>
+    private static async Task<bool> NeedsTableMigrationAsync()
+    {
+        try
+        {
+            await using var connection = new MySqlConnection(DemoConnectionString);
+            await connection.OpenAsync();
+            
+            // Check if password_hash column exists
+            await using var cmd = new MySqlCommand(
+                "SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = @dbName AND TABLE_NAME = 'user' AND COLUMN_NAME = 'password_hash'", 
+                connection);
+            cmd.Parameters.AddWithValue("@dbName", DemoDatabaseName);
+            
+            var result = await cmd.ExecuteScalarAsync();
+            return result == null; // If password_hash doesn't exist, migration is needed
+        }
+        catch (Exception ex)
+        {
+            LoggingServiceImpl.InstanceVal.LogError($"Failed to check table migration needs: {ex.Message}");
+            return false;
+        }
+    }
+    
+    /// <summary>
+    /// Migrates user table from old structure (password column) to new structure (password_hash column)
+    /// </summary>
+    private static async Task<bool> MigrateUserTableAsync()
+    {
+        try
+        {
+            await using var connection = new MySqlConnection(DemoConnectionString);
+            await connection.OpenAsync();
+            
+            using var transaction = await connection.BeginTransactionAsync();
+            
+            try
+            {
+                // Step 1: Add new password_hash column
+                LoggingServiceImpl.InstanceVal.LogDebug("Adding password_hash column...");
+                await using var addColumnCmd = new MySqlCommand(
+                    "ALTER TABLE `user` ADD COLUMN `password_hash` VARCHAR(255) NULL", connection, transaction);
+                await addColumnCmd.ExecuteNonQueryAsync();
+                
+                // Step 2: Migrate existing password data (if any)
+                LoggingServiceImpl.InstanceVal.LogDebug("Migrating existing password data...");
+                await using var migrateDataCmd = new MySqlCommand(
+                    "UPDATE `user` SET `password_hash` = `password` WHERE `password` IS NOT NULL", connection, transaction);
+                await migrateDataCmd.ExecuteNonQueryAsync();
+                
+                // Step 3: Drop old password column
+                LoggingServiceImpl.InstanceVal.LogDebug("Removing old password column...");
+                await using var dropColumnCmd = new MySqlCommand(
+                    "ALTER TABLE `user` DROP COLUMN `password`", connection, transaction);
+                await dropColumnCmd.ExecuteNonQueryAsync();
+                
+                // Step 4: Make password_hash NOT NULL
+                LoggingServiceImpl.InstanceVal.LogDebug("Setting password_hash as required field...");
+                await using var notNullCmd = new MySqlCommand(
+                    "ALTER TABLE `user` MODIFY `password_hash` VARCHAR(255) NOT NULL", connection, transaction);
+                await notNullCmd.ExecuteNonQueryAsync();
+                
+                await transaction.CommitAsync();
+                LoggingServiceImpl.InstanceVal.LogDebug("User table migration completed successfully.");
+                return true;
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggingServiceImpl.InstanceVal.LogError($"Failed to migrate user table: {ex.Message}");
+            return false;
+        }
+    }
     /// <summary>
     /// Checks if a specific table exists in a database
     /// </summary>
