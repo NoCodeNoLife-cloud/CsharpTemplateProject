@@ -1,5 +1,7 @@
 using MySqlConnector;
 using ClientApplication.Database;
+using ClientApplication.Database.Models;
+using ClientApplication.Database.Services;
 using LoggingService.Services;
 using LoggingService.Enums;
 using Sql.Exceptions;
@@ -130,9 +132,12 @@ public static class UserAuthenticationService
         {
             LoggingServiceImpl.InstanceVal.LogDebug($"Attempting to register new user '{username}'...");
 
+            // Use UserService for registration to leverage CRUD functionality
+            var userService = new UserService();
+            
             // First check if username already exists
-            var (exists, _, _) = await AuthenticateUserAsync(username, "dummy_password_for_check");
-            if (exists)
+            var existingUser = await userService.FindByUsernameAsync(username);
+            if (existingUser != null)
             {
                 LoggingServiceImpl.InstanceVal.LogWarning($"Registration failed: Username '{username}' already exists");
                 return (false, null, "Username already exists");
@@ -140,26 +145,17 @@ public static class UserAuthenticationService
 
             // Hash the password
             var hashedPassword = HashPassword(password);
-
-            await using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
-            await connection.OpenAsync();
-
-            await using var cmd = new MySqlCommand(
-                "INSERT INTO `user` (username, password_hash) VALUES (@username, @passwordHash)", connection);
-            cmd.Parameters.AddWithValue("@username", username);
-            cmd.Parameters.AddWithValue("@passwordHash", hashedPassword);
-
-            var rowsAffected = await cmd.ExecuteNonQueryAsync();
             
-            if (rowsAffected > 0)
+            // Create user entity
+            var newUser = new User(username, hashedPassword);
+            
+            // Save user using CRUD service
+            var createdUser = await userService.CreateAsync(newUser);
+            
+            if (createdUser.Id > 0)
             {
-                // Get the newly created user ID
-                await using var getIdCmd = new MySqlCommand(
-                    "SELECT LAST_INSERT_ID()", connection);
-                var userId = Convert.ToInt32(await getIdCmd.ExecuteScalarAsync());
-                
-                LoggingServiceImpl.InstanceVal.LogInformation($"User registration successful: ID={userId}, Username={username}");
-                return (true, userId, null);
+                LoggingServiceImpl.InstanceVal.LogInformation($"User registration successful: ID={createdUser.Id}, Username={username}");
+                return (true, createdUser.Id, null);
             }
             else
             {
@@ -173,4 +169,132 @@ public static class UserAuthenticationService
             return (false, null, $"Registration error: {ex.Message}");
         }
     }
+
+    /// <summary>
+    /// Updates a user's password
+    /// </summary>
+    /// <param name="userId">User ID</param>
+    /// <param name="newPassword">New password</param>
+    /// <returns>True if update successful, false otherwise</returns>
+    [Obsolete("Obsolete")]
+    public static async Task<bool> UpdateUserPasswordAsync(int userId, string newPassword)
+    {
+        try
+        {
+            LoggingServiceImpl.InstanceVal.LogDebug($"Updating password for user ID {userId}...");
+            
+            var userService = new UserService();
+            var result = await userService.UpdatePasswordAsync(userId, newPassword);
+            
+            if (result)
+            {
+                LoggingServiceImpl.InstanceVal.LogInformation($"Password updated successfully for user ID {userId}");
+            }
+            else
+            {
+                LoggingServiceImpl.InstanceVal.LogWarning($"Failed to update password for user ID {userId}");
+            }
+            
+            return result;
+        }
+        catch (Exception ex)
+        {
+            LoggingServiceImpl.InstanceVal.LogError($"Failed to update password for user ID {userId}: {ex.Message}");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Gets a user by ID
+    /// </summary>
+    /// <param name="userId">User ID</param>
+    /// <returns>User entity if found, null otherwise</returns>
+    [Obsolete("Obsolete")]
+    public static async Task<User?> GetUserByIdAsync(int userId)
+    {
+        try
+        {
+            LoggingServiceImpl.InstanceVal.LogDebug($"Getting user by ID {userId}...");
+            
+            var userService = new UserService();
+            var user = await userService.GetByIdAsync(userId);
+            
+            if (user != null)
+            {
+                LoggingServiceImpl.InstanceVal.LogDebug($"User found: {user}");
+            }
+            else
+            {
+                LoggingServiceImpl.InstanceVal.LogDebug($"User with ID {userId} not found");
+            }
+            
+            return user;
+        }
+        catch (Exception ex)
+        {
+            LoggingServiceImpl.InstanceVal.LogError($"Failed to get user by ID {userId}: {ex.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Gets all users
+    /// </summary>
+    /// <returns>Collection of all users</returns>
+    [Obsolete("Obsolete")]
+    public static async Task<IEnumerable<User>> GetAllUsersAsync()
+    {
+        try
+        {
+            LoggingServiceImpl.InstanceVal.LogDebug("Getting all users...");
+            
+            var userService = new UserService();
+            var users = await userService.GetAllAsync();
+            
+            LoggingServiceImpl.InstanceVal.LogDebug($"Retrieved {users.Count()} users");
+            return users;
+        }
+        catch (Exception ex)
+        {
+            LoggingServiceImpl.InstanceVal.LogError($"Failed to get all users: {ex.Message}");
+            return Enumerable.Empty<User>();
+        }
+    }
+
+    /// <summary>
+    /// Deletes a user by ID
+    /// </summary>
+    /// <param name="userId">User ID</param>
+    /// <returns>True if deletion successful, false otherwise</returns>
+    [Obsolete("Obsolete")]
+    public static async Task<bool> DeleteUserAsync(int userId)
+    {
+        try
+        {
+            LoggingServiceImpl.InstanceVal.LogDebug($"Deleting user ID {userId}...");
+            
+            var userService = new UserService();
+            var result = await userService.DeleteAsync(userId);
+            
+            if (result)
+            {
+                LoggingServiceImpl.InstanceVal.LogInformation($"User deleted successfully: ID={userId}");
+            }
+            else
+            {
+                LoggingServiceImpl.InstanceVal.LogWarning($"Failed to delete user ID {userId}");
+            }
+            
+            return result;
+        }
+        catch (Exception ex)
+        {
+            LoggingServiceImpl.InstanceVal.LogError($"Failed to delete user ID {userId}: {ex.Message}");
+            return false;
+        }
+    }
+
+
+
+
 }

@@ -1,5 +1,7 @@
 using CommonFramework.Aop.Attributes;
 using System;
+using System.IO;
+using System.Linq;
 using LoggingService.Services;
 using LoggingService.Enums;
 using ClientApplication.Config;
@@ -21,6 +23,7 @@ internal static class Program
     private const int MaxUsernameLength = 50;
     private const int MinPasswordLength = 6;
     private const int MaxPasswordLength = 100;
+    private const string UserIdField = "User ID";
 
     /// <summary>
     /// Entry point of the application
@@ -37,13 +40,13 @@ internal static class Program
             // Enhanced startup sequence
             await InitializeApplicationAsync();
 
-            // Interactive user authentication
-            await InteractiveUserAuthenticationAsync();
+            // Interactive user management
+            await InteractiveUserManagementAsync();
         }
         catch (Exception ex)
         {
             LoggingServiceImpl.InstanceVal.LogError($"Application startup failed: {ex.Message}", ex);
-            Console.WriteLine("Press Enter to exit...");
+            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to exit...");
             Console.ReadLine();
         }
     }
@@ -55,7 +58,7 @@ internal static class Program
     {
         LoggingServiceImpl.InstanceVal.LogDebug($"Project Root Directory: {EnvironmentPath.ProjectRootDirectory}");
         await Task.Delay(500); // Simulate work
-        Console.WriteLine($"Environment configured");
+        LoggingServiceImpl.InstanceVal.LogInformation("Environment configured");
 
         // Step 2: Database setup
         LoggingServiceImpl.InstanceVal.LogDebug("Starting database environment setup...");
@@ -92,17 +95,17 @@ internal static class Program
     }
 
     /// <summary>
-    /// Interactive user authentication - prompts user for login or registration choice
+    /// Interactive user management - main menu for all user operations
     /// </summary>
     [Obsolete("Obsolete")]
-    private static async Task InteractiveUserAuthenticationAsync()
+    private static async Task InteractiveUserManagementAsync()
     {
         try
         {
             while (true)
             {
-                // Display enhanced menu
-                DisplayAuthenticationMenu();
+                // Display main menu
+                DisplayMainMenu();
 
                 var choice = GetUserMenuChoice();
 
@@ -110,31 +113,43 @@ internal static class Program
                 {
                     case "1":
                         await HandleUserLoginAsync();
-                        return; // Exit after successful login
+                        break;
                     case "2":
                         await HandleUserRegistrationAsync();
-                        Console.WriteLine("\nPress Enter to return to main menu...");
-                        Console.ReadLine();
-                        break; // Continue to show menu after registration
+                        break;
+                    case "3":
+                        await HandleUserManagementMenuAsync();
+                        break;
+                    case "4":
+                        LoggingServiceImpl.InstanceVal.LogInformation("Thank you for using our application. Goodbye!");
+                        return; // Exit application
                     default:
                         LoggingServiceImpl.InstanceVal.LogWarning("Invalid option selected!");
                         break;
+                }
+
+                if (choice != "4")
+                {
+                    LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+                    Console.ReadLine();
                 }
             }
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Unexpected error during user authentication: {ex.Message}", ex);
-            Console.WriteLine("Press Enter to exit...");
+            LoggingServiceImpl.InstanceVal.LogError($"Unexpected error during user management: {ex.Message}", ex);
+            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to exit...");
             Console.ReadLine();
         }
     }
 
     /// <summary>
-    /// Displays the enhanced authentication menu
+    /// Displays the main menu
     /// </summary>
-    private static void DisplayAuthenticationMenu()
+    private static void DisplayMainMenu()
     {
+        LoggingServiceImpl.InstanceVal.LogInformation("Displaying main menu");
+        Console.WriteLine("\n=== User Management System ===");
         Console.Write("[1] ");
         Console.WriteLine($"Login with existing account");
 
@@ -142,7 +157,41 @@ internal static class Program
         Console.WriteLine($"Register new account");
 
         Console.Write("[3] ");
+        Console.WriteLine($"User Management (Admin Operations)");
+
+        Console.Write("[4] ");
         Console.WriteLine($"Exit application");
+        Console.WriteLine("===============================");
+    }
+
+    /// <summary>
+    /// Displays the user management submenu
+    /// </summary>
+    private static void DisplayUserManagementMenu()
+    {
+        LoggingServiceImpl.InstanceVal.LogInformation("Displaying user management submenu");
+        Console.WriteLine("\n=== User Management Operations ===");
+        Console.Write("[1] ");
+        Console.WriteLine($"View all users");
+
+        Console.Write("[2] ");
+        Console.WriteLine($"Find user by ID");
+
+        Console.Write("[3] ");
+        Console.WriteLine($"Find user by username");
+
+        Console.Write("[4] ");
+        Console.WriteLine($"Update user password");
+
+        Console.Write("[5] ");
+        Console.WriteLine($"Delete user account");
+
+        Console.Write("[6] ");
+        Console.WriteLine($"View statistics");
+
+        Console.Write("[7] ");
+        Console.WriteLine($"Back to main menu");
+        Console.WriteLine("==================================");
     }
 
     /// <summary>
@@ -151,11 +200,12 @@ internal static class Program
     /// <returns>User's menu choice</returns>
     private static string GetUserMenuChoice()
     {
-        Console.Write("Enter your choice (1-3): ");
+        LoggingServiceImpl.InstanceVal.LogDebug("Waiting for user menu choice input");
+        Console.Write("Enter your choice: ");
         var choice = Console.ReadLine()?.Trim();
 
         // Validate input
-        if (string.IsNullOrEmpty(choice) || !IsValidMenuChoice(choice))
+        if (string.IsNullOrEmpty(choice))
         {
             return "INVALID";
         }
@@ -164,17 +214,56 @@ internal static class Program
     }
 
     /// <summary>
-    /// Validates if the menu choice is valid
+    /// Handles the user management submenu
     /// </summary>
-    /// <param name="choice">User's choice</param>
-    /// <returns>True if valid, false otherwise</returns>
-    private static bool IsValidMenuChoice(string choice)
+    [Obsolete("Obsolete")]
+    private static async Task HandleUserManagementMenuAsync()
     {
-        return choice switch
+        try
         {
-            "1" or "2" or "3" => true,
-            _ => false
-        };
+            while (true)
+            {
+                DisplayUserManagementMenu();
+                var choice = GetUserMenuChoice();
+
+                switch (choice)
+                {
+                    case "1":
+                        await HandleViewAllUsersAsync();
+                        break;
+                    case "2":
+                        await HandleFindUserByIdAsync();
+                        break;
+                    case "3":
+                        await HandleFindUserByUsernameAsync();
+                        break;
+                    case "4":
+                        await HandleUpdateUserPasswordAsync();
+                        break;
+                    case "5":
+                        await HandleDeleteUserAsync();
+                        break;
+                    case "6":
+                        await HandleViewStatisticsAsync();
+                        break;
+                    case "7":
+                        return; // Back to main menu
+                    default:
+                        LoggingServiceImpl.InstanceVal.LogWarning("Invalid option selected!");
+                        break;
+                }
+
+                if (choice != "7")
+                {
+                    LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+                    Console.ReadLine();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggingServiceImpl.InstanceVal.LogError($"Error in user management menu: {ex.Message}", ex);
+        }
     }
 
     /// <summary>
@@ -185,7 +274,8 @@ internal static class Program
     {
         try
         {
-            Console.WriteLine($"{LoginPrompt}");
+            Console.Clear();
+            LoggingServiceImpl.InstanceVal.LogInformation(LoginPrompt);
 
             // Get username with validation
             var username = GetUserInput(UsernameField, MinUsernameLength, MaxUsernameLength);
@@ -202,23 +292,34 @@ internal static class Program
             if (success)
             {
                 LoggingServiceImpl.InstanceVal.LogInformation($"User authentication successful: ID={userId}, Username={foundUsername}, welcome back");
+                LoggingServiceImpl.InstanceVal.LogInformation($"Welcome back, {foundUsername}! (User ID: {userId})");
             }
             else
             {
                 LoggingServiceImpl.InstanceVal.LogWarning($"User authentication failed: Username '{username}' does not exist or password is incorrect");
+                LoggingServiceImpl.InstanceVal.LogWarning("Authentication failed. Please check your credentials.");
             }
         }
         catch (MySqlException dbEx)
         {
             LoggingServiceImpl.InstanceVal.LogError($"Database error during login: {dbEx.Message}", dbEx);
+            LoggingServiceImpl.InstanceVal.LogError($"Database connection error: {dbEx.Message}");
+            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            Console.ReadLine();
         }
         catch (InvalidOperationException ioEx)
         {
             LoggingServiceImpl.InstanceVal.LogError($"Invalid operation during login: {ioEx.Message}", ioEx);
+            LoggingServiceImpl.InstanceVal.LogError($"Invalid operation: {ioEx.Message}");
+            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            Console.ReadLine();
         }
         catch (Exception ex)
         {
             LoggingServiceImpl.InstanceVal.LogError($"Unexpected error during user login: {ex.Message}", ex);
+            LoggingServiceImpl.InstanceVal.LogError($"Unexpected error: {ex.Message}");
+            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            Console.ReadLine();
         }
     }
 
@@ -231,7 +332,7 @@ internal static class Program
         try
         {
             Console.Clear();
-            Console.WriteLine($"Please enter your registration information:");
+            LoggingServiceImpl.InstanceVal.LogInformation("Please enter your registration information:");
 
             // Get username with validation
             var username = GetUserInput(UsernameField, MinUsernameLength, MaxUsernameLength);
@@ -248,7 +349,8 @@ internal static class Program
             if (password != confirmPassword)
             {
                 LoggingServiceImpl.InstanceVal.LogError($"Passwords do not match!");
-                Console.WriteLine("Press Enter to try again...");
+                LoggingServiceImpl.InstanceVal.LogWarning("Passwords do not match! Please try again.");
+                LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
                 Console.ReadLine();
                 return;
             }
@@ -260,32 +362,36 @@ internal static class Program
             if (success)
             {
                 LoggingServiceImpl.InstanceVal.LogInformation($"User registration successful: ID={userId}, Username={username}");
-                Console.WriteLine($"Your account has been created. (User ID: {userId})");
-                Console.WriteLine($"You can now login with your new account.");
+                LoggingServiceImpl.InstanceVal.LogInformation("Registration successful!");
+                LoggingServiceImpl.InstanceVal.LogInformation($"Your account has been created. (User ID: {userId})");
+                LoggingServiceImpl.InstanceVal.LogInformation("You can now login with your new account.");
             }
             else
             {
                 LoggingServiceImpl.InstanceVal.LogWarning($"User registration failed: {errorMessage}");
-                Console.WriteLine($"Registration failed! {errorMessage}");
+                LoggingServiceImpl.InstanceVal.LogWarning($"Registration failed! {errorMessage}");
             }
-
-            Console.WriteLine("Press Enter to continue...");
-            Console.ReadLine();
         }
         catch (MySqlException dbEx)
         {
             LoggingServiceImpl.InstanceVal.LogError($"Database error during registration: {dbEx.Message}", dbEx);
-            Console.WriteLine($"Database connection error: {dbEx.Message}");
+            LoggingServiceImpl.InstanceVal.LogError($"Database connection error: {dbEx.Message}");
+            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            Console.ReadLine();
         }
         catch (InvalidOperationException ioEx)
         {
             LoggingServiceImpl.InstanceVal.LogError($"Invalid operation during registration: {ioEx.Message}", ioEx);
-            Console.WriteLine($"Invalid operation: {ioEx.Message}");
+            LoggingServiceImpl.InstanceVal.LogError($"Invalid operation: {ioEx.Message}");
+            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            Console.ReadLine();
         }
         catch (Exception ex)
         {
             LoggingServiceImpl.InstanceVal.LogError($"Unexpected error during user registration: {ex.Message}", ex);
-            Console.WriteLine($"Unexpected error: {ex.Message}");
+            LoggingServiceImpl.InstanceVal.LogError($"Unexpected error: {ex.Message}");
+            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            Console.ReadLine();
         }
     }
 
@@ -305,21 +411,21 @@ internal static class Program
 
             if (string.IsNullOrWhiteSpace(input))
             {
-                Console.WriteLine($"{fieldName} cannot be empty.");
-                Console.WriteLine($"Press Ctrl+C to exit or try again.");
+                LoggingServiceImpl.InstanceVal.LogWarning($"{fieldName} cannot be empty.");
+                LoggingServiceImpl.InstanceVal.LogDebug($"Press Ctrl+C to exit or try again.");
                 continue;
             }
 
             if (input.Length < minLength)
             {
-                Console.WriteLine($"{fieldName} must be at least {minLength} characters long.");
-                Console.WriteLine($"Current length: {input.Length} characters");
+                LoggingServiceImpl.InstanceVal.LogWarning($"{fieldName} must be at least {minLength} characters long.");
+                LoggingServiceImpl.InstanceVal.LogDebug($"Current length: {input.Length} characters");
                 continue;
             }
 
             if (input.Length <= maxLength) return input.Trim();
-            Console.WriteLine($"{fieldName} cannot exceed {maxLength} characters.");
-            Console.WriteLine($"Current length: {input.Length} characters");
+            LoggingServiceImpl.InstanceVal.LogWarning($"{fieldName} cannot exceed {maxLength} characters.");
+            LoggingServiceImpl.InstanceVal.LogDebug($"Current length: {input.Length} characters");
         }
     }
 
@@ -339,20 +445,20 @@ internal static class Program
 
             if (string.IsNullOrEmpty(password))
             {
-                Console.WriteLine($"Password cannot be empty.");
-                Console.WriteLine($"Press Ctrl+C to exit or try again.");
+                LoggingServiceImpl.InstanceVal.LogWarning($"Password cannot be empty.");
+                LoggingServiceImpl.InstanceVal.LogDebug($"Press Ctrl+C to exit or try again.");
                 continue;
             }
 
             switch (password.Length)
             {
                 case < minPasswordLength:
-                    Console.WriteLine($"Password must be at least {MinPasswordLength} characters long.");
-                    Console.WriteLine($"Current length: {password.Length} characters");
+                    LoggingServiceImpl.InstanceVal.LogWarning($"Password must be at least {MinPasswordLength} characters long.");
+                    LoggingServiceImpl.InstanceVal.LogDebug($"Current length: {password.Length} characters");
                     continue;
                 case > maxPasswordLength:
-                    Console.WriteLine($"Password cannot exceed {MaxPasswordLength} characters.");
-                    Console.WriteLine($"Current length: {password.Length} characters");
+                    LoggingServiceImpl.InstanceVal.LogWarning($"Password cannot exceed {MaxPasswordLength} characters.");
+                    LoggingServiceImpl.InstanceVal.LogDebug($"Current length: {password.Length} characters");
                     continue;
                 default:
                     return password;
@@ -387,5 +493,293 @@ internal static class Program
 
         Console.WriteLine();
         return password.ToString();
+    }
+
+    /// <summary>
+    /// Gets user ID input with validation
+    /// </summary>
+    /// <returns>Validated user ID or 0 if invalid</returns>
+    private static int GetUserIdInput()
+    {
+        while (true)
+        {
+            Console.Write($"{UserIdField}: ");
+            var input = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                LoggingServiceImpl.InstanceVal.LogWarning($"{UserIdField} cannot be empty.");
+                continue;
+            }
+
+            if (int.TryParse(input, out var userId) && userId > 0)
+            {
+                return userId;
+            }
+
+            LoggingServiceImpl.InstanceVal.LogWarning($"Please enter a valid positive integer for {UserIdField}.");
+        }
+    }
+
+    /// <summary>
+    /// Handles viewing all users
+    /// </summary>
+    [Obsolete("Obsolete")]
+    private static async Task HandleViewAllUsersAsync()
+    {
+        try
+        {
+            Console.Clear();
+            LoggingServiceImpl.InstanceVal.LogInformation("=== All Users ===");
+
+            var users = await UserAuthenticationService.GetAllUsersAsync();
+            var userList = users.ToList();
+
+            if (userList.Count == 0)
+            {
+                LoggingServiceImpl.InstanceVal.LogWarning("No users found in the system.");
+                return;
+            }
+
+            LoggingServiceImpl.InstanceVal.LogInformation($"\nTotal users: {userList.Count}\n");
+            LoggingServiceImpl.InstanceVal.LogInformation($"{"ID",-5} {"Username",-20}");
+            LoggingServiceImpl.InstanceVal.LogInformation(new string('-', 30));
+
+            foreach (var user in userList)
+            {
+                LoggingServiceImpl.InstanceVal.LogInformation($"{user.Id,-5} {user.Username,-20}");
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggingServiceImpl.InstanceVal.LogError($"Error viewing all users: {ex.Message}", ex);
+            LoggingServiceImpl.InstanceVal.LogError($"Error: {ex.Message}");
+            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            Console.ReadLine();
+        }
+    }
+
+    /// <summary>
+    /// Handles finding user by ID
+    /// </summary>
+    [Obsolete("Obsolete")]
+    private static async Task HandleFindUserByIdAsync()
+    {
+        try
+        {
+            Console.Clear();
+            LoggingServiceImpl.InstanceVal.LogInformation("=== Find User by ID ===");
+
+            var userId = GetUserIdInput();
+            var user = await UserAuthenticationService.GetUserByIdAsync(userId);
+
+            if (user != null)
+            {
+                LoggingServiceImpl.InstanceVal.LogInformation("User found:");
+                LoggingServiceImpl.InstanceVal.LogInformation($"ID: {user.Id}");
+                LoggingServiceImpl.InstanceVal.LogInformation($"Username: {user.Username}");
+            }
+            else
+            {
+                LoggingServiceImpl.InstanceVal.LogWarning($"User with ID {userId} not found.");
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggingServiceImpl.InstanceVal.LogError($"Error finding user by ID: {ex.Message}", ex);
+            LoggingServiceImpl.InstanceVal.LogError($"Error: {ex.Message}");
+            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            Console.ReadLine();
+        }
+    }
+
+    /// <summary>
+    /// Handles finding user by username
+    /// </summary>
+    [Obsolete("Obsolete")]
+    private static async Task HandleFindUserByUsernameAsync()
+    {
+        try
+        {
+            Console.Clear();
+            LoggingServiceImpl.InstanceVal.LogInformation("=== Find User by Username ===");
+
+            var username = GetUserInput(UsernameField, MinUsernameLength, MaxUsernameLength);
+            if (string.IsNullOrEmpty(username)) return;
+
+            // Since we don't have a direct method in UserAuthenticationService, 
+            // we'll use UserService directly
+            var userService = new Database.Services.UserService();
+            var user = await userService.FindByUsernameAsync(username);
+
+            if (user != null)
+            {
+                LoggingServiceImpl.InstanceVal.LogInformation("User found:");
+                LoggingServiceImpl.InstanceVal.LogInformation($"ID: {user.Id}");
+                LoggingServiceImpl.InstanceVal.LogInformation($"Username: {user.Username}");
+            }
+            else
+            {
+                LoggingServiceImpl.InstanceVal.LogWarning($"User with username '{username}' not found.");
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggingServiceImpl.InstanceVal.LogError($"Error finding user by username: {ex.Message}", ex);
+            LoggingServiceImpl.InstanceVal.LogError($"Error: {ex.Message}");
+            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            Console.ReadLine();
+        }
+    }
+
+    /// <summary>
+    /// Handles updating user password
+    /// </summary>
+    [Obsolete("Obsolete")]
+    private static async Task HandleUpdateUserPasswordAsync()
+    {
+        try
+        {
+            Console.Clear();
+            LoggingServiceImpl.InstanceVal.LogInformation("=== Update User Password ===");
+
+            var userId = GetUserIdInput();
+            
+            // Verify user exists
+            var user = await UserAuthenticationService.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                LoggingServiceImpl.InstanceVal.LogWarning($"User with ID {userId} not found.");
+                return;
+            }
+
+            LoggingServiceImpl.InstanceVal.LogInformation($"Updating password for user: {user.Username} (ID: {userId})");
+
+            // Get new password
+            var newPassword = GetPasswordInput();
+            if (string.IsNullOrEmpty(newPassword)) return;
+
+            // Confirm new password
+            Console.Write("Confirm New Password: ");
+            var confirmNewPassword = ReadPasswordSecurely();
+
+            if (newPassword != confirmNewPassword)
+            {
+                LoggingServiceImpl.InstanceVal.LogWarning("New passwords do not match!");
+                return;
+            }
+
+            var success = await UserAuthenticationService.UpdateUserPasswordAsync(userId, newPassword);
+
+            if (success)
+            {
+                LoggingServiceImpl.InstanceVal.LogInformation($"Password updated successfully for user '{user.Username}' (ID: {userId})");
+            }
+            else
+            {
+                LoggingServiceImpl.InstanceVal.LogError($"Failed to update password for user ID {userId}");
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggingServiceImpl.InstanceVal.LogError($"Error updating user password: {ex.Message}", ex);
+            LoggingServiceImpl.InstanceVal.LogError($"Error: {ex.Message}");
+            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            Console.ReadLine();
+        }
+    }
+
+
+
+    /// <summary>
+    /// Handles deleting user account
+    /// </summary>
+    [Obsolete("Obsolete")]
+    private static async Task HandleDeleteUserAsync()
+    {
+        try
+        {
+            Console.Clear();
+            LoggingServiceImpl.InstanceVal.LogWarning("=== Delete User Account ===");
+
+            var userId = GetUserIdInput();
+            
+            // Verify user exists
+            var user = await UserAuthenticationService.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                LoggingServiceImpl.InstanceVal.LogWarning($"User with ID {userId} not found.");
+                return;
+            }
+
+            LoggingServiceImpl.InstanceVal.LogWarning($"WARNING: This will permanently delete user '{user.Username}' (ID: {userId})");
+            LoggingServiceImpl.InstanceVal.LogWarning("This action cannot be undone!");
+            LoggingServiceImpl.InstanceVal.LogDebug("\nAre you absolutely sure? Type 'DELETE' to confirm: ");
+            Console.Write("\nAre you absolutely sure? Type 'DELETE' to confirm: ");
+            var confirmation = Console.ReadLine()?.Trim();
+
+            if (confirmation != "DELETE")
+            {
+                LoggingServiceImpl.InstanceVal.LogInformation("Operation cancelled.");
+                return;
+            }
+
+            var success = await UserAuthenticationService.DeleteUserAsync(userId);
+
+            if (success)
+            {
+                LoggingServiceImpl.InstanceVal.LogInformation($"User '{user.Username}' (ID: {userId}) deleted successfully");
+            }
+            else
+            {
+                LoggingServiceImpl.InstanceVal.LogError($"Failed to delete user ID {userId}");
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggingServiceImpl.InstanceVal.LogError($"Error deleting user: {ex.Message}", ex);
+            LoggingServiceImpl.InstanceVal.LogError($"Error: {ex.Message}");
+            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            Console.ReadLine();
+        }
+    }
+
+    /// <summary>
+    /// Handles viewing system statistics
+    /// </summary>
+    [Obsolete("Obsolete")]
+    private static async Task HandleViewStatisticsAsync()
+    {
+        try
+        {
+            Console.Clear();
+            LoggingServiceImpl.InstanceVal.LogInformation("=== System Statistics ===");
+
+            // Get various statistics
+            var totalUsers = await UserAuthenticationService.GetAllUsersAsync();
+            var totalUsersCount = totalUsers.Count();
+
+            LoggingServiceImpl.InstanceVal.LogInformation($"\n📊 User Statistics:");
+            LoggingServiceImpl.InstanceVal.LogInformation($"   Total Users: {totalUsersCount}");
+
+            // Show all users
+            if (totalUsers.Any())
+            {
+                LoggingServiceImpl.InstanceVal.LogInformation($"\n📋 All Users:");
+                LoggingServiceImpl.InstanceVal.LogInformation($"{"ID",-5} {"Username",-20}");
+                LoggingServiceImpl.InstanceVal.LogInformation(new string('-', 30));
+                foreach (var user in totalUsers)
+                {
+                    LoggingServiceImpl.InstanceVal.LogInformation($"{user.Id,-5} {user.Username,-20}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggingServiceImpl.InstanceVal.LogError($"Error viewing statistics: {ex.Message}", ex);
+            LoggingServiceImpl.InstanceVal.LogError($"Error: {ex.Message}");
+            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            Console.ReadLine();
+        }
     }
 }

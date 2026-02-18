@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-using System.Threading;
 using LoggingService.Services;
 using ClientApplication.Config;
 
@@ -40,22 +37,22 @@ public static class Banner
         catch (UnauthorizedAccessException ex)
         {
             LoggingServiceImpl.InstanceVal.LogError($"Access denied to banner file: {ex.Message}", ex);
-            Console.WriteLine($"✗ Access denied: {ex.Message}");
+            Console.WriteLine($"Access denied: {ex.Message}");
         }
         catch (DirectoryNotFoundException ex)
         {
             LoggingServiceImpl.InstanceVal.LogError($"Directory not found: {ex.Message}", ex);
-            Console.WriteLine($"✗ Directory not found: {ex.Message}");
+            Console.WriteLine($"Directory not found: {ex.Message}");
         }
         catch (IOException ex)
         {
             LoggingServiceImpl.InstanceVal.LogError($"IO error reading banner file: {ex.Message}", ex);
-            Console.WriteLine($"✗ IO Error: {ex.Message}");
+            Console.WriteLine($"IO Error: {ex.Message}");
         }
         catch (Exception ex)
         {
             LoggingServiceImpl.InstanceVal.LogError($"Unexpected error reading banner file: {ex.Message}", ex);
-            Console.WriteLine($"✗ Unexpected error: {ex.Message}");
+            Console.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 
