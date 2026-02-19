@@ -1,3 +1,4 @@
+using ClientApplication.App.Manu;
 using LoggingService.Services;
 using ClientApplication.Database.UserAuthentication;
 

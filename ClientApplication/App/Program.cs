@@ -2,6 +2,7 @@ using CommonFramework.Aop.Attributes;
 using LoggingService.Services;
 using LoggingService.Enums;
 using ClientApplication.App.Banner;
+using ClientApplication.App.Manu;
 
 namespace ClientApplication.App;
 
