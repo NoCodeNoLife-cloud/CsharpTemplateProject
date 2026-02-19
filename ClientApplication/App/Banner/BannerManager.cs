@@ -7,7 +7,7 @@ namespace ClientApplication.App.Banner;
 /// <summary>
 /// Banner management class for handling application banner display
 /// </summary>
-public static class Banner
+public static class BannerManager
 {
     /// <summary>
     /// Banner file relative path

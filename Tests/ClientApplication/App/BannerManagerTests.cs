@@ -8,13 +8,13 @@ namespace Tests.ClientApplication.App;
 /// Banner class unit tests
 ///  banner path resolution and file existence checking functionality
 /// </summary>
-public class BannerTests
+public class BannerManagerTests
 {
     [Fact]
     public void BannerPath_Constant_ShouldReturnCorrectRelativePath()
     {
         // Act
-        const string bannerPath = Banner.BannerPath;
+        const string bannerPath = BannerManager.BannerPath;
 
         // Assert
         bannerPath.Should().Be("App/Banner/Banner.txt");
@@ -24,7 +24,7 @@ public class BannerTests
     public void GetBannerPath_ShouldReturnValidFullPath()
     {
         // Act
-        var fullPath = Banner.GetBannerPath();
+        var fullPath = BannerManager.GetBannerPath();
 
         // Assert
         fullPath.Should().NotBeNull();
@@ -38,7 +38,7 @@ public class BannerTests
     public void IsBannerFileExists_ShouldReturnBoolean()
     {
         // Act
-        var exists = Banner.IsBannerFileExists();
+        var exists = BannerManager.IsBannerFileExists();
 
         // Assert
         Assert.IsType<bool>(exists);
@@ -48,8 +48,8 @@ public class BannerTests
     public void GetBannerPath_CalledMultipleTimes_ShouldReturnSameResult()
     {
         // Act
-        var path1 = Banner.GetBannerPath();
-        var path2 = Banner.GetBannerPath();
+        var path1 = BannerManager.GetBannerPath();
+        var path2 = BannerManager.GetBannerPath();
 
         // Assert
         path1.Should().Be(path2);
@@ -59,8 +59,8 @@ public class BannerTests
     public void IsBannerFileExists_CalledMultipleTimes_ShouldReturnSameResult()
     {
         // Act
-        var exists1 = Banner.IsBannerFileExists();
-        var exists2 = Banner.IsBannerFileExists();
+        var exists1 = BannerManager.IsBannerFileExists();
+        var exists2 = BannerManager.IsBannerFileExists();
 
         // Assert
         exists1.Should().Be(exists2);
@@ -71,8 +71,8 @@ public class BannerTests
     {
         // This test verifies that the Banner.txt file actually exists at the resolved path
         // Act
-        var fullPath = Banner.GetBannerPath();
-        var exists = Banner.IsBannerFileExists();
+        var fullPath = BannerManager.GetBannerPath();
+        var exists = BannerManager.IsBannerFileExists();
 
         // Assert
         exists.Should().BeTrue("Banner.txt file should exist at the resolved path");
@@ -84,7 +84,7 @@ public class BannerTests
     public void GetBannerPath_ShouldCreateValidFileSystemPath()
     {
         // Act
-        var fullPath = Banner.GetBannerPath();
+        var fullPath = BannerManager.GetBannerPath();
 
         // Assert
         fullPath.Should().NotBeNull();
