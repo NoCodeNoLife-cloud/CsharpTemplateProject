@@ -1,4 +1,6 @@
 using ClientApplication.App.Manu;
+using ClientApplication.Database.Models;
+using ClientApplication.Database.Services;
 using LoggingService.Services;
 using ClientApplication.Database.UserAuthentication;
 
@@ -44,6 +46,7 @@ internal static class UserManagementMenuHandler
     /// <summary>
     /// Handles the user management submenu
     /// </summary>
+    [Obsolete("Obsolete")]
     public static async Task HandleUserManagementMenuAsync()
     {
         try
@@ -80,11 +83,9 @@ internal static class UserManagementMenuHandler
                         break;
                 }
 
-                if (choice != "7")
-                {
-                    LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
-                    Console.ReadLine();
-                }
+                if (choice == "7") continue;
+                LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+                Console.ReadLine();
             }
         }
         catch (Exception ex)
@@ -96,6 +97,7 @@ internal static class UserManagementMenuHandler
     /// <summary>
     /// Handles viewing all users
     /// </summary>
+    [Obsolete("Obsolete")]
     public static async Task HandleViewAllUsersAsync()
     {
         try
@@ -133,6 +135,7 @@ internal static class UserManagementMenuHandler
     /// <summary>
     /// Handles finding user by ID
     /// </summary>
+    [Obsolete("Obsolete")]
     public static async Task HandleFindUserByIdAsync()
     {
         try
@@ -179,7 +182,7 @@ internal static class UserManagementMenuHandler
             // Since we don't have a direct method in UserAuthenticationService, 
             // we'll use UserService directly
             var userService = new Database.Services.UserService();
-            var user = await userService.FindByUsernameAsync(username);
+            var user = await UserService.FindByUsernameAsync(username);
 
             if (user != null)
             {
@@ -204,6 +207,7 @@ internal static class UserManagementMenuHandler
     /// <summary>
     /// Handles updating user password
     /// </summary>
+    [Obsolete("Obsolete")]
     public static async Task HandleUpdateUserPasswordAsync()
     {
         try
@@ -212,7 +216,7 @@ internal static class UserManagementMenuHandler
             LoggingServiceImpl.InstanceVal.LogInformation("=== Update User Password ===");
 
             var userId = GetUserIdInput();
-            
+
             // Verify user exists
             var user = await UserAuthenticationService.GetUserByIdAsync(userId);
             if (user == null)
@@ -260,6 +264,7 @@ internal static class UserManagementMenuHandler
     /// <summary>
     /// Handles deleting user account
     /// </summary>
+    [Obsolete("Obsolete")]
     public static async Task HandleDeleteUserAsync()
     {
         try
@@ -268,7 +273,7 @@ internal static class UserManagementMenuHandler
             LoggingServiceImpl.InstanceVal.LogWarning("=== Delete User Account ===");
 
             var userId = GetUserIdInput();
-            
+
             // Verify user exists
             var user = await UserAuthenticationService.GetUserByIdAsync(userId);
             if (user == null)
@@ -312,6 +317,7 @@ internal static class UserManagementMenuHandler
     /// <summary>
     /// Handles viewing system statistics
     /// </summary>
+    [Obsolete("Obsolete")]
     public static async Task HandleViewStatisticsAsync()
     {
         try
@@ -321,18 +327,19 @@ internal static class UserManagementMenuHandler
 
             // Get various statistics
             var totalUsers = await UserAuthenticationService.GetAllUsersAsync();
-            var totalUsersCount = totalUsers.Count();
+            var enumerable = totalUsers as User[] ?? totalUsers.ToArray();
+            var totalUsersCount = enumerable.Count();
 
             LoggingServiceImpl.InstanceVal.LogInformation($"\n📊 User Statistics:");
             LoggingServiceImpl.InstanceVal.LogInformation($"   Total Users: {totalUsersCount}");
 
             // Show all users
-            if (totalUsers.Any())
+            if (enumerable.Any())
             {
                 LoggingServiceImpl.InstanceVal.LogInformation($"\n📋 All Users:");
                 LoggingServiceImpl.InstanceVal.LogInformation($"{"ID",-5} {"Username",-20}");
                 LoggingServiceImpl.InstanceVal.LogInformation(new string('-', 30));
-                foreach (var user in totalUsers)
+                foreach (var user in enumerable)
                 {
                     LoggingServiceImpl.InstanceVal.LogInformation($"{user.Id,-5} {user.Username,-20}");
                 }

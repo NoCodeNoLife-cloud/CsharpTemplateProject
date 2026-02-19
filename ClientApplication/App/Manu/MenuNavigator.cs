@@ -10,6 +10,7 @@ internal static class MenuNavigator
     /// <summary>
     /// Navigate through the main menu interactively
     /// </summary>
+    [Obsolete("Obsolete")]
     public static async Task NavigateMainMenuAsync()
     {
         try
@@ -40,11 +41,9 @@ internal static class MenuNavigator
                         break;
                 }
 
-                if (choice != "4")
-                {
-                    LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
-                    Console.ReadLine();
-                }
+                if (choice == "4") continue;
+                LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+                Console.ReadLine();
             }
         }
         catch (Exception ex)

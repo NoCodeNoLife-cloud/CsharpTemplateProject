@@ -67,15 +67,10 @@ internal static class InputValidator
                 LoggingServiceImpl.InstanceVal.LogDebug($"Current length: {password.Length} characters");
                 continue;
             }
-            
-            if (password.Length > maxPasswordLength)
-            {
-                LoggingServiceImpl.InstanceVal.LogWarning($"Password cannot exceed {maxPasswordLength} characters.");
-                LoggingServiceImpl.InstanceVal.LogDebug($"Current length: {password.Length} characters");
-                continue;
-            }
-            
-            return password;
+
+            if (password.Length <= maxPasswordLength) return password;
+            LoggingServiceImpl.InstanceVal.LogWarning($"Password cannot exceed {maxPasswordLength} characters.");
+            LoggingServiceImpl.InstanceVal.LogDebug($"Current length: {password.Length} characters");
         }
     }
 

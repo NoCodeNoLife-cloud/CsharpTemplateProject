@@ -32,25 +32,21 @@ public class UserService : ICrudService<User, int>
             connection.Open();
 
             using var cmd = new MySqlCommand(
-                "INSERT INTO `user` (username, password_hash) VALUES (@username, @passwordHash)", 
+                "INSERT INTO `user` (username, password_hash) VALUES (@username, @passwordHash)",
                 connection);
-            
+
             cmd.Parameters.AddWithValue("@username", entity.Username);
             cmd.Parameters.AddWithValue("@passwordHash", entity.PasswordHash);
 
             var rowsAffected = cmd.ExecuteNonQuery();
 
-            if (rowsAffected > 0)
-            {
-                // Get the newly created user ID
-                using var getIdCmd = new MySqlCommand("SELECT LAST_INSERT_ID()", connection);
-                entity.Id = Convert.ToInt32(getIdCmd.ExecuteScalar());
-                
-                LoggingServiceImpl.InstanceVal.LogInformation($"User created successfully: ID={entity.Id}, Username={entity.Username}");
-                return entity;
-            }
-            
-            throw new InvalidOperationException("Failed to create user");
+            if (rowsAffected <= 0) throw new InvalidOperationException("Failed to create user");
+            // Get the newly created user ID
+            using var getIdCmd = new MySqlCommand("SELECT LAST_INSERT_ID()", connection);
+            entity.Id = Convert.ToInt32(getIdCmd.ExecuteScalar());
+
+            LoggingServiceImpl.InstanceVal.LogInformation($"User created successfully: ID={entity.Id}, Username={entity.Username}");
+            return entity;
         }
         catch (Exception ex)
         {
@@ -74,25 +70,21 @@ public class UserService : ICrudService<User, int>
             await connection.OpenAsync();
 
             await using var cmd = new MySqlCommand(
-                "INSERT INTO `user` (username, password_hash) VALUES (@username, @passwordHash)", 
+                "INSERT INTO `user` (username, password_hash) VALUES (@username, @passwordHash)",
                 connection);
-            
+
             cmd.Parameters.AddWithValue("@username", entity.Username);
             cmd.Parameters.AddWithValue("@passwordHash", entity.PasswordHash);
 
             var rowsAffected = await cmd.ExecuteNonQueryAsync();
 
-            if (rowsAffected > 0)
-            {
-                // Get the newly created user ID
-                await using var getIdCmd = new MySqlCommand("SELECT LAST_INSERT_ID()", connection);
-                entity.Id = Convert.ToInt32(await getIdCmd.ExecuteScalarAsync());
-                
-                LoggingServiceImpl.InstanceVal.LogInformation($"User created successfully: ID={entity.Id}, Username={entity.Username}");
-                return entity;
-            }
-            
-            throw new InvalidOperationException("Failed to create user");
+            if (rowsAffected <= 0) throw new InvalidOperationException("Failed to create user");
+            // Get the newly created user ID
+            await using var getIdCmd = new MySqlCommand("SELECT LAST_INSERT_ID()", connection);
+            entity.Id = Convert.ToInt32(await getIdCmd.ExecuteScalarAsync());
+
+            LoggingServiceImpl.InstanceVal.LogInformation($"User created successfully: ID={entity.Id}, Username={entity.Username}");
+            return entity;
         }
         catch (Exception ex)
         {
@@ -116,7 +108,7 @@ public class UserService : ICrudService<User, int>
             connection.Open();
 
             using var cmd = new MySqlCommand(
-                "SELECT id, username, password_hash FROM `user` WHERE id = @id", 
+                "SELECT id, username, password_hash FROM `user` WHERE id = @id",
                 connection);
             cmd.Parameters.AddWithValue("@id", id);
 
@@ -129,7 +121,7 @@ public class UserService : ICrudService<User, int>
                     reader.GetString("username"),
                     reader.GetString("password_hash")
                 );
-                
+
                 LoggingServiceImpl.InstanceVal.LogDebug($"User found: {user}");
                 return user;
             }
@@ -159,7 +151,7 @@ public class UserService : ICrudService<User, int>
             await connection.OpenAsync();
 
             await using var cmd = new MySqlCommand(
-                "SELECT id, username, password_hash FROM `user` WHERE id = @id", 
+                "SELECT id, username, password_hash FROM `user` WHERE id = @id",
                 connection);
             cmd.Parameters.AddWithValue("@id", id);
 
@@ -172,7 +164,7 @@ public class UserService : ICrudService<User, int>
                     reader.GetString("username"),
                     reader.GetString("password_hash")
                 );
-                
+
                 LoggingServiceImpl.InstanceVal.LogDebug($"User found: {user}");
                 return user;
             }
@@ -203,7 +195,7 @@ public class UserService : ICrudService<User, int>
             connection.Open();
 
             using var cmd = new MySqlCommand(
-                "SELECT id, username, password_hash FROM `user` ORDER BY id DESC", 
+                "SELECT id, username, password_hash FROM `user` ORDER BY id DESC",
                 connection);
 
             using var reader = cmd.ExecuteReader();
@@ -244,7 +236,7 @@ public class UserService : ICrudService<User, int>
             await connection.OpenAsync();
 
             await using var cmd = new MySqlCommand(
-                "SELECT id, username, password_hash FROM `user` ORDER BY id DESC", 
+                "SELECT id, username, password_hash FROM `user` ORDER BY id DESC",
                 connection);
 
             await using var reader = await cmd.ExecuteReaderAsync();
@@ -284,9 +276,9 @@ public class UserService : ICrudService<User, int>
             connection.Open();
 
             using var cmd = new MySqlCommand(
-                "UPDATE `user` SET username = @username, password_hash = @passwordHash WHERE id = @id", 
+                "UPDATE `user` SET username = @username, password_hash = @passwordHash WHERE id = @id",
                 connection);
-            
+
             cmd.Parameters.AddWithValue("@id", entity.Id);
             cmd.Parameters.AddWithValue("@username", entity.Username);
             cmd.Parameters.AddWithValue("@passwordHash", entity.PasswordHash);
@@ -298,7 +290,7 @@ public class UserService : ICrudService<User, int>
                 LoggingServiceImpl.InstanceVal.LogInformation($"User updated successfully: ID={entity.Id}, Username={entity.Username}");
                 return entity;
             }
-            
+
             throw new InvalidOperationException($"User with ID {entity.Id} not found");
         }
         catch (Exception ex)
@@ -323,9 +315,9 @@ public class UserService : ICrudService<User, int>
             await connection.OpenAsync();
 
             await using var cmd = new MySqlCommand(
-                "UPDATE `user` SET username = @username, password_hash = @passwordHash WHERE id = @id", 
+                "UPDATE `user` SET username = @username, password_hash = @passwordHash WHERE id = @id",
                 connection);
-            
+
             cmd.Parameters.AddWithValue("@id", entity.Id);
             cmd.Parameters.AddWithValue("@username", entity.Username);
             cmd.Parameters.AddWithValue("@passwordHash", entity.PasswordHash);
@@ -337,7 +329,7 @@ public class UserService : ICrudService<User, int>
                 LoggingServiceImpl.InstanceVal.LogInformation($"User updated successfully: ID={entity.Id}, Username={entity.Username}");
                 return entity;
             }
-            
+
             throw new InvalidOperationException($"User with ID {entity.Id} not found");
         }
         catch (Exception ex)
@@ -365,13 +357,13 @@ public class UserService : ICrudService<User, int>
             cmd.Parameters.AddWithValue("@id", id);
 
             var rowsAffected = cmd.ExecuteNonQuery();
-            
+
             if (rowsAffected > 0)
             {
                 LoggingServiceImpl.InstanceVal.LogInformation($"User deleted successfully: ID={id}");
                 return true;
             }
-            
+
             LoggingServiceImpl.InstanceVal.LogWarning($"User with ID {id} not found for deletion");
             return false;
         }
@@ -400,13 +392,13 @@ public class UserService : ICrudService<User, int>
             cmd.Parameters.AddWithValue("@id", id);
 
             var rowsAffected = await cmd.ExecuteNonQueryAsync();
-            
+
             if (rowsAffected > 0)
             {
                 LoggingServiceImpl.InstanceVal.LogInformation($"User deleted successfully: ID={id}");
                 return true;
             }
-            
+
             LoggingServiceImpl.InstanceVal.LogWarning($"User with ID {id} not found for deletion");
             return false;
         }
@@ -494,7 +486,7 @@ public class UserService : ICrudService<User, int>
 
             using var cmd = new MySqlCommand("SELECT COUNT(*) FROM `user`", connection);
             var count = Convert.ToInt32(cmd.ExecuteScalar());
-            
+
             LoggingServiceImpl.InstanceVal.LogDebug($"Total users: {count}");
             return count;
         }
@@ -520,7 +512,7 @@ public class UserService : ICrudService<User, int>
 
             await using var cmd = new MySqlCommand("SELECT COUNT(*) FROM `user`", connection);
             var count = Convert.ToInt32(await cmd.ExecuteScalarAsync());
-            
+
             LoggingServiceImpl.InstanceVal.LogDebug($"Total users: {count}");
             return count;
         }
@@ -555,7 +547,7 @@ public class UserService : ICrudService<User, int>
                 // Add parameters if provided
                 var paramDict = parameters.GetType().GetProperties()
                     .ToDictionary(p => p.Name, p => p.GetValue(parameters));
-                
+
                 foreach (var param in paramDict)
                 {
                     cmd.Parameters.AddWithValue($"@{param.Key}", param.Value);
@@ -608,7 +600,7 @@ public class UserService : ICrudService<User, int>
                 // Add parameters if provided
                 var paramDict = parameters.GetType().GetProperties()
                     .ToDictionary(p => p.Name, p => p.GetValue(parameters));
-                
+
                 foreach (var param in paramDict)
                 {
                     cmd.Parameters.AddWithValue($"@{param.Key}", param.Value);
@@ -654,7 +646,7 @@ public class UserService : ICrudService<User, int>
             connection.Open();
 
             using var cmd = new MySqlCommand(
-                "SELECT id, username, password_hash FROM `user` WHERE username = @username", 
+                "SELECT id, username, password_hash FROM `user` WHERE username = @username",
                 connection);
             cmd.Parameters.AddWithValue("@username", username);
 
@@ -667,7 +659,7 @@ public class UserService : ICrudService<User, int>
                     reader.GetString("username"),
                     reader.GetString("password_hash")
                 );
-                
+
                 LoggingServiceImpl.InstanceVal.LogDebug($"User found by username: {user}");
                 return user;
             }
@@ -687,7 +679,7 @@ public class UserService : ICrudService<User, int>
     /// </summary>
     /// <param name="username">Username to search for</param>
     /// <returns>Task containing user entity if found, null otherwise</returns>
-    public async Task<User?> FindByUsernameAsync(string username)
+    public static async Task<User?> FindByUsernameAsync(string username)
     {
         try
         {
@@ -697,7 +689,7 @@ public class UserService : ICrudService<User, int>
             await connection.OpenAsync();
 
             await using var cmd = new MySqlCommand(
-                "SELECT id, username, password_hash FROM `user` WHERE username = @username", 
+                "SELECT id, username, password_hash FROM `user` WHERE username = @username",
                 connection);
             cmd.Parameters.AddWithValue("@username", username);
 
@@ -710,7 +702,7 @@ public class UserService : ICrudService<User, int>
                     reader.GetString("username"),
                     reader.GetString("password_hash")
                 );
-                
+
                 LoggingServiceImpl.InstanceVal.LogDebug($"User found by username: {user}");
                 return user;
             }
@@ -731,6 +723,7 @@ public class UserService : ICrudService<User, int>
     /// <param name="userId">User ID</param>
     /// <param name="newPassword">New plain text password</param>
     /// <returns>True if update successful, false otherwise</returns>
+    [Obsolete("Obsolete")]
     public bool UpdatePassword(int userId, string newPassword)
     {
         try
@@ -743,20 +736,20 @@ public class UserService : ICrudService<User, int>
             connection.Open();
 
             using var cmd = new MySqlCommand(
-                "UPDATE `user` SET password_hash = @passwordHash WHERE id = @id", 
+                "UPDATE `user` SET password_hash = @passwordHash WHERE id = @id",
                 connection);
-            
+
             cmd.Parameters.AddWithValue("@id", userId);
             cmd.Parameters.AddWithValue("@passwordHash", hashedPassword);
 
             var rowsAffected = cmd.ExecuteNonQuery();
-            
+
             if (rowsAffected > 0)
             {
                 LoggingServiceImpl.InstanceVal.LogInformation($"Password updated successfully for user ID {userId}");
                 return true;
             }
-            
+
             LoggingServiceImpl.InstanceVal.LogWarning($"User with ID {userId} not found for password update");
             return false;
         }
@@ -773,7 +766,8 @@ public class UserService : ICrudService<User, int>
     /// <param name="userId">User ID</param>
     /// <param name="newPassword">New plain text password</param>
     /// <returns>Task containing true if update successful, false otherwise</returns>
-    public async Task<bool> UpdatePasswordAsync(int userId, string newPassword)
+    [Obsolete("Obsolete")]
+    public static async Task<bool> UpdatePasswordAsync(int userId, string newPassword)
     {
         try
         {
@@ -785,20 +779,20 @@ public class UserService : ICrudService<User, int>
             await connection.OpenAsync();
 
             await using var cmd = new MySqlCommand(
-                "UPDATE `user` SET password_hash = @passwordHash WHERE id = @id", 
+                "UPDATE `user` SET password_hash = @passwordHash WHERE id = @id",
                 connection);
-            
+
             cmd.Parameters.AddWithValue("@id", userId);
             cmd.Parameters.AddWithValue("@passwordHash", hashedPassword);
 
             var rowsAffected = await cmd.ExecuteNonQueryAsync();
-            
+
             if (rowsAffected > 0)
             {
                 LoggingServiceImpl.InstanceVal.LogInformation($"Password updated successfully for user ID {userId}");
                 return true;
             }
-            
+
             LoggingServiceImpl.InstanceVal.LogWarning($"User with ID {userId} not found for password update");
             return false;
         }
@@ -814,6 +808,7 @@ public class UserService : ICrudService<User, int>
     /// </summary>
     /// <param name="password">Plain text password</param>
     /// <returns>Base64 encoded hashed password</returns>
+    [Obsolete("Obsolete")]
     private static string HashPassword(string password)
     {
         using var rng = RandomNumberGenerator.Create();

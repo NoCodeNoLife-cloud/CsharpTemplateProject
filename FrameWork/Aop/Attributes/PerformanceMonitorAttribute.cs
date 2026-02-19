@@ -11,7 +11,7 @@ namespace CommonFramework.Aop.Attributes;
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
 public class PerformanceMonitorAttribute(int thresholdMilliseconds = 100) : Attribute, IMethodAdvice
 {
-    public TimeSpan Threshold { get; set; } = TimeSpan.FromMilliseconds(thresholdMilliseconds);
+    public TimeSpan Threshold { get; init; } = TimeSpan.FromMilliseconds(thresholdMilliseconds);
 
     public void Advise(MethodAdviceContext context)
     {

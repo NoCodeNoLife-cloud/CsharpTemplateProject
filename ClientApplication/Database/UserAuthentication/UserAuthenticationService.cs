@@ -134,9 +134,9 @@ public static class UserAuthenticationService
 
             // Use UserService for registration to leverage CRUD functionality
             var userService = new UserService();
-            
+
             // First check if username already exists
-            var existingUser = await userService.FindByUsernameAsync(username);
+            var existingUser = await UserService.FindByUsernameAsync(username);
             if (existingUser != null)
             {
                 LoggingServiceImpl.InstanceVal.LogWarning($"Registration failed: Username '{username}' already exists");
@@ -145,13 +145,13 @@ public static class UserAuthenticationService
 
             // Hash the password
             var hashedPassword = HashPassword(password);
-            
+
             // Create user entity
             var newUser = new User(username, hashedPassword);
-            
+
             // Save user using CRUD service
             var createdUser = await userService.CreateAsync(newUser);
-            
+
             if (createdUser.Id > 0)
             {
                 LoggingServiceImpl.InstanceVal.LogInformation($"User registration successful: ID={createdUser.Id}, Username={username}");
@@ -182,10 +182,9 @@ public static class UserAuthenticationService
         try
         {
             LoggingServiceImpl.InstanceVal.LogDebug($"Updating password for user ID {userId}...");
-            
-            var userService = new UserService();
-            var result = await userService.UpdatePasswordAsync(userId, newPassword);
-            
+
+            var result = await UserService.UpdatePasswordAsync(userId, newPassword);
+
             if (result)
             {
                 LoggingServiceImpl.InstanceVal.LogInformation($"Password updated successfully for user ID {userId}");
@@ -194,7 +193,7 @@ public static class UserAuthenticationService
             {
                 LoggingServiceImpl.InstanceVal.LogWarning($"Failed to update password for user ID {userId}");
             }
-            
+
             return result;
         }
         catch (Exception ex)
@@ -215,19 +214,12 @@ public static class UserAuthenticationService
         try
         {
             LoggingServiceImpl.InstanceVal.LogDebug($"Getting user by ID {userId}...");
-            
+
             var userService = new UserService();
             var user = await userService.GetByIdAsync(userId);
-            
-            if (user != null)
-            {
-                LoggingServiceImpl.InstanceVal.LogDebug($"User found: {user}");
-            }
-            else
-            {
-                LoggingServiceImpl.InstanceVal.LogDebug($"User with ID {userId} not found");
-            }
-            
+
+            LoggingServiceImpl.InstanceVal.LogDebug(user != null ? $"User found: {user}" : $"User with ID {userId} not found");
+
             return user;
         }
         catch (Exception ex)
@@ -247,12 +239,13 @@ public static class UserAuthenticationService
         try
         {
             LoggingServiceImpl.InstanceVal.LogDebug("Getting all users...");
-            
+
             var userService = new UserService();
             var users = await userService.GetAllAsync();
-            
-            LoggingServiceImpl.InstanceVal.LogDebug($"Retrieved {users.Count()} users");
-            return users;
+
+            var allUsersAsync = users as User[] ?? users.ToArray();
+            LoggingServiceImpl.InstanceVal.LogDebug($"Retrieved {allUsersAsync.Length} users");
+            return allUsersAsync;
         }
         catch (Exception ex)
         {
@@ -272,10 +265,10 @@ public static class UserAuthenticationService
         try
         {
             LoggingServiceImpl.InstanceVal.LogDebug($"Deleting user ID {userId}...");
-            
+
             var userService = new UserService();
             var result = await userService.DeleteAsync(userId);
-            
+
             if (result)
             {
                 LoggingServiceImpl.InstanceVal.LogInformation($"User deleted successfully: ID={userId}");
@@ -284,7 +277,7 @@ public static class UserAuthenticationService
             {
                 LoggingServiceImpl.InstanceVal.LogWarning($"Failed to delete user ID {userId}");
             }
-            
+
             return result;
         }
         catch (Exception ex)
@@ -293,8 +286,4 @@ public static class UserAuthenticationService
             return false;
         }
     }
-
-
-
-
 }

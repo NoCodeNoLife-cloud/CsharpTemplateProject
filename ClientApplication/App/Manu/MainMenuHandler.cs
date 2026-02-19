@@ -9,7 +9,6 @@ namespace ClientApplication.App.Manu;
 internal static class MainMenuHandler
 {
     private const string UsernameField = "Username";
-    private const string PasswordField = "Password";
     private const int MinUsernameLength = 3;
     private const int MaxUsernameLength = 50;
     private const int MinPasswordLength = 6;
@@ -47,17 +46,13 @@ internal static class MainMenuHandler
         var choice = Console.ReadLine()?.Trim();
 
         // Validate input
-        if (string.IsNullOrEmpty(choice))
-        {
-            return "INVALID";
-        }
-
-        return choice;
+        return string.IsNullOrEmpty(choice) ? "INVALID" : choice;
     }
 
     /// <summary>
     /// Handles user login process
     /// </summary>
+    [Obsolete("Obsolete")]
     public static async Task HandleUserLoginAsync()
     {
         try
@@ -114,6 +109,7 @@ internal static class MainMenuHandler
     /// <summary>
     /// Handles user registration process
     /// </summary>
+    [Obsolete("Obsolete")]
     public static async Task HandleUserRegistrationAsync()
     {
         try

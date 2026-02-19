@@ -12,14 +12,14 @@ namespace CommonFramework.Aop.Attributes;
 public class LogAttribute : Attribute, IMethodAdvice
 {
     public LogLevel LogLevel { get; set; }
-    
+
     // Fine-grained logging control options
-    public bool LogMethodEntry { get; set; } = true;        // Method entry logging
-    public bool LogMethodExit { get; set; } = true;         // Method exit logging
-    public bool LogMethodException { get; set; } = true;    // Method exception logging
-    public bool LogParameters { get; set; }                 // Method parameters logging
-    public bool LogReturnValue { get; set; }                // Method return value logging
-    public bool LogExecutionTime { get; set; }              // Execution time logging
+    public bool LogMethodEntry { get; set; } = true; // Method entry logging
+    public bool LogMethodExit { get; set; } = true; // Method exit logging
+    public bool LogMethodException { get; set; } = true; // Method exception logging
+    public bool LogParameters { get; set; } // Method parameters logging
+    public bool LogReturnValue { get; set; } // Method return value logging
+    public bool LogExecutionTime { get; set; } // Execution time logging
 
     // Thread-static field to track recently logged exceptions and avoid duplicates
     [ThreadStatic] private static HashSet<Exception>? _recentlyLoggedExceptions;
@@ -53,21 +53,19 @@ public class LogAttribute : Attribute, IMethodAdvice
         try
         {
             context.Proceed(); // Execute the original method
-            
+
             // Log successful method exit
             if (LogMethodExit)
             {
-                LogMethodExitMessage(methodName, startTime, context, null);
+                LogMethodExitMessage(methodName, startTime, context);
             }
         }
         catch (Exception ex)
         {
             // Log method exception (avoid duplicate logging)
-            if (LogMethodException && !RecentlyLoggedExceptions.Contains(ex))
-            {
-                LogMethodExceptionMessage(methodName, startTime, context, ex);
-                RecentlyLoggedExceptions.Add(ex);
-            }
+            if (!LogMethodException || RecentlyLoggedExceptions.Contains(ex)) throw;
+            LogMethodExceptionMessage(methodName, startTime, context, ex);
+            RecentlyLoggedExceptions.Add(ex);
 
             throw;
         }
@@ -87,10 +85,10 @@ public class LogAttribute : Attribute, IMethodAdvice
         LoggingServiceImpl.InstanceVal.Log(LogLevel, logMessage);
     }
 
-    private void LogMethodExitMessage(string methodName, DateTimeOffset startTime, MethodAdviceContext context, Exception? exception)
+    private void LogMethodExitMessage(string methodName, DateTimeOffset startTime, MethodAdviceContext context)
     {
         var executionTime = DateTimeOffset.Now - startTime;
-        
+
         var baseMessage = BuildSuccessLogMessage(methodName);
         var timeInfo = LogExecutionTime ? $", Execution time: {executionTime.TotalMilliseconds:F2} ms" : string.Empty;
         var returnValueInfo = BuildReturnValueInfo(context);
@@ -109,7 +107,7 @@ public class LogAttribute : Attribute, IMethodAdvice
     private void LogMethodExceptionMessage(string methodName, DateTimeOffset startTime, MethodAdviceContext context, Exception exception)
     {
         var executionTime = DateTimeOffset.Now - startTime;
-        
+
         var baseMessage = BuildFailureLogMessage(methodName);
         var timeInfo = LogExecutionTime ? $", Execution time: {executionTime.TotalMilliseconds:F2} ms" : string.Empty;
         var errorMessage = $", Error message: {exception.Message}";
