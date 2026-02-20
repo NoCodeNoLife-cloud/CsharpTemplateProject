@@ -136,14 +136,14 @@ public class CustomSerilogImpl : ILoggingService
 
             StackFrame? targetFrame = null;
 
-            // 智能查找用户代码帧，跳过系统和框架代码
+            // Intelligent search for user code frames, skipping system and framework code
             for (int i = 4; i < stackTrace.FrameCount; i++)
             {
                 var frame = stackTrace.GetFrame(i);
                 if (frame == null) continue;
 
                 var frameFileName = frame.GetFileName();
-                // 过滤掉系统框架、Serilog和AOP相关文件
+                // Filter out system framework, Serilog and AOP related files
                 if (string.IsNullOrEmpty(frameFileName) ||
                     frameFileName.Contains("Serilog") ||
                     frameFileName.Contains("System.Private.CoreLib") ||
@@ -153,7 +153,7 @@ public class CustomSerilogImpl : ILoggingService
                 break;
             }
 
-            // 回退机制：如果没找到合适的帧，使用默认的第4帧
+            // Fallback mechanism: if no suitable frame is found, use the default 4th frame
             targetFrame ??= stackTrace.GetFrame(4);
 
             if (targetFrame == null) return "Unknown";
@@ -163,7 +163,7 @@ public class CustomSerilogImpl : ILoggingService
 
             if (string.IsNullOrEmpty(fileName)) return "Unknown";
 
-            // 转换为相对路径（与原实现保持一致）
+            // Convert to relative path (consistent with original implementation)
             var pathSegments = fileName.Split(Path.DirectorySeparatorChar);
             var startIndex = Math.Max(0, pathSegments.Length - 3);
             var relativePath = string.Join(Path.DirectorySeparatorChar.ToString(), pathSegments.Skip(startIndex));
