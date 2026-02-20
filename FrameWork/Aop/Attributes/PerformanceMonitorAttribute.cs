@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using ArxOne.MrAdvice.Advice;
-using LoggingService.Services;
+using CustomSerilogImpl.InstanceVal.Service.Services;
 
 namespace CommonFramework.Aop.Attributes;
 
@@ -21,7 +21,7 @@ public class PerformanceMonitorAttribute(int thresholdMilliseconds = 100) : Attr
 
         if (stopwatch.Elapsed <= Threshold) return;
         var methodName = $"{context.TargetType.Name}.{context.TargetMethod.Name}";
-        LoggingServiceImpl.InstanceVal.LogWarning(
+        LoggingFactory.Instance.LogWarning(
             $"Performance warning: Method {methodName} took {stopwatch.ElapsedMilliseconds}ms (threshold: {Threshold.TotalMilliseconds}ms)");
     }
 }

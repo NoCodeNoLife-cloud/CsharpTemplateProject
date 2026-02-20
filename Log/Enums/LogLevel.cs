@@ -1,4 +1,4 @@
-﻿namespace LoggingService.Enums;
+﻿namespace CustomSerilogImpl.InstanceVal.Service.Enums;
 
 /// <summary>
 /// Log level enumeration for controlling output verbosity

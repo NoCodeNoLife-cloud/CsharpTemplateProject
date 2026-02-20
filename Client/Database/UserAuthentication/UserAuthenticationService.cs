@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using Client.Database.Models;
 using Client.Database.Services;
-using LoggingService.Services;
+using CustomSerilogImpl.InstanceVal.Service.Services;
 using MySqlConnector;
 
 namespace Client.Database.UserAuthentication;
@@ -26,7 +26,7 @@ public static class UserAuthenticationService
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"Authenticating user '{username}' with provided password...");
+            LoggingFactory.Instance.LogDebug($"Authenticating user '{username}' with provided password...");
 
             await using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             await connection.OpenAsync();
@@ -46,24 +46,24 @@ public static class UserAuthenticationService
                 // Verify password using secure hash comparison
                 if (VerifyPassword(password, storedHash))
                 {
-                    LoggingServiceImpl.InstanceVal.LogDebug($"User authentication successful: ID={userId}, Username={foundUsername}");
+                    LoggingFactory.Instance.LogDebug($"User authentication successful: ID={userId}, Username={foundUsername}");
                     return (true, userId, foundUsername);
                 }
                 else
                 {
-                    LoggingServiceImpl.InstanceVal.LogDebug($"Password mismatch for user '{username}'");
+                    LoggingFactory.Instance.LogDebug($"Password mismatch for user '{username}'");
                     return (false, null, null);
                 }
             }
             else
             {
-                LoggingServiceImpl.InstanceVal.LogDebug($"User '{username}' not found in database");
+                LoggingFactory.Instance.LogDebug($"User '{username}' not found in database");
                 return (false, null, null);
             }
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to authenticate user '{username}': {ex.Message}");
+            LoggingFactory.Instance.LogError($"Failed to authenticate user '{username}': {ex.Message}");
             return (false, null, null);
         }
     }
@@ -126,7 +126,7 @@ public static class UserAuthenticationService
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"Attempting to register new user '{username}'...");
+            LoggingFactory.Instance.LogDebug($"Attempting to register new user '{username}'...");
 
             // Use UserService for registration to leverage CRUD functionality
             var userService = new UserService();
@@ -135,7 +135,7 @@ public static class UserAuthenticationService
             var existingUser = await UserService.FindByUsernameAsync(username);
             if (existingUser != null)
             {
-                LoggingServiceImpl.InstanceVal.LogWarning($"Registration failed: Username '{username}' already exists");
+                LoggingFactory.Instance.LogWarning($"Registration failed: Username '{username}' already exists");
                 return (false, null, "Username already exists");
             }
 
@@ -150,18 +150,18 @@ public static class UserAuthenticationService
 
             if (createdUser.Id > 0)
             {
-                LoggingServiceImpl.InstanceVal.LogInformation($"User registration successful: ID={createdUser.Id}, Username={username}");
+                LoggingFactory.Instance.LogInformation($"User registration successful: ID={createdUser.Id}, Username={username}");
                 return (true, createdUser.Id, null);
             }
             else
             {
-                LoggingServiceImpl.InstanceVal.LogError($"Failed to insert user '{username}' into database");
+                LoggingFactory.Instance.LogError($"Failed to insert user '{username}' into database");
                 return (false, null, "Failed to create user account");
             }
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to register user '{username}': {ex.Message}");
+            LoggingFactory.Instance.LogError($"Failed to register user '{username}': {ex.Message}");
             return (false, null, $"Registration error: {ex.Message}");
         }
     }
@@ -177,24 +177,24 @@ public static class UserAuthenticationService
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"Updating password for user ID {userId}...");
+            LoggingFactory.Instance.LogDebug($"Updating password for user ID {userId}...");
 
             var result = await UserService.UpdatePasswordAsync(userId, newPassword);
 
             if (result)
             {
-                LoggingServiceImpl.InstanceVal.LogInformation($"Password updated successfully for user ID {userId}");
+                LoggingFactory.Instance.LogInformation($"Password updated successfully for user ID {userId}");
             }
             else
             {
-                LoggingServiceImpl.InstanceVal.LogWarning($"Failed to update password for user ID {userId}");
+                LoggingFactory.Instance.LogWarning($"Failed to update password for user ID {userId}");
             }
 
             return result;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to update password for user ID {userId}: {ex.Message}");
+            LoggingFactory.Instance.LogError($"Failed to update password for user ID {userId}: {ex.Message}");
             return false;
         }
     }
@@ -209,18 +209,18 @@ public static class UserAuthenticationService
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"Getting user by ID {userId}...");
+            LoggingFactory.Instance.LogDebug($"Getting user by ID {userId}...");
 
             var userService = new UserService();
             var user = await userService.GetByIdAsync(userId);
 
-            LoggingServiceImpl.InstanceVal.LogDebug(user != null ? $"User found: {user}" : $"User with ID {userId} not found");
+            LoggingFactory.Instance.LogDebug(user != null ? $"User found: {user}" : $"User with ID {userId} not found");
 
             return user;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to get user by ID {userId}: {ex.Message}");
+            LoggingFactory.Instance.LogError($"Failed to get user by ID {userId}: {ex.Message}");
             return null;
         }
     }
@@ -234,18 +234,18 @@ public static class UserAuthenticationService
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug("Getting all users...");
+            LoggingFactory.Instance.LogDebug("Getting all users...");
 
             var userService = new UserService();
             var users = await userService.GetAllAsync();
 
             var allUsersAsync = users as User[] ?? users.ToArray();
-            LoggingServiceImpl.InstanceVal.LogDebug($"Retrieved {allUsersAsync.Length} users");
+            LoggingFactory.Instance.LogDebug($"Retrieved {allUsersAsync.Length} users");
             return allUsersAsync;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to get all users: {ex.Message}");
+            LoggingFactory.Instance.LogError($"Failed to get all users: {ex.Message}");
             return Enumerable.Empty<User>();
         }
     }
@@ -260,25 +260,25 @@ public static class UserAuthenticationService
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"Deleting user ID {userId}...");
+            LoggingFactory.Instance.LogDebug($"Deleting user ID {userId}...");
 
             var userService = new UserService();
             var result = await userService.DeleteAsync(userId);
 
             if (result)
             {
-                LoggingServiceImpl.InstanceVal.LogInformation($"User deleted successfully: ID={userId}");
+                LoggingFactory.Instance.LogInformation($"User deleted successfully: ID={userId}");
             }
             else
             {
-                LoggingServiceImpl.InstanceVal.LogWarning($"Failed to delete user ID {userId}");
+                LoggingFactory.Instance.LogWarning($"Failed to delete user ID {userId}");
             }
 
             return result;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to delete user ID {userId}: {ex.Message}");
+            LoggingFactory.Instance.LogError($"Failed to delete user ID {userId}: {ex.Message}");
             return false;
         }
     }

@@ -2,7 +2,7 @@ using Client.App.Manu;
 using Client.Database.Models;
 using Client.Database.Services;
 using Client.Database.UserAuthentication;
-using LoggingService.Services;
+using CustomSerilogImpl.InstanceVal.Service.Services;
 
 namespace Client.App;
 
@@ -18,7 +18,7 @@ internal static class UserManagementMenuHandler
     /// </summary>
     public static void DisplayUserManagementMenu()
     {
-        LoggingServiceImpl.InstanceVal.LogInformation("Displaying user management submenu");
+        LoggingFactory.Instance.LogInformation("Displaying user management submenu");
         Console.WriteLine("\n=== User Management Operations ===");
         Console.Write("[1] ");
         Console.WriteLine($"View all users");
@@ -79,18 +79,18 @@ internal static class UserManagementMenuHandler
                     case "7":
                         return; // Back to main menu
                     default:
-                        LoggingServiceImpl.InstanceVal.LogWarning("Invalid option selected!");
+                        LoggingFactory.Instance.LogWarning("Invalid option selected!");
                         break;
                 }
 
                 if (choice == "7") continue;
-                LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+                LoggingFactory.Instance.LogDebug("Press Enter to continue...");
                 Console.ReadLine();
             }
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Error in user management menu: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Error in user management menu: {ex.Message}", ex);
         }
     }
 
@@ -103,31 +103,31 @@ internal static class UserManagementMenuHandler
         try
         {
             Console.Clear();
-            LoggingServiceImpl.InstanceVal.LogInformation("=== All Users ===");
+            LoggingFactory.Instance.LogInformation("=== All Users ===");
 
             var users = await UserAuthenticationService.GetAllUsersAsync();
             var userList = users.ToList();
 
             if (userList.Count == 0)
             {
-                LoggingServiceImpl.InstanceVal.LogWarning("No users found in the system.");
+                LoggingFactory.Instance.LogWarning("No users found in the system.");
                 return;
             }
 
-            LoggingServiceImpl.InstanceVal.LogInformation($"\nTotal users: {userList.Count}\n");
-            LoggingServiceImpl.InstanceVal.LogInformation($"{"ID",-5} {"Username",-20}");
-            LoggingServiceImpl.InstanceVal.LogInformation(new string('-', 30));
+            LoggingFactory.Instance.LogInformation($"\nTotal users: {userList.Count}\n");
+            LoggingFactory.Instance.LogInformation($"{"ID",-5} {"Username",-20}");
+            LoggingFactory.Instance.LogInformation(new string('-', 30));
 
             foreach (var user in userList)
             {
-                LoggingServiceImpl.InstanceVal.LogInformation($"{user.Id,-5} {user.Username,-20}");
+                LoggingFactory.Instance.LogInformation($"{user.Id,-5} {user.Username,-20}");
             }
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Error viewing all users: {ex.Message}", ex);
-            LoggingServiceImpl.InstanceVal.LogError($"Error: {ex.Message}");
-            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            LoggingFactory.Instance.LogError($"Error viewing all users: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Error: {ex.Message}");
+            LoggingFactory.Instance.LogDebug("Press Enter to continue...");
             Console.ReadLine();
         }
     }
@@ -141,27 +141,27 @@ internal static class UserManagementMenuHandler
         try
         {
             Console.Clear();
-            LoggingServiceImpl.InstanceVal.LogInformation("=== Find User by ID ===");
+            LoggingFactory.Instance.LogInformation("=== Find User by ID ===");
 
             var userId = GetUserIdInput();
             var user = await UserAuthenticationService.GetUserByIdAsync(userId);
 
             if (user != null)
             {
-                LoggingServiceImpl.InstanceVal.LogInformation("User found:");
-                LoggingServiceImpl.InstanceVal.LogInformation($"ID: {user.Id}");
-                LoggingServiceImpl.InstanceVal.LogInformation($"Username: {user.Username}");
+                LoggingFactory.Instance.LogInformation("User found:");
+                LoggingFactory.Instance.LogInformation($"ID: {user.Id}");
+                LoggingFactory.Instance.LogInformation($"Username: {user.Username}");
             }
             else
             {
-                LoggingServiceImpl.InstanceVal.LogWarning($"User with ID {userId} not found.");
+                LoggingFactory.Instance.LogWarning($"User with ID {userId} not found.");
             }
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Error finding user by ID: {ex.Message}", ex);
-            LoggingServiceImpl.InstanceVal.LogError($"Error: {ex.Message}");
-            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            LoggingFactory.Instance.LogError($"Error finding user by ID: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Error: {ex.Message}");
+            LoggingFactory.Instance.LogDebug("Press Enter to continue...");
             Console.ReadLine();
         }
     }
@@ -174,7 +174,7 @@ internal static class UserManagementMenuHandler
         try
         {
             Console.Clear();
-            LoggingServiceImpl.InstanceVal.LogInformation("=== Find User by Username ===");
+            LoggingFactory.Instance.LogInformation("=== Find User by Username ===");
 
             var username = InputValidator.GetUserInput("Username", 3, 50);
             if (string.IsNullOrEmpty(username)) return;
@@ -186,20 +186,20 @@ internal static class UserManagementMenuHandler
 
             if (user != null)
             {
-                LoggingServiceImpl.InstanceVal.LogInformation("User found:");
-                LoggingServiceImpl.InstanceVal.LogInformation($"ID: {user.Id}");
-                LoggingServiceImpl.InstanceVal.LogInformation($"Username: {user.Username}");
+                LoggingFactory.Instance.LogInformation("User found:");
+                LoggingFactory.Instance.LogInformation($"ID: {user.Id}");
+                LoggingFactory.Instance.LogInformation($"Username: {user.Username}");
             }
             else
             {
-                LoggingServiceImpl.InstanceVal.LogWarning($"User with username '{username}' not found.");
+                LoggingFactory.Instance.LogWarning($"User with username '{username}' not found.");
             }
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Error finding user by username: {ex.Message}", ex);
-            LoggingServiceImpl.InstanceVal.LogError($"Error: {ex.Message}");
-            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            LoggingFactory.Instance.LogError($"Error finding user by username: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Error: {ex.Message}");
+            LoggingFactory.Instance.LogDebug("Press Enter to continue...");
             Console.ReadLine();
         }
     }
@@ -213,7 +213,7 @@ internal static class UserManagementMenuHandler
         try
         {
             Console.Clear();
-            LoggingServiceImpl.InstanceVal.LogInformation("=== Update User Password ===");
+            LoggingFactory.Instance.LogInformation("=== Update User Password ===");
 
             var userId = GetUserIdInput();
 
@@ -221,11 +221,11 @@ internal static class UserManagementMenuHandler
             var user = await UserAuthenticationService.GetUserByIdAsync(userId);
             if (user == null)
             {
-                LoggingServiceImpl.InstanceVal.LogWarning($"User with ID {userId} not found.");
+                LoggingFactory.Instance.LogWarning($"User with ID {userId} not found.");
                 return;
             }
 
-            LoggingServiceImpl.InstanceVal.LogInformation($"Updating password for user: {user.Username} (ID: {userId})");
+            LoggingFactory.Instance.LogInformation($"Updating password for user: {user.Username} (ID: {userId})");
 
             // Get new password
             var newPassword = InputValidator.GetPasswordInput(6, 100);
@@ -237,7 +237,7 @@ internal static class UserManagementMenuHandler
 
             if (newPassword != confirmNewPassword)
             {
-                LoggingServiceImpl.InstanceVal.LogWarning("New passwords do not match!");
+                LoggingFactory.Instance.LogWarning("New passwords do not match!");
                 return;
             }
 
@@ -245,18 +245,18 @@ internal static class UserManagementMenuHandler
 
             if (success)
             {
-                LoggingServiceImpl.InstanceVal.LogInformation($"Password updated successfully for user '{user.Username}' (ID: {userId})");
+                LoggingFactory.Instance.LogInformation($"Password updated successfully for user '{user.Username}' (ID: {userId})");
             }
             else
             {
-                LoggingServiceImpl.InstanceVal.LogError($"Failed to update password for user ID {userId}");
+                LoggingFactory.Instance.LogError($"Failed to update password for user ID {userId}");
             }
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Error updating user password: {ex.Message}", ex);
-            LoggingServiceImpl.InstanceVal.LogError($"Error: {ex.Message}");
-            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            LoggingFactory.Instance.LogError($"Error updating user password: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Error: {ex.Message}");
+            LoggingFactory.Instance.LogDebug("Press Enter to continue...");
             Console.ReadLine();
         }
     }
@@ -270,7 +270,7 @@ internal static class UserManagementMenuHandler
         try
         {
             Console.Clear();
-            LoggingServiceImpl.InstanceVal.LogWarning("=== Delete User Account ===");
+            LoggingFactory.Instance.LogWarning("=== Delete User Account ===");
 
             var userId = GetUserIdInput();
 
@@ -278,19 +278,19 @@ internal static class UserManagementMenuHandler
             var user = await UserAuthenticationService.GetUserByIdAsync(userId);
             if (user == null)
             {
-                LoggingServiceImpl.InstanceVal.LogWarning($"User with ID {userId} not found.");
+                LoggingFactory.Instance.LogWarning($"User with ID {userId} not found.");
                 return;
             }
 
-            LoggingServiceImpl.InstanceVal.LogWarning($"WARNING: This will permanently delete user '{user.Username}' (ID: {userId})");
-            LoggingServiceImpl.InstanceVal.LogWarning("This action cannot be undone!");
-            LoggingServiceImpl.InstanceVal.LogDebug("\nAre you absolutely sure? Type 'DELETE' to confirm: ");
+            LoggingFactory.Instance.LogWarning($"WARNING: This will permanently delete user '{user.Username}' (ID: {userId})");
+            LoggingFactory.Instance.LogWarning("This action cannot be undone!");
+            LoggingFactory.Instance.LogDebug("\nAre you absolutely sure? Type 'DELETE' to confirm: ");
             Console.Write("\nAre you absolutely sure? Type 'DELETE' to confirm: ");
             var confirmation = Console.ReadLine()?.Trim();
 
             if (confirmation != "DELETE")
             {
-                LoggingServiceImpl.InstanceVal.LogInformation("Operation cancelled.");
+                LoggingFactory.Instance.LogInformation("Operation cancelled.");
                 return;
             }
 
@@ -298,18 +298,18 @@ internal static class UserManagementMenuHandler
 
             if (success)
             {
-                LoggingServiceImpl.InstanceVal.LogInformation($"User '{user.Username}' (ID: {userId}) deleted successfully");
+                LoggingFactory.Instance.LogInformation($"User '{user.Username}' (ID: {userId}) deleted successfully");
             }
             else
             {
-                LoggingServiceImpl.InstanceVal.LogError($"Failed to delete user ID {userId}");
+                LoggingFactory.Instance.LogError($"Failed to delete user ID {userId}");
             }
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Error deleting user: {ex.Message}", ex);
-            LoggingServiceImpl.InstanceVal.LogError($"Error: {ex.Message}");
-            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            LoggingFactory.Instance.LogError($"Error deleting user: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Error: {ex.Message}");
+            LoggingFactory.Instance.LogDebug("Press Enter to continue...");
             Console.ReadLine();
         }
     }
@@ -323,33 +323,33 @@ internal static class UserManagementMenuHandler
         try
         {
             Console.Clear();
-            LoggingServiceImpl.InstanceVal.LogInformation("=== System Statistics ===");
+            LoggingFactory.Instance.LogInformation("=== System Statistics ===");
 
             // Get various statistics
             var totalUsers = await UserAuthenticationService.GetAllUsersAsync();
             var enumerable = totalUsers as User[] ?? totalUsers.ToArray();
             var totalUsersCount = enumerable.Count();
 
-            LoggingServiceImpl.InstanceVal.LogInformation($"\n📊 User Statistics:");
-            LoggingServiceImpl.InstanceVal.LogInformation($"   Total Users: {totalUsersCount}");
+            LoggingFactory.Instance.LogInformation($"\n📊 User Statistics:");
+            LoggingFactory.Instance.LogInformation($"   Total Users: {totalUsersCount}");
 
             // Show all users
             if (enumerable.Any())
             {
-                LoggingServiceImpl.InstanceVal.LogInformation($"\n📋 All Users:");
-                LoggingServiceImpl.InstanceVal.LogInformation($"{"ID",-5} {"Username",-20}");
-                LoggingServiceImpl.InstanceVal.LogInformation(new string('-', 30));
+                LoggingFactory.Instance.LogInformation($"\n📋 All Users:");
+                LoggingFactory.Instance.LogInformation($"{"ID",-5} {"Username",-20}");
+                LoggingFactory.Instance.LogInformation(new string('-', 30));
                 foreach (var user in enumerable)
                 {
-                    LoggingServiceImpl.InstanceVal.LogInformation($"{user.Id,-5} {user.Username,-20}");
+                    LoggingFactory.Instance.LogInformation($"{user.Id,-5} {user.Username,-20}");
                 }
             }
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Error viewing statistics: {ex.Message}", ex);
-            LoggingServiceImpl.InstanceVal.LogError($"Error: {ex.Message}");
-            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            LoggingFactory.Instance.LogError($"Error viewing statistics: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Error: {ex.Message}");
+            LoggingFactory.Instance.LogDebug("Press Enter to continue...");
             Console.ReadLine();
         }
     }
@@ -367,7 +367,7 @@ internal static class UserManagementMenuHandler
 
             if (string.IsNullOrWhiteSpace(input))
             {
-                LoggingServiceImpl.InstanceVal.LogWarning($"{UserIdField} cannot be empty.");
+                LoggingFactory.Instance.LogWarning($"{UserIdField} cannot be empty.");
                 continue;
             }
 
@@ -376,7 +376,7 @@ internal static class UserManagementMenuHandler
                 return userId;
             }
 
-            LoggingServiceImpl.InstanceVal.LogWarning($"Please enter a valid positive integer for {UserIdField}.");
+            LoggingFactory.Instance.LogWarning($"Please enter a valid positive integer for {UserIdField}.");
         }
     }
 }

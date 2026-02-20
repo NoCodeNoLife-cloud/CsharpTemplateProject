@@ -1,6 +1,6 @@
 using ArxOne.MrAdvice.Advice;
-using LoggingService.Enums;
-using LoggingService.Services;
+using CustomSerilogImpl.InstanceVal.Service.Enums;
+using CustomSerilogImpl.InstanceVal.Service.Services;
 
 namespace CommonFramework.Aop.Attributes;
 
@@ -82,7 +82,7 @@ public class LogAttribute : Attribute, IMethodAdvice
             logMessage += $", Parameters: {paramInfo}";
         }
 
-        LoggingServiceImpl.InstanceVal.Log(LogLevel, logMessage);
+        LoggingFactory.Instance.Log(LogLevel, logMessage);
     }
 
     private void LogMethodExitMessage(string methodName, DateTimeOffset startTime, MethodAdviceContext context)
@@ -95,7 +95,7 @@ public class LogAttribute : Attribute, IMethodAdvice
 
         var logMessage = $"{baseMessage}{timeInfo}{returnValueInfo}";
 
-        LoggingServiceImpl.InstanceVal.Log(LogLevel, logMessage);
+        LoggingFactory.Instance.Log(LogLevel, logMessage);
 
         // Clean up exception tracking (when main method exits)
         if (context.TargetMethod.Name == "Main")
@@ -115,7 +115,7 @@ public class LogAttribute : Attribute, IMethodAdvice
 
         var logMessage = $"{baseMessage}{timeInfo}{errorMessage}{stackTraceInfo}";
 
-        LoggingServiceImpl.InstanceVal.LogError(logMessage, exception);
+        LoggingFactory.Instance.LogError(logMessage, exception);
 
         // Clean up exception tracking (when main method exits)
         if (context.TargetMethod.Name == "Main")

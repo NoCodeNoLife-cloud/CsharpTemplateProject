@@ -1,9 +1,21 @@
-﻿using LoggingService.Enums;
+using CustomSerilogImpl.InstanceVal.Service.Enums;
 
-namespace LoggingService.Interfaces;
+namespace CustomSerilogImpl.InstanceVal.Service.Interfaces;
 
 public interface ILoggingService
 {
+    /// <summary>
+    /// Gets or sets the minimum log level that will be output
+    /// </summary>
+    LogLevel MinimumLogLevel { get; set; }
+    
+    /// <summary>
+    /// Checks if the specified log level is enabled
+    /// </summary>
+    /// <param name="level">Log level to check</param>
+    /// <returns>True if the log level is enabled, false otherwise</returns>
+    bool IsEnabled(LogLevel level);
+    
     /// <summary>
     /// Logs an informational message
     /// </summary>

@@ -128,7 +128,7 @@ public class PerformanceMonitorAttributeTests
         // The actual threshold checking logic
         if (stopwatch.Elapsed > attribute.Threshold)
         {
-            // In real implementation, this would call LoggingServiceImpl.InstanceVal.LogWarning
+            // In real implementation, this would call CustomSerilogImpl.InstanceVal.LogWarning
             // For testing purposes, we're just verifying the logic flow
         }
     }

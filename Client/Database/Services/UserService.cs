@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 using Client.Database.Models;
-using LoggingService.Services;
+using CustomSerilogImpl.InstanceVal.Service.Services;
 using MySqlConnector;
 using Sql.Interfaces;
 
@@ -24,7 +24,7 @@ public class UserService : ICrudService<User, int>
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"Creating user '{entity.Username}'...");
+            LoggingFactory.Instance.LogDebug($"Creating user '{entity.Username}'...");
 
             using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             connection.Open();
@@ -43,12 +43,12 @@ public class UserService : ICrudService<User, int>
             using var getIdCmd = new MySqlCommand("SELECT LAST_INSERT_ID()", connection);
             entity.Id = Convert.ToInt32(getIdCmd.ExecuteScalar());
 
-            LoggingServiceImpl.InstanceVal.LogInformation($"User created successfully: ID={entity.Id}, Username={entity.Username}");
+            LoggingFactory.Instance.LogInformation($"User created successfully: ID={entity.Id}, Username={entity.Username}");
             return entity;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to create user '{entity.Username}': {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Failed to create user '{entity.Username}': {ex.Message}", ex);
             throw;
         }
     }
@@ -62,7 +62,7 @@ public class UserService : ICrudService<User, int>
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"Creating user '{entity.Username}' asynchronously...");
+            LoggingFactory.Instance.LogDebug($"Creating user '{entity.Username}' asynchronously...");
 
             await using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             await connection.OpenAsync();
@@ -81,12 +81,12 @@ public class UserService : ICrudService<User, int>
             await using var getIdCmd = new MySqlCommand("SELECT LAST_INSERT_ID()", connection);
             entity.Id = Convert.ToInt32(await getIdCmd.ExecuteScalarAsync());
 
-            LoggingServiceImpl.InstanceVal.LogInformation($"User created successfully: ID={entity.Id}, Username={entity.Username}");
+            LoggingFactory.Instance.LogInformation($"User created successfully: ID={entity.Id}, Username={entity.Username}");
             return entity;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to create user '{entity.Username}': {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Failed to create user '{entity.Username}': {ex.Message}", ex);
             throw;
         }
     }
@@ -100,7 +100,7 @@ public class UserService : ICrudService<User, int>
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"Getting user by ID: {id}");
+            LoggingFactory.Instance.LogDebug($"Getting user by ID: {id}");
 
             using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             connection.Open();
@@ -120,16 +120,16 @@ public class UserService : ICrudService<User, int>
                     reader.GetString("password_hash")
                 );
 
-                LoggingServiceImpl.InstanceVal.LogDebug($"User found: {user}");
+                LoggingFactory.Instance.LogDebug($"User found: {user}");
                 return user;
             }
 
-            LoggingServiceImpl.InstanceVal.LogDebug($"User with ID {id} not found");
+            LoggingFactory.Instance.LogDebug($"User with ID {id} not found");
             return null;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to get user by ID {id}: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Failed to get user by ID {id}: {ex.Message}", ex);
             throw;
         }
     }
@@ -143,7 +143,7 @@ public class UserService : ICrudService<User, int>
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"Getting user by ID: {id} asynchronously");
+            LoggingFactory.Instance.LogDebug($"Getting user by ID: {id} asynchronously");
 
             await using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             await connection.OpenAsync();
@@ -163,16 +163,16 @@ public class UserService : ICrudService<User, int>
                     reader.GetString("password_hash")
                 );
 
-                LoggingServiceImpl.InstanceVal.LogDebug($"User found: {user}");
+                LoggingFactory.Instance.LogDebug($"User found: {user}");
                 return user;
             }
 
-            LoggingServiceImpl.InstanceVal.LogDebug($"User with ID {id} not found");
+            LoggingFactory.Instance.LogDebug($"User with ID {id} not found");
             return null;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to get user by ID {id}: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Failed to get user by ID {id}: {ex.Message}", ex);
             throw;
         }
     }
@@ -185,7 +185,7 @@ public class UserService : ICrudService<User, int>
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug("Getting all users");
+            LoggingFactory.Instance.LogDebug("Getting all users");
 
             var users = new List<User>();
 
@@ -208,12 +208,12 @@ public class UserService : ICrudService<User, int>
                 users.Add(user);
             }
 
-            LoggingServiceImpl.InstanceVal.LogDebug($"Retrieved {users.Count} users");
+            LoggingFactory.Instance.LogDebug($"Retrieved {users.Count} users");
             return users;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to get all users: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Failed to get all users: {ex.Message}", ex);
             throw;
         }
     }
@@ -226,7 +226,7 @@ public class UserService : ICrudService<User, int>
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug("Getting all users asynchronously");
+            LoggingFactory.Instance.LogDebug("Getting all users asynchronously");
 
             var users = new List<User>();
 
@@ -249,12 +249,12 @@ public class UserService : ICrudService<User, int>
                 users.Add(user);
             }
 
-            LoggingServiceImpl.InstanceVal.LogDebug($"Retrieved {users.Count} users");
+            LoggingFactory.Instance.LogDebug($"Retrieved {users.Count} users");
             return users;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to get all users: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Failed to get all users: {ex.Message}", ex);
             throw;
         }
     }
@@ -268,7 +268,7 @@ public class UserService : ICrudService<User, int>
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"Updating user ID {entity.Id}");
+            LoggingFactory.Instance.LogDebug($"Updating user ID {entity.Id}");
 
             using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             connection.Open();
@@ -285,7 +285,7 @@ public class UserService : ICrudService<User, int>
 
             if (rowsAffected > 0)
             {
-                LoggingServiceImpl.InstanceVal.LogInformation($"User updated successfully: ID={entity.Id}, Username={entity.Username}");
+                LoggingFactory.Instance.LogInformation($"User updated successfully: ID={entity.Id}, Username={entity.Username}");
                 return entity;
             }
 
@@ -293,7 +293,7 @@ public class UserService : ICrudService<User, int>
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to update user ID {entity.Id}: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Failed to update user ID {entity.Id}: {ex.Message}", ex);
             throw;
         }
     }
@@ -307,7 +307,7 @@ public class UserService : ICrudService<User, int>
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"Updating user ID {entity.Id} asynchronously");
+            LoggingFactory.Instance.LogDebug($"Updating user ID {entity.Id} asynchronously");
 
             await using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             await connection.OpenAsync();
@@ -324,7 +324,7 @@ public class UserService : ICrudService<User, int>
 
             if (rowsAffected > 0)
             {
-                LoggingServiceImpl.InstanceVal.LogInformation($"User updated successfully: ID={entity.Id}, Username={entity.Username}");
+                LoggingFactory.Instance.LogInformation($"User updated successfully: ID={entity.Id}, Username={entity.Username}");
                 return entity;
             }
 
@@ -332,7 +332,7 @@ public class UserService : ICrudService<User, int>
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to update user ID {entity.Id}: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Failed to update user ID {entity.Id}: {ex.Message}", ex);
             throw;
         }
     }
@@ -346,7 +346,7 @@ public class UserService : ICrudService<User, int>
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"Deleting user ID {id}");
+            LoggingFactory.Instance.LogDebug($"Deleting user ID {id}");
 
             using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             connection.Open();
@@ -358,16 +358,16 @@ public class UserService : ICrudService<User, int>
 
             if (rowsAffected > 0)
             {
-                LoggingServiceImpl.InstanceVal.LogInformation($"User deleted successfully: ID={id}");
+                LoggingFactory.Instance.LogInformation($"User deleted successfully: ID={id}");
                 return true;
             }
 
-            LoggingServiceImpl.InstanceVal.LogWarning($"User with ID {id} not found for deletion");
+            LoggingFactory.Instance.LogWarning($"User with ID {id} not found for deletion");
             return false;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to delete user ID {id}: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Failed to delete user ID {id}: {ex.Message}", ex);
             throw;
         }
     }
@@ -381,7 +381,7 @@ public class UserService : ICrudService<User, int>
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"Deleting user ID {id} asynchronously");
+            LoggingFactory.Instance.LogDebug($"Deleting user ID {id} asynchronously");
 
             await using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             await connection.OpenAsync();
@@ -393,16 +393,16 @@ public class UserService : ICrudService<User, int>
 
             if (rowsAffected > 0)
             {
-                LoggingServiceImpl.InstanceVal.LogInformation($"User deleted successfully: ID={id}");
+                LoggingFactory.Instance.LogInformation($"User deleted successfully: ID={id}");
                 return true;
             }
 
-            LoggingServiceImpl.InstanceVal.LogWarning($"User with ID {id} not found for deletion");
+            LoggingFactory.Instance.LogWarning($"User with ID {id} not found for deletion");
             return false;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to delete user ID {id}: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Failed to delete user ID {id}: {ex.Message}", ex);
             throw;
         }
     }
@@ -424,7 +424,7 @@ public class UserService : ICrudService<User, int>
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"Checking if user ID {id} exists");
+            LoggingFactory.Instance.LogDebug($"Checking if user ID {id} exists");
 
             using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             connection.Open();
@@ -437,7 +437,7 @@ public class UserService : ICrudService<User, int>
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to check if user ID {id} exists: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Failed to check if user ID {id} exists: {ex.Message}", ex);
             throw;
         }
     }
@@ -451,7 +451,7 @@ public class UserService : ICrudService<User, int>
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"Checking if user ID {id} exists asynchronously");
+            LoggingFactory.Instance.LogDebug($"Checking if user ID {id} exists asynchronously");
 
             await using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             await connection.OpenAsync();
@@ -464,7 +464,7 @@ public class UserService : ICrudService<User, int>
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to check if user ID {id} exists: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Failed to check if user ID {id} exists: {ex.Message}", ex);
             throw;
         }
     }
@@ -477,7 +477,7 @@ public class UserService : ICrudService<User, int>
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug("Getting user count");
+            LoggingFactory.Instance.LogDebug("Getting user count");
 
             using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             connection.Open();
@@ -485,12 +485,12 @@ public class UserService : ICrudService<User, int>
             using var cmd = new MySqlCommand("SELECT COUNT(*) FROM `user`", connection);
             var count = Convert.ToInt32(cmd.ExecuteScalar());
 
-            LoggingServiceImpl.InstanceVal.LogDebug($"Total users: {count}");
+            LoggingFactory.Instance.LogDebug($"Total users: {count}");
             return count;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to get user count: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Failed to get user count: {ex.Message}", ex);
             throw;
         }
     }
@@ -503,7 +503,7 @@ public class UserService : ICrudService<User, int>
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug("Getting user count asynchronously");
+            LoggingFactory.Instance.LogDebug("Getting user count asynchronously");
 
             await using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             await connection.OpenAsync();
@@ -511,12 +511,12 @@ public class UserService : ICrudService<User, int>
             await using var cmd = new MySqlCommand("SELECT COUNT(*) FROM `user`", connection);
             var count = Convert.ToInt32(await cmd.ExecuteScalarAsync());
 
-            LoggingServiceImpl.InstanceVal.LogDebug($"Total users: {count}");
+            LoggingFactory.Instance.LogDebug($"Total users: {count}");
             return count;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to get user count: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Failed to get user count: {ex.Message}", ex);
             throw;
         }
     }
@@ -531,7 +531,7 @@ public class UserService : ICrudService<User, int>
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"Getting users by condition: {condition}");
+            LoggingFactory.Instance.LogDebug($"Getting users by condition: {condition}");
 
             var users = new List<User>();
 
@@ -564,12 +564,12 @@ public class UserService : ICrudService<User, int>
                 users.Add(user);
             }
 
-            LoggingServiceImpl.InstanceVal.LogDebug($"Found {users.Count} users matching condition");
+            LoggingFactory.Instance.LogDebug($"Found {users.Count} users matching condition");
             return users;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to get users by condition: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Failed to get users by condition: {ex.Message}", ex);
             throw;
         }
     }
@@ -584,7 +584,7 @@ public class UserService : ICrudService<User, int>
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"Getting users by condition asynchronously: {condition}");
+            LoggingFactory.Instance.LogDebug($"Getting users by condition asynchronously: {condition}");
 
             var users = new List<User>();
 
@@ -617,12 +617,12 @@ public class UserService : ICrudService<User, int>
                 users.Add(user);
             }
 
-            LoggingServiceImpl.InstanceVal.LogDebug($"Found {users.Count} users matching condition");
+            LoggingFactory.Instance.LogDebug($"Found {users.Count} users matching condition");
             return users;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to get users by condition: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Failed to get users by condition: {ex.Message}", ex);
             throw;
         }
     }
@@ -638,7 +638,7 @@ public class UserService : ICrudService<User, int>
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"Finding user by username: {username}");
+            LoggingFactory.Instance.LogDebug($"Finding user by username: {username}");
 
             using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             connection.Open();
@@ -658,16 +658,16 @@ public class UserService : ICrudService<User, int>
                     reader.GetString("password_hash")
                 );
 
-                LoggingServiceImpl.InstanceVal.LogDebug($"User found by username: {user}");
+                LoggingFactory.Instance.LogDebug($"User found by username: {user}");
                 return user;
             }
 
-            LoggingServiceImpl.InstanceVal.LogDebug($"User with username '{username}' not found");
+            LoggingFactory.Instance.LogDebug($"User with username '{username}' not found");
             return null;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to find user by username '{username}': {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Failed to find user by username '{username}': {ex.Message}", ex);
             throw;
         }
     }
@@ -681,7 +681,7 @@ public class UserService : ICrudService<User, int>
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"Finding user by username asynchronously: {username}");
+            LoggingFactory.Instance.LogDebug($"Finding user by username asynchronously: {username}");
 
             await using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             await connection.OpenAsync();
@@ -701,16 +701,16 @@ public class UserService : ICrudService<User, int>
                     reader.GetString("password_hash")
                 );
 
-                LoggingServiceImpl.InstanceVal.LogDebug($"User found by username: {user}");
+                LoggingFactory.Instance.LogDebug($"User found by username: {user}");
                 return user;
             }
 
-            LoggingServiceImpl.InstanceVal.LogDebug($"User with username '{username}' not found");
+            LoggingFactory.Instance.LogDebug($"User with username '{username}' not found");
             return null;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to find user by username '{username}': {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Failed to find user by username '{username}': {ex.Message}", ex);
             throw;
         }
     }
@@ -726,7 +726,7 @@ public class UserService : ICrudService<User, int>
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"Updating password for user ID {userId}");
+            LoggingFactory.Instance.LogDebug($"Updating password for user ID {userId}");
 
             var hashedPassword = HashPassword(newPassword);
 
@@ -744,16 +744,16 @@ public class UserService : ICrudService<User, int>
 
             if (rowsAffected > 0)
             {
-                LoggingServiceImpl.InstanceVal.LogInformation($"Password updated successfully for user ID {userId}");
+                LoggingFactory.Instance.LogInformation($"Password updated successfully for user ID {userId}");
                 return true;
             }
 
-            LoggingServiceImpl.InstanceVal.LogWarning($"User with ID {userId} not found for password update");
+            LoggingFactory.Instance.LogWarning($"User with ID {userId} not found for password update");
             return false;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to update password for user ID {userId}: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Failed to update password for user ID {userId}: {ex.Message}", ex);
             throw;
         }
     }
@@ -769,7 +769,7 @@ public class UserService : ICrudService<User, int>
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"Updating password for user ID {userId} asynchronously");
+            LoggingFactory.Instance.LogDebug($"Updating password for user ID {userId} asynchronously");
 
             var hashedPassword = HashPassword(newPassword);
 
@@ -787,16 +787,16 @@ public class UserService : ICrudService<User, int>
 
             if (rowsAffected > 0)
             {
-                LoggingServiceImpl.InstanceVal.LogInformation($"Password updated successfully for user ID {userId}");
+                LoggingFactory.Instance.LogInformation($"Password updated successfully for user ID {userId}");
                 return true;
             }
 
-            LoggingServiceImpl.InstanceVal.LogWarning($"User with ID {userId} not found for password update");
+            LoggingFactory.Instance.LogWarning($"User with ID {userId} not found for password update");
             return false;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to update password for user ID {userId}: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Failed to update password for user ID {userId}: {ex.Message}", ex);
             throw;
         }
     }

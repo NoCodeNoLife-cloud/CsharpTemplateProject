@@ -1,4 +1,4 @@
-using LoggingService.Services;
+using CustomSerilogImpl.InstanceVal.Service.Services;
 
 namespace CommonFramework.Banner;
 
@@ -27,27 +27,27 @@ public static class BannerManager
             }
             else
             {
-                LoggingServiceImpl.InstanceVal.LogError("Banner file not found");
+                LoggingFactory.Instance.LogError("Banner file not found");
             }
         }
         catch (UnauthorizedAccessException ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Access denied to banner file: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Access denied to banner file: {ex.Message}", ex);
             Console.WriteLine($"Access denied: {ex.Message}");
         }
         catch (DirectoryNotFoundException ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Directory not found: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Directory not found: {ex.Message}", ex);
             Console.WriteLine($"Directory not found: {ex.Message}");
         }
         catch (IOException ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"IO error reading banner file: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"IO error reading banner file: {ex.Message}", ex);
             Console.WriteLine($"IO Error: {ex.Message}");
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Unexpected error reading banner file: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Unexpected error reading banner file: {ex.Message}", ex);
             Console.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
@@ -67,7 +67,7 @@ public static class BannerManager
         }
 
         var bannerPath = Path.Combine(projectPath, BannerPath);
-        LoggingServiceImpl.InstanceVal.LogDebug($"Resolved banner path: {bannerPath}");
+        LoggingFactory.Instance.LogDebug($"Resolved banner path: {bannerPath}");
         return bannerPath;
     }
 

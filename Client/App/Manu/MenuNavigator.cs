@@ -1,4 +1,4 @@
-using LoggingService.Services;
+using CustomSerilogImpl.InstanceVal.Service.Services;
 
 namespace Client.App.Manu;
 
@@ -34,22 +34,22 @@ internal static class MenuNavigator
                         await UserManagementMenuHandler.HandleUserManagementMenuAsync();
                         break;
                     case "4":
-                        LoggingServiceImpl.InstanceVal.LogInformation("Thank you for using our application. Goodbye!");
+                        LoggingFactory.Instance.LogInformation("Thank you for using our application. Goodbye!");
                         return; // Exit application
                     default:
-                        LoggingServiceImpl.InstanceVal.LogWarning("Invalid option selected!");
+                        LoggingFactory.Instance.LogWarning("Invalid option selected!");
                         break;
                 }
 
                 if (choice == "4") continue;
-                LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+                LoggingFactory.Instance.LogDebug("Press Enter to continue...");
                 Console.ReadLine();
             }
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Unexpected error during menu navigation: {ex.Message}", ex);
-            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to exit...");
+            LoggingFactory.Instance.LogError($"Unexpected error during menu navigation: {ex.Message}", ex);
+            LoggingFactory.Instance.LogDebug("Press Enter to exit...");
             Console.ReadLine();
         }
     }

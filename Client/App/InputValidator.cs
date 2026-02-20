@@ -1,4 +1,4 @@
-using LoggingService.Services;
+using CustomSerilogImpl.InstanceVal.Service.Services;
 
 namespace Client.App;
 
@@ -23,21 +23,21 @@ internal static class InputValidator
 
             if (string.IsNullOrWhiteSpace(input))
             {
-                LoggingServiceImpl.InstanceVal.LogWarning($"{fieldName} cannot be empty.");
-                LoggingServiceImpl.InstanceVal.LogDebug($"Press Ctrl+C to exit or try again.");
+                LoggingFactory.Instance.LogWarning($"{fieldName} cannot be empty.");
+                LoggingFactory.Instance.LogDebug($"Press Ctrl+C to exit or try again.");
                 continue;
             }
 
             if (input.Length < minLength)
             {
-                LoggingServiceImpl.InstanceVal.LogWarning($"{fieldName} must be at least {minLength} characters long.");
-                LoggingServiceImpl.InstanceVal.LogDebug($"Current length: {input.Length} characters");
+                LoggingFactory.Instance.LogWarning($"{fieldName} must be at least {minLength} characters long.");
+                LoggingFactory.Instance.LogDebug($"Current length: {input.Length} characters");
                 continue;
             }
 
             if (input.Length <= maxLength) return input.Trim();
-            LoggingServiceImpl.InstanceVal.LogWarning($"{fieldName} cannot exceed {maxLength} characters.");
-            LoggingServiceImpl.InstanceVal.LogDebug($"Current length: {input.Length} characters");
+            LoggingFactory.Instance.LogWarning($"{fieldName} cannot exceed {maxLength} characters.");
+            LoggingFactory.Instance.LogDebug($"Current length: {input.Length} characters");
         }
     }
 
@@ -56,21 +56,21 @@ internal static class InputValidator
 
             if (string.IsNullOrEmpty(password))
             {
-                LoggingServiceImpl.InstanceVal.LogWarning($"Password cannot be empty.");
-                LoggingServiceImpl.InstanceVal.LogDebug($"Press Ctrl+C to exit or try again.");
+                LoggingFactory.Instance.LogWarning($"Password cannot be empty.");
+                LoggingFactory.Instance.LogDebug($"Press Ctrl+C to exit or try again.");
                 continue;
             }
 
             if (password.Length < minPasswordLength)
             {
-                LoggingServiceImpl.InstanceVal.LogWarning($"Password must be at least {minPasswordLength} characters long.");
-                LoggingServiceImpl.InstanceVal.LogDebug($"Current length: {password.Length} characters");
+                LoggingFactory.Instance.LogWarning($"Password must be at least {minPasswordLength} characters long.");
+                LoggingFactory.Instance.LogDebug($"Current length: {password.Length} characters");
                 continue;
             }
 
             if (password.Length <= maxPasswordLength) return password;
-            LoggingServiceImpl.InstanceVal.LogWarning($"Password cannot exceed {maxPasswordLength} characters.");
-            LoggingServiceImpl.InstanceVal.LogDebug($"Current length: {password.Length} characters");
+            LoggingFactory.Instance.LogWarning($"Password cannot exceed {maxPasswordLength} characters.");
+            LoggingFactory.Instance.LogDebug($"Current length: {password.Length} characters");
         }
     }
 

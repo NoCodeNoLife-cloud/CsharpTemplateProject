@@ -2,8 +2,8 @@ using Client.Config;
 using Client.Database;
 using CommonFramework.Aop.Attributes;
 using CommonFramework.Banner;
-using LoggingService.Enums;
-using LoggingService.Services;
+using CustomSerilogImpl.InstanceVal.Service.Enums;
+using CustomSerilogImpl.InstanceVal.Service.Services;
 
 namespace Client.App;
 
@@ -18,22 +18,22 @@ internal static class ApplicationInitializer
     [Log(LogLevel = LogLevel.Debug, LogMethodEntry = false)]
     public static async Task InitializeAsync()
     {
-        LoggingServiceImpl.InstanceVal.LogDebug($"Project Root Directory: {EnvironmentPath.GetProjectRootDirectory()}");
+        LoggingFactory.Instance.LogDebug($"Project Root Directory: {EnvironmentPath.GetProjectRootDirectory()}");
         await Task.Delay(500); // Simulate work
-        LoggingServiceImpl.InstanceVal.LogInformation("Environment configured");
+        LoggingFactory.Instance.LogInformation("Environment configured");
 
         // Step 2: Database setup
-        LoggingServiceImpl.InstanceVal.LogDebug("Starting database environment setup...");
+        LoggingFactory.Instance.LogDebug("Starting database environment setup...");
         var databaseSetupSuccess = await DatabaseSetupUtility.SetupDemoDatabaseAsync();
         await Task.Delay(800); // Simulate work
 
         if (databaseSetupSuccess)
         {
-            LoggingServiceImpl.InstanceVal.LogInformation("Database environment ready");
+            LoggingFactory.Instance.LogInformation("Database environment ready");
         }
         else
         {
-            LoggingServiceImpl.InstanceVal.LogError("Database setup failed");
+            LoggingFactory.Instance.LogError("Database setup failed");
             throw new InvalidOperationException("Failed to setup database environment");
         }
 
@@ -43,16 +43,16 @@ internal static class ApplicationInitializer
 
         if (connectionTest)
         {
-            LoggingServiceImpl.InstanceVal.LogInformation("Database connection established and test successful");
+            LoggingFactory.Instance.LogInformation("Database connection established and test successful");
         }
         else
         {
-            LoggingServiceImpl.InstanceVal.LogWarning("Database connection test failed, but setup completed");
+            LoggingFactory.Instance.LogWarning("Database connection test failed, but setup completed");
         }
 
         // Step 4: Final initialization
         await Task.Delay(200); // Simulate work
-        LoggingServiceImpl.InstanceVal.LogInformation("System initialization complete! Application is ready for use!");
+        LoggingFactory.Instance.LogInformation("System initialization complete! Application is ready for use!");
         await Task.Delay(1000);
     }
 }

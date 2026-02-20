@@ -1,5 +1,5 @@
 using Client.Config;
-using LoggingService.Services;
+using CustomSerilogImpl.InstanceVal.Service.Services;
 using MySqlConnector;
 
 namespace Client.Database;
@@ -25,44 +25,44 @@ public static class DatabaseSetupUtility
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogDebug("Starting database setup process...");
+            LoggingFactory.Instance.LogDebug("Starting database setup process...");
 
             // Step 1: Check if MySQL server is accessible
-            LoggingServiceImpl.InstanceVal.LogDebug("Step 1: Checking MySQL server connectivity...");
+            LoggingFactory.Instance.LogDebug("Step 1: Checking MySQL server connectivity...");
             if (!await CheckMySqlServerConnectivityAsync())
             {
-                LoggingServiceImpl.InstanceVal.LogError("Cannot connect to MySQL server. Please ensure MySQL is running and credentials are correct.");
+                LoggingFactory.Instance.LogError("Cannot connect to MySQL server. Please ensure MySQL is running and credentials are correct.");
                 return false;
             }
 
-            LoggingServiceImpl.InstanceVal.LogDebug("MySQL server connectivity check passed.");
+            LoggingFactory.Instance.LogDebug("MySQL server connectivity check passed.");
 
             // Step 2: Check if demo database exists, create if not
-            LoggingServiceImpl.InstanceVal.LogDebug("Step 2: Checking/creating demo database...");
+            LoggingFactory.Instance.LogDebug("Step 2: Checking/creating demo database...");
             if (!await EnsureDemoDatabaseExistsAsync())
             {
-                LoggingServiceImpl.InstanceVal.LogError("Failed to create/access demo database.");
+                LoggingFactory.Instance.LogError("Failed to create/access demo database.");
                 return false;
             }
 
-            LoggingServiceImpl.InstanceVal.LogDebug("Demo database is ready.");
+            LoggingFactory.Instance.LogDebug("Demo database is ready.");
 
             // Step 3: Check if user table exists, create if not
-            LoggingServiceImpl.InstanceVal.LogDebug("Step 3: Checking/creating user table...");
+            LoggingFactory.Instance.LogDebug("Step 3: Checking/creating user table...");
             if (!await EnsureUserTableExistsAsync())
             {
-                LoggingServiceImpl.InstanceVal.LogError("Failed to create/access user table.");
+                LoggingFactory.Instance.LogError("Failed to create/access user table.");
                 return false;
             }
 
-            LoggingServiceImpl.InstanceVal.LogDebug("User table is ready.");
+            LoggingFactory.Instance.LogDebug("User table is ready.");
 
-            LoggingServiceImpl.InstanceVal.LogInformation("Database setup completed successfully!");
+            LoggingFactory.Instance.LogInformation("Database setup completed successfully!");
             return true;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Database setup failed: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Database setup failed: {ex.Message}", ex);
             return false;
         }
     }
@@ -80,7 +80,7 @@ public static class DatabaseSetupUtility
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"MySQL connectivity check failed: {ex.Message}");
+            LoggingFactory.Instance.LogDebug($"MySQL connectivity check failed: {ex.Message}");
             return false;
         }
     }
@@ -95,24 +95,24 @@ public static class DatabaseSetupUtility
             // First check if database already exists
             if (await CheckDatabaseExistsAsync(DemoDatabaseName))
             {
-                LoggingServiceImpl.InstanceVal.LogDebug($"Demo database '{DemoDatabaseName}' already exists.");
+                LoggingFactory.Instance.LogDebug($"Demo database '{DemoDatabaseName}' already exists.");
                 return true;
             }
 
             // Create the database
-            LoggingServiceImpl.InstanceVal.LogDebug($"Creating demo database '{DemoDatabaseName}'...");
+            LoggingFactory.Instance.LogDebug($"Creating demo database '{DemoDatabaseName}'...");
             await using var connection = new MySqlConnection(DatabaseParam.AdminConnectionString);
             await connection.OpenAsync();
 
             await using var cmd = new MySqlCommand($"CREATE DATABASE `{DemoDatabaseName}`", connection);
             await cmd.ExecuteNonQueryAsync();
 
-            LoggingServiceImpl.InstanceVal.LogDebug($"Successfully created demo database '{DemoDatabaseName}'.");
+            LoggingFactory.Instance.LogDebug($"Successfully created demo database '{DemoDatabaseName}'.");
             return true;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to ensure demo database exists: {ex.Message}");
+            LoggingFactory.Instance.LogError($"Failed to ensure demo database exists: {ex.Message}");
             return false;
         }
     }
@@ -136,7 +136,7 @@ public static class DatabaseSetupUtility
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"Database existence check failed: {ex.Message}");
+            LoggingFactory.Instance.LogDebug($"Database existence check failed: {ex.Message}");
             return false;
         }
     }
@@ -152,12 +152,12 @@ public static class DatabaseSetupUtility
             // Check if table already exists
             if (await CheckTableExistsAsync(DemoDatabaseName, "user"))
             {
-                LoggingServiceImpl.InstanceVal.LogDebug("User table already exists");
+                LoggingFactory.Instance.LogDebug("User table already exists");
                 return true;
             }
 
             // Create the user table
-            LoggingServiceImpl.InstanceVal.LogDebug("Creating user table...");
+            LoggingFactory.Instance.LogDebug("Creating user table...");
             const string createTableSql =
                 """
                 CREATE TABLE `user` (
@@ -175,12 +175,12 @@ public static class DatabaseSetupUtility
             await using var cmd = new MySqlCommand(createTableSql, connection);
             await cmd.ExecuteNonQueryAsync();
 
-            LoggingServiceImpl.InstanceVal.LogDebug("Successfully created user table with id, username, and password_hash fields.");
+            LoggingFactory.Instance.LogDebug("Successfully created user table with id, username, and password_hash fields.");
             return true;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Failed to ensure user table exists: {ex.Message}");
+            LoggingFactory.Instance.LogError($"Failed to ensure user table exists: {ex.Message}");
             return false;
         }
     }
@@ -206,7 +206,7 @@ public static class DatabaseSetupUtility
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogDebug($"Table existence check failed: {ex.Message}");
+            LoggingFactory.Instance.LogDebug($"Table existence check failed: {ex.Message}");
             return false;
         }
     }
@@ -221,12 +221,12 @@ public static class DatabaseSetupUtility
             await using var connection = new MySqlConnection(DemoConnectionString);
             await connection.OpenAsync();
             var result = await connection.PingAsync();
-            LoggingServiceImpl.InstanceVal.LogDebug($"Demo database connection test: {(result ? "SUCCESS" : "FAILED")}");
+            LoggingFactory.Instance.LogDebug($"Demo database connection test: {(result ? "SUCCESS" : "FAILED")}");
             return result;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Demo database connection test failed: {ex.Message}");
+            LoggingFactory.Instance.LogError($"Demo database connection test failed: {ex.Message}");
             return false;
         }
     }

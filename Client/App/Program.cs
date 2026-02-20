@@ -1,8 +1,8 @@
 using Client.App.Manu;
 using CommonFramework.Aop.Attributes;
 using CommonFramework.Banner;
-using LoggingService.Enums;
-using LoggingService.Services;
+using CustomSerilogImpl.InstanceVal.Service.Enums;
+using CustomSerilogImpl.InstanceVal.Service.Services;
 
 namespace Client.App;
 
@@ -18,6 +18,8 @@ internal static class Program
     [Obsolete("Obsolete")]
     private static async Task Main()
     {
+        LoggingFactory.Instance.LogInformation("hello world");
+
         try
         {
             // Print enhanced Banner
@@ -31,8 +33,8 @@ internal static class Program
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Application startup failed: {ex.Message}", ex);
-            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to exit...");
+            LoggingFactory.Instance.LogError($"Application startup failed: {ex.Message}", ex);
+            LoggingFactory.Instance.LogDebug("Press Enter to exit...");
             Console.ReadLine();
         }
     }

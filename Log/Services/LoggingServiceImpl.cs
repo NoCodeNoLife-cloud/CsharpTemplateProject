@@ -1,7 +1,7 @@
-using LoggingService.Enums;
-using LoggingService.Interfaces;
+using CustomSerilogImpl.InstanceVal.Service.Enums;
+using CustomSerilogImpl.InstanceVal.Service.Interfaces;
 
-namespace LoggingService.Services;
+namespace CustomSerilogImpl.InstanceVal.Service.Services;
 
 /// <summary>
 /// Implementation of logging service with colored console output and caller information

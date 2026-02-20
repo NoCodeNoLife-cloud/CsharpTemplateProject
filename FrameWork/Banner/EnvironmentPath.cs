@@ -1,5 +1,5 @@
 using System.Reflection;
-using LoggingService.Services;
+using CustomSerilogImpl.InstanceVal.Service.Services;
 
 namespace CommonFramework.Banner;
 
@@ -35,7 +35,7 @@ public static class EnvironmentPath
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Error initializing environment paths: {ex.Message}");
+            LoggingFactory.Instance.LogError($"Error initializing environment paths: {ex.Message}");
             return null;
         }
     }

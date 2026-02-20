@@ -4,7 +4,7 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>LoggingService</RootNamespace>
+        <RootNamespace>CustomSerilogImpl.InstanceVal.Service</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

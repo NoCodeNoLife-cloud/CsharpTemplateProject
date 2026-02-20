@@ -1,5 +1,5 @@
 using Client.Database.UserAuthentication;
-using LoggingService.Services;
+using CustomSerilogImpl.InstanceVal.Service.Services;
 
 namespace Client.App.Manu;
 
@@ -19,7 +19,7 @@ internal static class MainMenuHandler
     /// </summary>
     public static void DisplayMainMenu()
     {
-        LoggingServiceImpl.InstanceVal.LogInformation("Displaying main menu");
+        LoggingFactory.Instance.LogInformation("Displaying main menu");
         Console.WriteLine("\n=== User Management System ===");
         Console.Write("[1] ");
         Console.WriteLine($"Login with existing account");
@@ -41,7 +41,7 @@ internal static class MainMenuHandler
     /// <returns>User's menu choice</returns>
     public static string GetUserMenuChoice()
     {
-        LoggingServiceImpl.InstanceVal.LogDebug("Waiting for user menu choice input");
+        LoggingFactory.Instance.LogDebug("Waiting for user menu choice input");
         Console.Write("Enter your choice: ");
         var choice = Console.ReadLine()?.Trim();
 
@@ -58,7 +58,7 @@ internal static class MainMenuHandler
         try
         {
             Console.Clear();
-            LoggingServiceImpl.InstanceVal.LogInformation("Please enter your login information:");
+            LoggingFactory.Instance.LogInformation("Please enter your login information:");
 
             // Get username with validation
             var username = InputValidator.GetUserInput(UsernameField, MinUsernameLength, MaxUsernameLength);
@@ -69,39 +69,39 @@ internal static class MainMenuHandler
             if (string.IsNullOrEmpty(password)) return;
 
             // Show processing indicator
-            LoggingServiceImpl.InstanceVal.LogDebug($"Verifying credentials for user '{username}'...");
+            LoggingFactory.Instance.LogDebug($"Verifying credentials for user '{username}'...");
             var (success, userId, foundUsername) = await UserAuthenticationService.AuthenticateUserAsync(username, password);
 
             if (success)
             {
-                LoggingServiceImpl.InstanceVal.LogInformation($"User authentication successful: ID={userId}, Username={foundUsername}, welcome back");
-                LoggingServiceImpl.InstanceVal.LogInformation($"Welcome back, {foundUsername}! (User ID: {userId})");
+                LoggingFactory.Instance.LogInformation($"User authentication successful: ID={userId}, Username={foundUsername}, welcome back");
+                LoggingFactory.Instance.LogInformation($"Welcome back, {foundUsername}! (User ID: {userId})");
             }
             else
             {
-                LoggingServiceImpl.InstanceVal.LogWarning($"User authentication failed: Username '{username}' does not exist or password is incorrect");
-                LoggingServiceImpl.InstanceVal.LogWarning("Authentication failed. Please check your credentials.");
+                LoggingFactory.Instance.LogWarning($"User authentication failed: Username '{username}' does not exist or password is incorrect");
+                LoggingFactory.Instance.LogWarning("Authentication failed. Please check your credentials.");
             }
         }
         catch (MySqlConnector.MySqlException dbEx)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Database error during login: {dbEx.Message}", dbEx);
-            LoggingServiceImpl.InstanceVal.LogError($"Database connection error: {dbEx.Message}");
-            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            LoggingFactory.Instance.LogError($"Database error during login: {dbEx.Message}", dbEx);
+            LoggingFactory.Instance.LogError($"Database connection error: {dbEx.Message}");
+            LoggingFactory.Instance.LogDebug("Press Enter to continue...");
             Console.ReadLine();
         }
         catch (InvalidOperationException ioEx)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Invalid operation during login: {ioEx.Message}", ioEx);
-            LoggingServiceImpl.InstanceVal.LogError($"Invalid operation: {ioEx.Message}");
-            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            LoggingFactory.Instance.LogError($"Invalid operation during login: {ioEx.Message}", ioEx);
+            LoggingFactory.Instance.LogError($"Invalid operation: {ioEx.Message}");
+            LoggingFactory.Instance.LogDebug("Press Enter to continue...");
             Console.ReadLine();
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Unexpected error during user login: {ex.Message}", ex);
-            LoggingServiceImpl.InstanceVal.LogError($"Unexpected error: {ex.Message}");
-            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            LoggingFactory.Instance.LogError($"Unexpected error during user login: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Unexpected error: {ex.Message}");
+            LoggingFactory.Instance.LogDebug("Press Enter to continue...");
             Console.ReadLine();
         }
     }
@@ -115,7 +115,7 @@ internal static class MainMenuHandler
         try
         {
             Console.Clear();
-            LoggingServiceImpl.InstanceVal.LogInformation("Please enter your registration information:");
+            LoggingFactory.Instance.LogInformation("Please enter your registration information:");
 
             // Get username with validation
             var username = InputValidator.GetUserInput(UsernameField, MinUsernameLength, MaxUsernameLength);
@@ -131,49 +131,49 @@ internal static class MainMenuHandler
 
             if (password != confirmPassword)
             {
-                LoggingServiceImpl.InstanceVal.LogError($"Passwords do not match!");
-                LoggingServiceImpl.InstanceVal.LogWarning("Passwords do not match! Please try again.");
-                LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+                LoggingFactory.Instance.LogError($"Passwords do not match!");
+                LoggingFactory.Instance.LogWarning("Passwords do not match! Please try again.");
+                LoggingFactory.Instance.LogDebug("Press Enter to continue...");
                 Console.ReadLine();
                 return;
             }
 
             // Show registration progress
-            LoggingServiceImpl.InstanceVal.LogDebug($"Attempting to register new user '{username}'...");
+            LoggingFactory.Instance.LogDebug($"Attempting to register new user '{username}'...");
             var (success, userId, errorMessage) = await UserAuthenticationService.RegisterUserAsync(username, password);
 
             if (success)
             {
-                LoggingServiceImpl.InstanceVal.LogInformation($"User registration successful: ID={userId}, Username={username}");
-                LoggingServiceImpl.InstanceVal.LogInformation("Registration successful!");
-                LoggingServiceImpl.InstanceVal.LogInformation($"Your account has been created. (User ID: {userId})");
-                LoggingServiceImpl.InstanceVal.LogInformation("You can now login with your new account.");
+                LoggingFactory.Instance.LogInformation($"User registration successful: ID={userId}, Username={username}");
+                LoggingFactory.Instance.LogInformation("Registration successful!");
+                LoggingFactory.Instance.LogInformation($"Your account has been created. (User ID: {userId})");
+                LoggingFactory.Instance.LogInformation("You can now login with your new account.");
             }
             else
             {
-                LoggingServiceImpl.InstanceVal.LogWarning($"User registration failed: {errorMessage}");
-                LoggingServiceImpl.InstanceVal.LogWarning($"Registration failed! {errorMessage}");
+                LoggingFactory.Instance.LogWarning($"User registration failed: {errorMessage}");
+                LoggingFactory.Instance.LogWarning($"Registration failed! {errorMessage}");
             }
         }
         catch (MySqlConnector.MySqlException dbEx)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Database error during registration: {dbEx.Message}", dbEx);
-            LoggingServiceImpl.InstanceVal.LogError($"Database connection error: {dbEx.Message}");
-            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            LoggingFactory.Instance.LogError($"Database error during registration: {dbEx.Message}", dbEx);
+            LoggingFactory.Instance.LogError($"Database connection error: {dbEx.Message}");
+            LoggingFactory.Instance.LogDebug("Press Enter to continue...");
             Console.ReadLine();
         }
         catch (InvalidOperationException ioEx)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Invalid operation during registration: {ioEx.Message}", ioEx);
-            LoggingServiceImpl.InstanceVal.LogError($"Invalid operation: {ioEx.Message}");
-            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            LoggingFactory.Instance.LogError($"Invalid operation during registration: {ioEx.Message}", ioEx);
+            LoggingFactory.Instance.LogError($"Invalid operation: {ioEx.Message}");
+            LoggingFactory.Instance.LogDebug("Press Enter to continue...");
             Console.ReadLine();
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Unexpected error during user registration: {ex.Message}", ex);
-            LoggingServiceImpl.InstanceVal.LogError($"Unexpected error: {ex.Message}");
-            LoggingServiceImpl.InstanceVal.LogDebug("Press Enter to continue...");
+            LoggingFactory.Instance.LogError($"Unexpected error during user registration: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Unexpected error: {ex.Message}");
+            LoggingFactory.Instance.LogDebug("Press Enter to continue...");
             Console.ReadLine();
         }
     }

@@ -1,4 +1,4 @@
-using LoggingService.Services;
+using CustomSerilogImpl.InstanceVal.Service.Services;
 
 namespace Client.Database.UserAuthentication;
 
@@ -15,13 +15,13 @@ public static class UserLoginValidator
     {
         try
         {
-            LoggingServiceImpl.InstanceVal.LogInformation("=== Starting Login Authentication Validation ===");
+            LoggingFactory.Instance.LogInformation("=== Starting Login Authentication Validation ===");
 
             // First, ensure database is set up
             var setupSuccess = await DatabaseSetupUtility.SetupDemoDatabaseAsync();
             if (!setupSuccess)
             {
-                LoggingServiceImpl.InstanceVal.LogError("Database setup failed");
+                LoggingFactory.Instance.LogError("Database setup failed");
                 return false;
             }
 
@@ -31,28 +31,28 @@ public static class UserLoginValidator
             const string wrongPassword = "wrong_password";
 
             // Validation 1: Test authentication with non-existent user
-            LoggingServiceImpl.InstanceVal.LogDebug("Validation 1: Testing authentication with non-existent user");
+            LoggingFactory.Instance.LogDebug("Validation 1: Testing authentication with non-existent user");
             var (authResult1, _, _) = await UserAuthenticationService.AuthenticateUserAsync("nonexistent_user", "any_password");
-            LoggingServiceImpl.InstanceVal.LogInformation($"Non-existent user authentication result: {authResult1}");
+            LoggingFactory.Instance.LogInformation($"Non-existent user authentication result: {authResult1}");
 
             // Validation 2: Test authentication with correct credentials
-            LoggingServiceImpl.InstanceVal.LogDebug("Validation 2: Testing authentication with correct credentials");
+            LoggingFactory.Instance.LogDebug("Validation 2: Testing authentication with correct credentials");
             var (authResult2, _, username2) = await UserAuthenticationService.AuthenticateUserAsync(testUsername, testPassword);
-            LoggingServiceImpl.InstanceVal.LogInformation($"Correct credentials authentication result: {authResult2}, User: {username2}");
+            LoggingFactory.Instance.LogInformation($"Correct credentials authentication result: {authResult2}, User: {username2}");
 
             // Validation 3: Test authentication with wrong password
-            LoggingServiceImpl.InstanceVal.LogDebug("Validation 3: Testing authentication with wrong password");
+            LoggingFactory.Instance.LogDebug("Validation 3: Testing authentication with wrong password");
             var (authResult3, _, _) = await UserAuthenticationService.AuthenticateUserAsync(testUsername, wrongPassword);
-            LoggingServiceImpl.InstanceVal.LogInformation($"Wrong password authentication result: {authResult3}");
+            LoggingFactory.Instance.LogInformation($"Wrong password authentication result: {authResult3}");
 
-            LoggingServiceImpl.InstanceVal.LogInformation("=== Login Authentication Validation Complete ===");
+            LoggingFactory.Instance.LogInformation("=== Login Authentication Validation Complete ===");
 
             // Success criteria: non-existent user should fail, correct credentials should succeed, wrong password should fail
             return !authResult1 && authResult2 && !authResult3;
         }
         catch (Exception ex)
         {
-            LoggingServiceImpl.InstanceVal.LogError($"Login authentication validation failed: {ex.Message}");
+            LoggingFactory.Instance.LogError($"Login authentication validation failed: {ex.Message}");
             return false;
         }
     }

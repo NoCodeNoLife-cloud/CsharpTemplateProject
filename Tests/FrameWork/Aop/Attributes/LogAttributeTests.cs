@@ -1,5 +1,5 @@
 using CommonFramework.Aop.Attributes;
-using LoggingService.Enums;
+using CustomSerilogImpl.InstanceVal.Service.Enums;
 
 namespace Tests.FrameWork.Aop.Attributes;
 

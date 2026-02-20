@@ -1,7 +1,7 @@
 using CommonFramework.Configuration.Interfaces;
 using CommonFramework.Configuration.Providers;
-using LoggingService.Enums;
-using LoggingService.Services;
+using CustomSerilogImpl.InstanceVal.Service.Enums;
+using CustomSerilogImpl.InstanceVal.Service.Services;
 
 namespace CommonFramework.Configuration.Services;
 
@@ -54,7 +54,7 @@ public class ConfigurationServiceImpl : IConfigurationService
         RegisterProvider(new JsonConfigurationProvider());
         RegisterProvider(new XmlConfigurationProvider());
         RegisterProvider(new YamlConfigurationProvider());
-        LoggingServiceImpl.InstanceVal.LogDebug(LogMessages.RegisteredProviders);
+        LoggingFactory.Instance.LogDebug(LogMessages.RegisteredProviders);
     }
 
     /// <summary>
@@ -78,12 +78,12 @@ public class ConfigurationServiceImpl : IConfigurationService
         {
             if (_providers.Any(p => p.Name.Equals(provider.Name, StringComparison.OrdinalIgnoreCase)))
             {
-                LoggingServiceImpl.InstanceVal.LogDebug(string.Format(LogMessages.RegisteredProvider, provider.Name));
+                LoggingFactory.Instance.LogDebug(string.Format(LogMessages.RegisteredProvider, provider.Name));
                 return;
             }
 
             _providers.Add(provider);
-            LoggingServiceImpl.InstanceVal.LogDebug(string.Format(LogMessages.RegisteredProvider, provider.Name));
+            LoggingFactory.Instance.LogDebug(string.Format(LogMessages.RegisteredProvider, provider.Name));
         }
     }
 
@@ -148,12 +148,12 @@ public class ConfigurationServiceImpl : IConfigurationService
                 var configData = provider.LoadConfiguration(source);
                 LogConfigurationData(source, configData);
                 MergeConfiguration(configData);
-                LoggingServiceImpl.InstanceVal.LogInformation(string.Format(LogMessages.SuccessfullyLoaded, provider.Name, source));
+                LoggingFactory.Instance.LogInformation(string.Format(LogMessages.SuccessfullyLoaded, provider.Name, source));
                 return new Dictionary<string, object>(_configurationCache);
             }
             catch (Exception ex)
             {
-                LoggingServiceImpl.InstanceVal.LogError(string.Format(LogMessages.FailedToLoad, source), ex);
+                LoggingFactory.Instance.LogError(string.Format(LogMessages.FailedToLoad, source), ex);
                 throw;
             }
         }
@@ -189,12 +189,12 @@ public class ConfigurationServiceImpl : IConfigurationService
             {
                 LogConfigurationData(source, configData);
                 MergeConfiguration(configData);
-                LoggingServiceImpl.InstanceVal.LogInformation(string.Format(LogMessages.SuccessfullyLoaded, provider.Name, source));
+                LoggingFactory.Instance.LogInformation(string.Format(LogMessages.SuccessfullyLoaded, provider.Name, source));
                 return new Dictionary<string, object>(_configurationCache);
             }
             catch (Exception ex)
             {
-                LoggingServiceImpl.InstanceVal.LogError(string.Format(LogMessages.FailedToLoad, source), ex);
+                LoggingFactory.Instance.LogError(string.Format(LogMessages.FailedToLoad, source), ex);
                 throw;
             }
         }
@@ -207,10 +207,10 @@ public class ConfigurationServiceImpl : IConfigurationService
     /// <param name="configData">Configuration data</param>
     private void LogConfigurationData(string source, Dictionary<string, object> configData)
     {
-        LoggingServiceImpl.InstanceVal.LogDebug(string.Format(LogMessages.LoadedEntries, configData.Count, source));
+        LoggingFactory.Instance.LogDebug(string.Format(LogMessages.LoadedEntries, configData.Count, source));
         foreach (var kvp in configData)
         {
-            LoggingServiceImpl.InstanceVal.LogDebug(string.Format(LogMessages.EntryDetail, kvp.Key, kvp.Value, kvp.Value.GetType().Name));
+            LoggingFactory.Instance.LogDebug(string.Format(LogMessages.EntryDetail, kvp.Key, kvp.Value, kvp.Value.GetType().Name));
         }
     }
 
@@ -230,15 +230,15 @@ public class ConfigurationServiceImpl : IConfigurationService
     /// <param name="newConfig">New configuration data</param>
     private void MergeConfiguration(Dictionary<string, object> newConfig)
     {
-        LoggingServiceImpl.InstanceVal.LogDebug(string.Format(LogMessages.MergingEntries, newConfig.Count));
+        LoggingFactory.Instance.LogDebug(string.Format(LogMessages.MergingEntries, newConfig.Count));
 
         foreach (var kvp in newConfig)
         {
             _configurationCache[kvp.Key] = kvp.Value;
-            LoggingServiceImpl.InstanceVal.LogDebug(string.Format(LogMessages.AddedToCache, kvp.Key, kvp.Value, kvp.Value.GetType().Name));
+            LoggingFactory.Instance.LogDebug(string.Format(LogMessages.AddedToCache, kvp.Key, kvp.Value, kvp.Value.GetType().Name));
         }
 
-        LoggingServiceImpl.InstanceVal.LogDebug(string.Format(LogMessages.CacheSize, _configurationCache.Count));
+        LoggingFactory.Instance.LogDebug(string.Format(LogMessages.CacheSize, _configurationCache.Count));
     }
 
     /// <summary>
@@ -286,11 +286,11 @@ public class ConfigurationServiceImpl : IConfigurationService
                 }
                 catch (Exception ex)
                 {
-                    LoggingServiceImpl.InstanceVal.Log(LogLevel.Warning, string.Format(LogMessages.ConversionFailed, key, typeof(T).Name), ex);
+                    LoggingFactory.Instance.Log(LogLevel.Warning, string.Format(LogMessages.ConversionFailed, key, typeof(T).Name), ex);
                 }
             }
 
-            LoggingServiceImpl.InstanceVal.LogDebug(string.Format(LogMessages.KeyNotFound, key));
+            LoggingFactory.Instance.LogDebug(string.Format(LogMessages.KeyNotFound, key));
             return defaultValue;
         }
     }
@@ -470,7 +470,7 @@ public class ConfigurationServiceImpl : IConfigurationService
         lock (_lockObject)
         {
             _configurationCache[key] = value;
-            LoggingServiceImpl.InstanceVal.LogDebug(string.Format(LogMessages.SetValue, key, value));
+            LoggingFactory.Instance.LogDebug(string.Format(LogMessages.SetValue, key, value));
         }
     }
 
@@ -482,7 +482,7 @@ public class ConfigurationServiceImpl : IConfigurationService
         lock (_lockObject)
         {
             _configurationCache.Clear();
-            LoggingServiceImpl.InstanceVal.LogInformation(LogMessages.CacheCleared);
+            LoggingFactory.Instance.LogInformation(LogMessages.CacheCleared);
         }
     }
 
