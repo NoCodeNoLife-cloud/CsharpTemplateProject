@@ -1,4 +1,4 @@
-namespace Client.Configuration.Database;
+namespace Client.Database.Config;
 
 /// <summary>
 /// Database configuration parameters for testing

@@ -19,7 +19,7 @@ public class CustomSerilogImpl : ILoggingService
 
     public CustomSerilogImpl()
     {
-        _levelSwitch = new LoggingLevelSwitch(MapToSerilogLevel(LogLevel.Information));
+        _levelSwitch = new LoggingLevelSwitch(MapToSerilogLevel(LogLevel.Debug));
 
         _logger = new LoggerConfiguration()
             .MinimumLevel.ControlledBy(_levelSwitch)
@@ -144,15 +144,13 @@ public class CustomSerilogImpl : ILoggingService
 
                 var frameFileName = frame.GetFileName();
                 // 过滤掉系统框架、Serilog和AOP相关文件
-                if (!string.IsNullOrEmpty(frameFileName) &&
-                    !frameFileName.Contains("Serilog") &&
-                    !frameFileName.Contains("System.Private.CoreLib") &&
-                    !frameFileName.Contains("MrAdvice") &&
-                    !frameFileName.Contains("CustomSerilogImpl"))
-                {
-                    targetFrame = frame;
-                    break;
-                }
+                if (string.IsNullOrEmpty(frameFileName) ||
+                    frameFileName.Contains("Serilog") ||
+                    frameFileName.Contains("System.Private.CoreLib") ||
+                    frameFileName.Contains("MrAdvice") ||
+                    frameFileName.Contains("CustomSerilogImpl")) continue;
+                targetFrame = frame;
+                break;
             }
 
             // 回退机制：如果没找到合适的帧，使用默认的第4帧

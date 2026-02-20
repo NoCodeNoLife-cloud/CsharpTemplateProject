@@ -1,4 +1,4 @@
-using Client.Configuration.Database;
+using Client.Database.Config;
 using Sql.Helpers;
 using Tests.IntegrationTests.Sql.Infrastructure;
 

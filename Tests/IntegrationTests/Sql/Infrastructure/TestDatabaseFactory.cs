@@ -1,4 +1,4 @@
-using Client.Configuration.Database;
+using Client.Database.Config;
 using MySqlConnector;
 
 namespace Tests.IntegrationTests.Sql.Infrastructure;
