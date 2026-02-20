@@ -29,12 +29,30 @@ public class LoggingServiceImpl : ILoggingService
     public static LoggingServiceImpl InstanceVal => Instance.Value;
 
     /// <summary>
+    /// Gets or sets the minimum log level that will be output
+    /// </summary>
+    public LogLevel MinimumLogLevel { get; set; } = LogLevel.Information;
+
+    /// <summary>
+    /// Checks if the specified log level is enabled
+    /// </summary>
+    /// <param name="level">Log level to check</param>
+    /// <returns>True if the log level is enabled, false otherwise</returns>
+    public bool IsEnabled(LogLevel level)
+    {
+        return level >= MinimumLogLevel;
+    }
+
+    /// <summary>
     /// Logs an informational message
     /// </summary>
     /// <param name="message">The message to log</param>
     public void LogInformation(string message)
     {
-        WriteColoredLog(LogLevel.Information, message);
+        if (IsEnabled(LogLevel.Information))
+        {
+            WriteColoredLog(LogLevel.Information, message);
+        }
     }
 
     /// <summary>
@@ -43,6 +61,7 @@ public class LoggingServiceImpl : ILoggingService
     /// <param name="message">The warning message to log</param>
     public void LogWarning(string message)
     {
+        if (!IsEnabled(LogLevel.Warning)) return;
         WriteColoredLog(LogLevel.Warning, message);
     }
 
@@ -53,6 +72,7 @@ public class LoggingServiceImpl : ILoggingService
     /// <param name="exception">Optional exception to include in the log</param>
     public void LogError(string message, Exception? exception = null)
     {
+        if (!IsEnabled(LogLevel.Error)) return;
         if (exception != null)
         {
             var fullMessage = $"{message} - Exception: {exception.Message}";
@@ -70,6 +90,7 @@ public class LoggingServiceImpl : ILoggingService
     /// <param name="message">The debug message to log</param>
     public void LogDebug(string message)
     {
+        if (!IsEnabled(LogLevel.Debug)) return;
         WriteColoredLog(LogLevel.Debug, message);
     }
 
@@ -80,6 +101,7 @@ public class LoggingServiceImpl : ILoggingService
     /// <param name="exception">Optional exception to include in the log</param>
     public void LogCritical(string message, Exception? exception = null)
     {
+        if (!IsEnabled(LogLevel.Critical)) return;
         if (exception != null)
         {
             var fullMessage = $"{message} - Exception: {exception.Message}";
@@ -99,6 +121,7 @@ public class LoggingServiceImpl : ILoggingService
     /// <param name="exception">Optional exception to include in the log</param>
     public void Log(LogLevel level, string message, Exception? exception = null)
     {
+        if (!IsEnabled(level)) return;
         if (exception != null)
         {
             var fullMessage = $"{message} - Exception: {exception.Message}";
