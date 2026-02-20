@@ -1,6 +1,6 @@
 using LoggingService.Services;
 
-namespace ClientApplication.App;
+namespace Client.App;
 
 /// <summary>
 /// Input validation utilities

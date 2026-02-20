@@ -1,5 +1,5 @@
 using Client.Config;
-using ClientApplication.Config;
+using CommonFramework.Banner;
 using Xunit;
 using FluentAssertions;
 
@@ -15,7 +15,7 @@ public class EnvironmentPathTests
     public void ProjectRootDirectory_ShouldNotBeNull()
     {
         // Act
-        var projectRoot = EnvironmentPath.ProjectRootDirectory;
+        var projectRoot = EnvironmentPath.GetProjectRootDirectory();
 
         // Assert
         projectRoot.Should().NotBeNull();
@@ -27,8 +27,8 @@ public class EnvironmentPathTests
     public void MultipleCalls_ToProjectRootDirectory_ShouldReturnSameValue()
     {
         // Act
-        var root1 = EnvironmentPath.ProjectRootDirectory;
-        var root2 = EnvironmentPath.ProjectRootDirectory;
+        var root1 = EnvironmentPath.GetProjectRootDirectory();
+        var root2 = EnvironmentPath.GetProjectRootDirectory();
 
         // Assert
         root1.Should().Be(root2);
@@ -42,7 +42,7 @@ public class EnvironmentPathTests
         // Act & Assert
         Action action = () =>
         {
-            var _ = EnvironmentPath.ProjectRootDirectory;
+            var _ = EnvironmentPath.GetProjectRootDirectory();
         };
 
         action.Should().NotThrow();
@@ -53,7 +53,7 @@ public class EnvironmentPathTests
     public void ProjectRootDirectory_ShouldPointToValidDirectory()
     {
         // Act
-        var projectRoot = EnvironmentPath.ProjectRootDirectory;
+        var projectRoot = EnvironmentPath.GetProjectRootDirectory();
 
         // Assert
         projectRoot.Should().NotBeNull();

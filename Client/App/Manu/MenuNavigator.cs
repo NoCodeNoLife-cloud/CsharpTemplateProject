@@ -1,6 +1,6 @@
 using LoggingService.Services;
 
-namespace ClientApplication.App.Manu;
+namespace Client.App.Manu;
 
 /// <summary>
 /// Menu navigation handler for interactive user interface

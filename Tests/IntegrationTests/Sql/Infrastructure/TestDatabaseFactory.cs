@@ -1,5 +1,5 @@
+using Client.Configuration.Database;
 using MySqlConnector;
-using ClientApplication.Configuration.Database;
 
 namespace Tests.IntegrationTests.Sql.Infrastructure;
 

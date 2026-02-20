@@ -1,10 +1,10 @@
+using Client.App.Manu;
 using CommonFramework.Aop.Attributes;
-using LoggingService.Services;
+using CommonFramework.Banner;
 using LoggingService.Enums;
-using ClientApplication.App.Banner;
-using ClientApplication.App.Manu;
+using LoggingService.Services;
 
-namespace ClientApplication.App;
+namespace Client.App;
 
 /// <summary>
 /// Contains the main entry point of the application

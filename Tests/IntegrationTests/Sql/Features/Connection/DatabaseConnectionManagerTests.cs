@@ -1,6 +1,6 @@
+using Client.Configuration.Database;
 using Sql.Helpers;
 using Tests.IntegrationTests.Sql.Infrastructure;
-using ClientApplication.Configuration.Database;
 
 namespace Tests.IntegrationTests.Sql.Features.Connection;
 

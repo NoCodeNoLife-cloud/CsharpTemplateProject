@@ -1,14 +1,10 @@
-using MySqlConnector;
-using ClientApplication.Database;
-using ClientApplication.Database.Models;
-using ClientApplication.Database.Services;
-using LoggingService.Services;
-using LoggingService.Enums;
-using Sql.Exceptions;
 using System.Security.Cryptography;
-using System.Text;
+using Client.Database.Models;
+using Client.Database.Services;
+using LoggingService.Services;
+using MySqlConnector;
 
-namespace ClientApplication.Database.UserAuthentication;
+namespace Client.Database.UserAuthentication;
 
 /// <summary>
 /// Service class for user authentication and login operations

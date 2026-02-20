@@ -1,10 +1,8 @@
-using MySqlConnector;
-using Sql.Helpers;
-using ClientApplication.Config;
+using Client.Config;
 using LoggingService.Services;
-using LoggingService.Enums;
+using MySqlConnector;
 
-namespace ClientApplication.Database;
+namespace Client.Database;
 
 /// <summary>
 /// Database setup utility for initializing and verifying MySQL database environment

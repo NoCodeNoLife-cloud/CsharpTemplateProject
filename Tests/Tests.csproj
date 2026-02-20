@@ -30,7 +30,7 @@
 
     <!-- Add references to projects under test -->
     <ItemGroup>
-        <ProjectReference Include="..\ClientApplication\ClientApplication.csproj"/>
+        <ProjectReference Include="..\Client\Client.csproj" />
         <ProjectReference Include="..\FrameWork\FrameWork.csproj"/>
         <ProjectReference Include="..\Log\Log.csproj"/>
         <ProjectReference Include="..\Sql\Sql.csproj"/>

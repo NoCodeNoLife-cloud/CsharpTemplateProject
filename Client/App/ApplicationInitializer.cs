@@ -1,11 +1,11 @@
 using Client.Config;
+using Client.Database;
 using CommonFramework.Aop.Attributes;
-using LoggingService.Services;
+using CommonFramework.Banner;
 using LoggingService.Enums;
-using ClientApplication.Config;
-using ClientApplication.Database;
+using LoggingService.Services;
 
-namespace ClientApplication.App;
+namespace Client.App;
 
 /// <summary>
 /// Application initialization handler
@@ -18,7 +18,7 @@ internal static class ApplicationInitializer
     [Log(LogLevel = LogLevel.Debug, LogMethodEntry = false)]
     public static async Task InitializeAsync()
     {
-        LoggingServiceImpl.InstanceVal.LogDebug($"Project Root Directory: {EnvironmentPath.ProjectRootDirectory}");
+        LoggingServiceImpl.InstanceVal.LogDebug($"Project Root Directory: {EnvironmentPath.GetProjectRootDirectory()}");
         await Task.Delay(500); // Simulate work
         LoggingServiceImpl.InstanceVal.LogInformation("Environment configured");
 

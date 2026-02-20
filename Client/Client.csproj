@@ -5,6 +5,7 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <RootNamespace>Client</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -14,8 +15,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="App\Banner\**" CopyToOutputDirectory="PreserveNewest" />
-        <None Update="App\Banner\Banner.txt">
+        <None Include="Resources\**" CopyToOutputDirectory="PreserveNewest" />
+        <None Update="Resources\Banner.txt">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>

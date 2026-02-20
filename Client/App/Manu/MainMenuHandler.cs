@@ -1,7 +1,7 @@
-using ClientApplication.Database.UserAuthentication;
+using Client.Database.UserAuthentication;
 using LoggingService.Services;
 
-namespace ClientApplication.App.Manu;
+namespace Client.App.Manu;
 
 /// <summary>
 /// Main menu handler for user interactions

@@ -1,12 +1,10 @@
+using System.Security.Cryptography;
+using Client.Database.Models;
+using LoggingService.Services;
 using MySqlConnector;
 using Sql.Interfaces;
-using ClientApplication.Database.Models;
-using LoggingService.Services;
-using LoggingService.Enums;
-using System.Security.Cryptography;
-using System.Text;
 
-namespace ClientApplication.Database.Services;
+namespace Client.Database.Services;
 
 /// <summary>
 /// User service implementing CRUD operations for user management

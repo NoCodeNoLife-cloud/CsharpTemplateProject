@@ -136,7 +136,7 @@ public class LoggingServiceImpl : ILoggingService
     /// <summary>
     /// Gets caller method information from the call stack including line number
     /// </summary>
-    /// <returns>Formatted string containing file path and line number in format 'at ClientApplication/App/Program.cs(2)'</returns>
+    /// <returns>Formatted string containing file path and line number in format 'at Client/App/Program.cs(2)'</returns>
     private static string GetCallerInfo()
     {
         var stackTrace = new System.Diagnostics.StackTrace(true);
@@ -157,7 +157,7 @@ public class LoggingServiceImpl : ILoggingService
         // Extract the relevant part of the path (remove full system path)
         var pathSegments = fileName.Split(Path.DirectorySeparatorChar);
         if (pathSegments.Length < 2) return lineNumber > 0 ? $"at {relativePath}({lineNumber})" : $"at {relativePath}";
-        // Take the last two segments to form a relative path like ClientApplication/App/Program.cs
+        // Take the last two segments to form a relative path like Client/App/Program.cs
         var startIndex = Math.Max(0, pathSegments.Length - 3);
         relativePath = string.Join(Path.DirectorySeparatorChar.ToString(), pathSegments.Skip(startIndex));
 

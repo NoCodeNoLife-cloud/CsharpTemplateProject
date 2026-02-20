@@ -1,10 +1,10 @@
-using ClientApplication.App.Manu;
-using ClientApplication.Database.Models;
-using ClientApplication.Database.Services;
+using Client.App.Manu;
+using Client.Database.Models;
+using Client.Database.Services;
+using Client.Database.UserAuthentication;
 using LoggingService.Services;
-using ClientApplication.Database.UserAuthentication;
 
-namespace ClientApplication.App;
+namespace Client.App;
 
 /// <summary>
 /// User management submenu handler

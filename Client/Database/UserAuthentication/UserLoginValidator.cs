@@ -1,6 +1,6 @@
 using LoggingService.Services;
 
-namespace ClientApplication.Database.UserAuthentication;
+namespace Client.Database.UserAuthentication;
 
 /// <summary>
 /// Validates user login credentials and prevents duplicate entries

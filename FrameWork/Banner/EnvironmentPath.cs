@@ -1,6 +1,7 @@
 using System.Reflection;
+using LoggingService.Services;
 
-namespace ClientApplication.Config;
+namespace CommonFramework.Banner;
 
 /// <summary>
 /// Static environment path management class for managing various path information of the application
@@ -9,22 +10,9 @@ namespace ClientApplication.Config;
 public static class EnvironmentPath
 {
     /// <summary>
-    /// Project root directory path
-    /// </summary>
-    public static string? ProjectRootDirectory { get; private set; }
-
-    /// <summary>
-    /// Static constructor, automatically executed when the class is first accessed
-    /// </summary>
-    static EnvironmentPath()
-    {
-        InitializePaths();
-    }
-
-    /// <summary>
     /// Initialize all path variables
     /// </summary>
-    private static void InitializePaths()
+    public static string? GetProjectRootDirectory()
     {
         try
         {
@@ -43,12 +31,12 @@ public static class EnvironmentPath
             var envCurrentDir = Environment.CurrentDirectory;
             var projectRoot4 = FindProjectRoot(envCurrentDir, "ClientApplication.csproj");
 
-            // Return the best project root directory (prioritize CSProj search results)
-            ProjectRootDirectory = projectRoot3 ?? projectRoot4 ?? projectRoot1 ?? appDomainBase;
+            return projectRoot3 ?? projectRoot4 ?? projectRoot1 ?? appDomainBase;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error initializing environment paths: {ex.Message}");
+            LoggingServiceImpl.InstanceVal.LogError($"Error initializing environment paths: {ex.Message}");
+            return null;
         }
     }
 

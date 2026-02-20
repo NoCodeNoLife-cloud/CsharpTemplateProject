@@ -1,4 +1,4 @@
-using ClientApplication.App.Banner;
+using CommonFramework.Banner;
 using Xunit;
 using FluentAssertions;
 

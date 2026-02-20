@@ -1,9 +1,6 @@
-using Client.Config;
 using LoggingService.Services;
-using ClientApplication.Config;
 
-
-namespace ClientApplication.App.Banner;
+namespace CommonFramework.Banner;
 
 /// <summary>
 /// Banner management class for handling application banner display
@@ -22,17 +19,15 @@ public static class BannerManager
     {
         try
         {
-            if (IsBannerFileExists())
+            var bannerPath = GetBannerPath();
+            if (File.Exists(bannerPath))
             {
-                var bannerPath = GetBannerPath();
                 var bannerContent = File.ReadAllText(bannerPath);
-
-                // Print banner
                 Console.WriteLine(bannerContent);
             }
             else
             {
-                LoggingServiceImpl.InstanceVal.LogWarning("Banner file not found");
+                LoggingServiceImpl.InstanceVal.LogError("Banner file not found");
             }
         }
         catch (UnauthorizedAccessException ex)
@@ -63,7 +58,17 @@ public static class BannerManager
     /// <returns>Full path of Banner file</returns>
     public static string GetBannerPath()
     {
-        return Path.Combine(EnvironmentPath.ProjectRootDirectory ?? throw new InvalidOperationException(), BannerPath);
+        var projectPath = EnvironmentPath.GetProjectRootDirectory();
+
+        // Validate that ProjectRootDirectory is resolved
+        if (string.IsNullOrEmpty(projectPath))
+        {
+            throw new InvalidOperationException("Unable to resolve project root directory");
+        }
+
+        var bannerPath = Path.Combine(projectPath, BannerPath);
+        LoggingServiceImpl.InstanceVal.LogDebug($"Resolved banner path: {bannerPath}");
+        return bannerPath;
     }
 
     /// <summary>
