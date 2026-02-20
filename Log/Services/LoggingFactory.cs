@@ -8,7 +8,7 @@ namespace CustomSerilogImpl.InstanceVal.Service.Services;
 /// </summary>
 public static class LoggingFactory
 {
-    private static ILoggingService? _currentInstance;
+    private static volatile ILoggingService? _currentInstance;
     private static readonly Lock LockObject = new();
 
     /// <summary>
@@ -42,7 +42,10 @@ public static class LoggingFactory
             if (_currentInstance != null) return _currentInstance;
             lock (LockObject)
             {
-                _currentInstance ??= CreateInstance(CurrentImplementation);
+                if (_currentInstance == null)
+                {
+                    _currentInstance = CreateInstance(CurrentImplementation);
+                }
             }
 
             return _currentInstance;

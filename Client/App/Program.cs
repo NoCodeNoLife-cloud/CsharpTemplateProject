@@ -18,8 +18,6 @@ internal static class Program
     [Obsolete("Obsolete")]
     private static async Task Main()
     {
-        LoggingFactory.Instance.LogInformation("hello world");
-
         try
         {
             // Print enhanced Banner
