@@ -1,8 +1,8 @@
 using Sql.Helpers;
-using Tests.Sql.Infrastructure;
-using ClientApplication.Config;
+using Tests.IntegrationTests.Sql.Infrastructure;
+using ClientApplication.Configuration.Database;
 
-namespace Tests.Sql.Features.Connection;
+namespace Tests.IntegrationTests.Sql.Features.Connection;
 
 public class DatabaseConnectionManagerTests : DatabaseTestBase
 {
@@ -40,7 +40,7 @@ public class DatabaseConnectionManagerTests : DatabaseTestBase
         // Assert
         result.Should().NotBeNull();
         result.ConnectionString.Should().Contain($"Database={TestDatabaseName}");
-        result.ConnectionString.Should().Contain($"Server={DatabaseParam.AdminServer}");
+        result.ConnectionString.Should().Contain($"Server={DatabaseConfiguration.AdminServer}");
     }
 
     [Fact]
@@ -52,7 +52,7 @@ public class DatabaseConnectionManagerTests : DatabaseTestBase
         // Assert
         result.Should().NotBeNull();
         result.ConnectionString.Should().Contain($"Database={TestDatabaseName}");
-        result.ConnectionString.Should().Contain($"Server={DatabaseParam.AdminServer}");
+        result.ConnectionString.Should().Contain($"Server={DatabaseConfiguration.AdminServer}");
     }
 
     [Fact]
@@ -79,7 +79,7 @@ public class DatabaseConnectionManagerTests : DatabaseTestBase
     public async Task IsConnectionAvailableAsync_WithInvalidConnectionString_ShouldReturnFalse()
     {
         // Arrange
-        const string invalidConnectionString = $"Server={DatabaseParam.AdminServer};Database=nonexistent_db_xyz;Uid={DatabaseParam.AdminUid};Pwd={DatabaseParam.AdminPwd};";
+        const string invalidConnectionString = $"Server={DatabaseConfiguration.AdminServer};Database=nonexistent_db_xyz;Uid={DatabaseConfiguration.AdminUid};Pwd={DatabaseConfiguration.AdminPwd};";
         using var manager = new DatabaseConnectionManager(invalidConnectionString);
 
         // Act
@@ -93,7 +93,7 @@ public class DatabaseConnectionManagerTests : DatabaseTestBase
     public void IsConnectionAvailable_WithInvalidConnectionString_ShouldReturnFalse()
     {
         // Arrange
-        const string invalidConnectionString = $"Server={DatabaseParam.AdminServer};Database=nonexistent_db_xyz;Uid={DatabaseParam.AdminUid};Pwd={DatabaseParam.AdminPwd};";
+        const string invalidConnectionString = $"Server={DatabaseConfiguration.AdminServer};Database=nonexistent_db_xyz;Uid={DatabaseConfiguration.AdminUid};Pwd={DatabaseConfiguration.AdminPwd};";
         using var manager = new DatabaseConnectionManager(invalidConnectionString);
 
         // Act

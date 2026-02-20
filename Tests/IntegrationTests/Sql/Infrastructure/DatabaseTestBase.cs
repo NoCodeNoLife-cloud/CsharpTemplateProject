@@ -1,7 +1,7 @@
-﻿using MySqlConnector;
+using MySqlConnector;
 using Sql.Helpers;
 
-namespace Tests.Sql.Infrastructure;
+namespace Tests.IntegrationTests.Sql.Infrastructure;
 
 /// <summary>
 /// Base class for database integration tests

@@ -12,7 +12,7 @@ public static class BannerManager
     /// <summary>
     /// Banner file relative path
     /// </summary>
-    public const string BannerPath = "App/Banner/Banner.txt";
+    public const string BannerPath = "Resources/Banner.txt";
 
     /// <summary>
     /// Print application banner to console with enhanced visual effects

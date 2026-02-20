@@ -1,7 +1,7 @@
 using MySqlConnector;
-using ClientApplication.Config;
+using ClientApplication.Configuration.Database;
 
-namespace Tests.Sql.Infrastructure;
+namespace Tests.IntegrationTests.Sql.Infrastructure;
 
 /// <summary>
 /// Test database factory for creating isolated test databases
@@ -34,14 +34,14 @@ public static class TestDatabaseFactory
         try
         {
             // Connect to MySQL server without specifying database
-            await using var connection = new MySqlConnection(DatabaseParam.AdminConnectionString);
+            await using var connection = new MySqlConnection(DatabaseConfiguration.AdminConnectionString);
             await connection.OpenAsync();
 
             // Create test database
             await using var cmd = new MySqlCommand($"CREATE DATABASE `{databaseName}`", connection);
             await cmd.ExecuteNonQueryAsync();
 
-            return $"Server={DatabaseParam.AdminServer};Database={databaseName};Uid={DatabaseParam.AdminUid};Pwd={DatabaseParam.AdminPwd};";
+            return $"Server={DatabaseConfiguration.AdminServer};Database={databaseName};Uid={DatabaseConfiguration.AdminUid};Pwd={DatabaseConfiguration.AdminPwd};";
         }
         catch (Exception ex)
         {
@@ -57,7 +57,7 @@ public static class TestDatabaseFactory
     {
         try
         {
-            await using var connection = new MySqlConnection(DatabaseParam.AdminConnectionString);
+            await using var connection = new MySqlConnection(DatabaseConfiguration.AdminConnectionString);
             await connection.OpenAsync();
 
             await using var cmd = new MySqlCommand($"DROP DATABASE IF EXISTS `{databaseName}`", connection);

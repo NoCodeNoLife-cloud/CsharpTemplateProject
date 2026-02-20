@@ -1,19 +1,28 @@
 namespace ClientApplication.Config;
 
 /// <summary>
-/// Database configuration parameters for testing
-/// Contains admin credentials for database management
+/// Database parameter configuration class
 /// </summary>
 public static class DatabaseParam
 {
-    public const string AdminServer = "localhost";
-    public const string AdminUid = "root";
-    public const string AdminPwd = "123456";
+    /// <summary>
+    /// Administrator connection string
+    /// </summary>
+    public static string AdminConnectionString => 
+        $"Server={AdminServer};Database=mysql;Uid={AdminUid};Pwd={AdminPwd};";
 
     /// <summary>
-    /// Gets the admin connection string (without database specification)
-    /// Used for creating/dropping test databases
+    /// Administrator server address
     /// </summary>
-    public static string AdminConnectionString =>
-        $"Server={AdminServer};Uid={AdminUid};Pwd={AdminPwd};";
+    public static string AdminServer { get; set; } = "localhost";
+
+    /// <summary>
+    /// Administrator username
+    /// </summary>
+    public static string AdminUid { get; set; } = "root";
+
+    /// <summary>
+    /// Administrator password
+    /// </summary>
+    public static string AdminPwd { get; set; } = "123456";
 }

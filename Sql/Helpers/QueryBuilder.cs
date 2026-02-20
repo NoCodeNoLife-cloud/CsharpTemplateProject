@@ -114,6 +114,23 @@ public class QueryBuilder
     }
 
     /// <summary>
+    /// Adds CROSS JOIN clause
+    /// </summary>
+    /// <param name="table">Table to join</param>
+    /// <param name="alias">Table alias (optional)</param>
+    /// <returns>QueryBuilder instance</returns>
+    public QueryBuilder CrossJoin(string table, string? alias = null)
+    {
+        if (string.IsNullOrWhiteSpace(table))
+            throw new ArgumentException("Table name cannot be null or empty", nameof(table));
+
+        var tableSpec = alias != null ? $"{table} AS {alias}" : table;
+        _joinClauses.Append($" CROSS JOIN {tableSpec}");
+        
+        return this;
+    }
+
+    /// <summary>
     /// Adds WHERE clause
     /// </summary>
     /// <param name="condition">Condition expression</param>
