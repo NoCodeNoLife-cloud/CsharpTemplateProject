@@ -1,3 +1,4 @@
+using Client.Config;
 using ClientApplication.Config;
 using Xunit;
 using FluentAssertions;
@@ -22,11 +23,6 @@ public class EnvironmentPathTests
     }
 
 
-
-
-
-
-
     [Fact]
     public void MultipleCalls_ToProjectRootDirectory_ShouldReturnSameValue()
     {
@@ -37,7 +33,6 @@ public class EnvironmentPathTests
         // Assert
         root1.Should().Be(root2);
     }
-
 
 
     [Fact]
@@ -54,9 +49,6 @@ public class EnvironmentPathTests
     }
 
 
-
-
-
     [Fact]
     public void ProjectRootDirectory_ShouldPointToValidDirectory()
     {
@@ -71,6 +63,4 @@ public class EnvironmentPathTests
         var directoryInfo = new DirectoryInfo(projectRoot);
         directoryInfo.Exists.Should().BeTrue("Project root directory should exist");
     }
-
-
 }

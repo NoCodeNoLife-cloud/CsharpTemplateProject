@@ -1,3 +1,4 @@
+using Client.Config;
 using LoggingService.Services;
 using ClientApplication.Config;
 

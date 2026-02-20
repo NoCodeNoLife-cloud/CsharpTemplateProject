@@ -1,3 +1,4 @@
+using Client.Config;
 using CommonFramework.Aop.Attributes;
 using LoggingService.Services;
 using LoggingService.Enums;
