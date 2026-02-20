@@ -31,7 +31,7 @@ public class LoggingServiceImpl : ILoggingService
     /// <summary>
     /// Gets or sets the minimum log level that will be output
     /// </summary>
-    public LogLevel MinimumLogLevel { get; set; } = LogLevel.Information;
+    public LogLevel MinimumLogLevel { get; set; } = LogLevel.Debug;
 
     /// <summary>
     /// Checks if the specified log level is enabled

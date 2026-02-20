@@ -30,7 +30,7 @@ public static class LoggingFactory
     /// <summary>
     /// Gets or sets the current logging implementation type
     /// </summary>
-    public static LoggingImplementation CurrentImplementation { get; set; } = LoggingImplementation.Serilog;
+    public static LoggingImplementation CurrentImplementation { get; set; } = LoggingImplementation.Custom;
 
     /// <summary>
     /// Gets the singleton instance of the current logging service
@@ -42,6 +42,7 @@ public static class LoggingFactory
             if (_currentInstance != null) return _currentInstance;
             lock (LockObject)
             {
+                // ReSharper disable once ConvertIfStatementToNullCoalescingAssignment
                 if (_currentInstance == null)
                 {
                     _currentInstance = CreateInstance(CurrentImplementation);
