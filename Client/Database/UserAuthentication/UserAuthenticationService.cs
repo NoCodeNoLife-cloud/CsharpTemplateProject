@@ -115,18 +115,21 @@ public static class UserAuthenticationService
         return true;
     }
 
+    
+    
     /// <summary>
     /// Registers a new user with username and password
     /// </summary>
     /// <param name="username">Username for new account</param>
     /// <param name="password">Password for new account</param>
+    /// <param name="priority">Priority level for the new user (default is "user")</param>
     /// <returns>Tuple containing (success, userId, errorMessage) - success indicates if registration was successful</returns>
     [Obsolete("Obsolete")]
-    public static async Task<(bool success, int? userId, string? errorMessage)> RegisterUserAsync(string username, string password)
+    public static async Task<(bool success, int? userId, string? errorMessage)> RegisterUserAsync(string username, string password, string priority = "user")
     {
         try
         {
-            LoggingFactory.Instance.LogDebug($"Attempting to register new user '{username}'...");
+            LoggingFactory.Instance.LogDebug($"Attempting to register new user '{username}' with {priority} permissions...");
 
             // Use UserService for registration to leverage CRUD functionality
             var userService = new UserService();
@@ -142,15 +145,15 @@ public static class UserAuthenticationService
             // Hash the password
             var hashedPassword = HashPassword(password);
 
-            // Create user entity
-            var newUser = new User(username, hashedPassword);
+            // Create user entity with specified priority
+            var newUser = new User(username, hashedPassword, priority);
 
             // Save user using CRUD service
             var createdUser = await userService.CreateAsync(newUser);
 
             if (createdUser.Id > 0)
             {
-                LoggingFactory.Instance.LogInformation($"User registration successful: ID={createdUser.Id}, Username={username}");
+                LoggingFactory.Instance.LogInformation($"User registration successful: ID={createdUser.Id}, Username={username}, Priority={priority}");
                 return (true, createdUser.Id, null);
             }
             else

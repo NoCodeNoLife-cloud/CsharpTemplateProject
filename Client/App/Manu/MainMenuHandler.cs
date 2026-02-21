@@ -138,9 +138,13 @@ internal static class MainMenuHandler
                 return;
             }
 
+            // Select user priority/permission level
+            var priority = GetUserPrioritySelection();
+            if (string.IsNullOrEmpty(priority)) return;
+
             // Show registration progress
-            LoggingFactory.Instance.LogDebug($"Attempting to register new user '{username}'...");
-            var (success, userId, errorMessage) = await UserAuthenticationService.RegisterUserAsync(username, password);
+            LoggingFactory.Instance.LogDebug($"Attempting to register new user '{username}' with {priority} permissions...");
+            var (success, userId, errorMessage) = await UserAuthenticationService.RegisterUserAsync(username, password, priority);
 
             if (success)
             {
@@ -175,6 +179,58 @@ internal static class MainMenuHandler
             LoggingFactory.Instance.LogError($"Unexpected error: {ex.Message}");
             LoggingFactory.Instance.LogDebug("Press Enter to continue...");
             Console.ReadLine();
+        }
+    }
+
+    /// <summary>
+    /// Gets user priority selection from interactive menu
+    /// </summary>
+    /// <returns>Selected priority ("user" or "admin"), or null if cancelled</returns>
+    private static string? GetUserPrioritySelection()
+    {
+        try
+        {
+            Console.Clear();
+            Console.WriteLine("=== Select Account Type ===");
+            Console.WriteLine("Please choose your account permission level:");
+            Console.WriteLine("");
+            
+            Console.Write("[1] ");
+            Console.WriteLine("Regular User (Standard permissions)");
+            
+            Console.Write("[2] ");
+            Console.WriteLine("Administrator (Full permissions)");
+            
+            Console.WriteLine("");
+            Console.Write("Enter your choice (1 or 2): ");
+            
+            while (true)
+            {
+                var choice = Console.ReadLine()?.Trim();
+                
+                switch (choice)
+                {
+                    case "1":
+                        LoggingFactory.Instance.LogInformation("Selected: Regular User");
+                        return "user";
+                    case "2":
+                        LoggingFactory.Instance.LogInformation("Selected: Administrator");
+                        return "admin";
+                    case "":
+                        Console.WriteLine("Please make a selection.");
+                        break;
+                    default:
+                        Console.WriteLine("Invalid choice. Please enter 1 or 2.");
+                        break;
+                }
+                
+                Console.Write("Enter your choice (1 or 2): ");
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggingFactory.Instance.LogError($"Error during priority selection: {ex.Message}", ex);
+            return null;
         }
     }
 }
