@@ -32,7 +32,7 @@ public static class UserAuthenticationService
             await connection.OpenAsync();
 
             await using var cmd = new MySqlCommand(
-                "SELECT id, username, password_hash FROM `user` WHERE username = @username", connection);
+                "SELECT id, username, password_hash FROM `users` WHERE username = @username", connection);
             cmd.Parameters.AddWithValue("@username", username);
 
             await using var reader = await cmd.ExecuteReaderAsync();

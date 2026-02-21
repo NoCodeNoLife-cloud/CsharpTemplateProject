@@ -181,7 +181,6 @@ internal static class UserManagementMenuHandler
 
             // Since we don't have a direct method in UserAuthenticationService, 
             // we'll use UserService directly
-            var userService = new Database.Services.UserService();
             var user = await UserService.FindByUsernameAsync(username);
 
             if (user != null)

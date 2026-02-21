@@ -150,7 +150,7 @@ public static class DatabaseSetupUtility
         try
         {
             // Check if table already exists
-            if (await CheckTableExistsAsync(DemoDatabaseName, "user"))
+            if (await CheckTableExistsAsync(DemoDatabaseName, "users"))
             {
                 LoggingFactory.Instance.LogDebug("User table already exists");
                 return true;
@@ -160,7 +160,7 @@ public static class DatabaseSetupUtility
             LoggingFactory.Instance.LogDebug("Creating user table...");
             const string createTableSql =
                 """
-                CREATE TABLE `user` (
+                CREATE TABLE `users` (
                     `id` INT AUTO_INCREMENT PRIMARY KEY,
                     `username` VARCHAR(50) NOT NULL,
                     `password_hash` VARCHAR(255) NOT NULL,

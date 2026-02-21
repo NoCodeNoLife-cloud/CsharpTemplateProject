@@ -30,7 +30,7 @@ public class UserService : ICrudService<User, int>
             connection.Open();
 
             using var cmd = new MySqlCommand(
-                "INSERT INTO `user` (username, password_hash) VALUES (@username, @passwordHash)",
+                "INSERT INTO `users` (username, password_hash) VALUES (@username, @passwordHash)",
                 connection);
 
             cmd.Parameters.AddWithValue("@username", entity.Username);
@@ -68,7 +68,7 @@ public class UserService : ICrudService<User, int>
             await connection.OpenAsync();
 
             await using var cmd = new MySqlCommand(
-                "INSERT INTO `user` (username, password_hash) VALUES (@username, @passwordHash)",
+                "INSERT INTO `users` (username, password_hash) VALUES (@username, @passwordHash)",
                 connection);
 
             cmd.Parameters.AddWithValue("@username", entity.Username);
@@ -106,7 +106,7 @@ public class UserService : ICrudService<User, int>
             connection.Open();
 
             using var cmd = new MySqlCommand(
-                "SELECT id, username, password_hash FROM `user` WHERE id = @id",
+                "SELECT id, username, password_hash FROM `users` WHERE id = @id",
                 connection);
             cmd.Parameters.AddWithValue("@id", id);
 
@@ -149,7 +149,7 @@ public class UserService : ICrudService<User, int>
             await connection.OpenAsync();
 
             await using var cmd = new MySqlCommand(
-                "SELECT id, username, password_hash FROM `user` WHERE id = @id",
+                "SELECT id, username, password_hash FROM `users` WHERE id = @id",
                 connection);
             cmd.Parameters.AddWithValue("@id", id);
 
@@ -193,7 +193,7 @@ public class UserService : ICrudService<User, int>
             connection.Open();
 
             using var cmd = new MySqlCommand(
-                "SELECT id, username, password_hash FROM `user` ORDER BY id DESC",
+                "SELECT id, username, password_hash FROM `users` ORDER BY id DESC",
                 connection);
 
             using var reader = cmd.ExecuteReader();
@@ -234,7 +234,7 @@ public class UserService : ICrudService<User, int>
             await connection.OpenAsync();
 
             await using var cmd = new MySqlCommand(
-                "SELECT id, username, password_hash FROM `user` ORDER BY id DESC",
+                "SELECT id, username, password_hash FROM `users` ORDER BY id DESC",
                 connection);
 
             await using var reader = await cmd.ExecuteReaderAsync();
@@ -274,7 +274,7 @@ public class UserService : ICrudService<User, int>
             connection.Open();
 
             using var cmd = new MySqlCommand(
-                "UPDATE `user` SET username = @username, password_hash = @passwordHash WHERE id = @id",
+                "UPDATE `users` SET username = @username, password_hash = @passwordHash WHERE id = @id",
                 connection);
 
             cmd.Parameters.AddWithValue("@id", entity.Id);
@@ -313,7 +313,7 @@ public class UserService : ICrudService<User, int>
             await connection.OpenAsync();
 
             await using var cmd = new MySqlCommand(
-                "UPDATE `user` SET username = @username, password_hash = @passwordHash WHERE id = @id",
+                "UPDATE `users` SET username = @username, password_hash = @passwordHash WHERE id = @id",
                 connection);
 
             cmd.Parameters.AddWithValue("@id", entity.Id);
@@ -351,7 +351,7 @@ public class UserService : ICrudService<User, int>
             using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             connection.Open();
 
-            using var cmd = new MySqlCommand("DELETE FROM `user` WHERE id = @id", connection);
+            using var cmd = new MySqlCommand("DELETE FROM `users` WHERE id = @id", connection);
             cmd.Parameters.AddWithValue("@id", id);
 
             var rowsAffected = cmd.ExecuteNonQuery();
@@ -386,7 +386,7 @@ public class UserService : ICrudService<User, int>
             await using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             await connection.OpenAsync();
 
-            await using var cmd = new MySqlCommand("DELETE FROM `user` WHERE id = @id", connection);
+            await using var cmd = new MySqlCommand("DELETE FROM `users` WHERE id = @id", connection);
             cmd.Parameters.AddWithValue("@id", id);
 
             var rowsAffected = await cmd.ExecuteNonQueryAsync();
@@ -429,7 +429,7 @@ public class UserService : ICrudService<User, int>
             using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             connection.Open();
 
-            using var cmd = new MySqlCommand("SELECT COUNT(*) FROM `user` WHERE id = @id", connection);
+            using var cmd = new MySqlCommand("SELECT COUNT(*) FROM `users` WHERE id = @id", connection);
             cmd.Parameters.AddWithValue("@id", id);
 
             var count = Convert.ToInt32(cmd.ExecuteScalar());
@@ -456,7 +456,7 @@ public class UserService : ICrudService<User, int>
             await using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             await connection.OpenAsync();
 
-            await using var cmd = new MySqlCommand("SELECT COUNT(*) FROM `user` WHERE id = @id", connection);
+            await using var cmd = new MySqlCommand("SELECT COUNT(*) FROM `users` WHERE id = @id", connection);
             cmd.Parameters.AddWithValue("@id", id);
 
             var count = Convert.ToInt32(await cmd.ExecuteScalarAsync());
@@ -482,7 +482,7 @@ public class UserService : ICrudService<User, int>
             using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             connection.Open();
 
-            using var cmd = new MySqlCommand("SELECT COUNT(*) FROM `user`", connection);
+            using var cmd = new MySqlCommand("SELECT COUNT(*) FROM `users`", connection);
             var count = Convert.ToInt32(cmd.ExecuteScalar());
 
             LoggingFactory.Instance.LogDebug($"Total users: {count}");
@@ -508,7 +508,7 @@ public class UserService : ICrudService<User, int>
             await using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             await connection.OpenAsync();
 
-            await using var cmd = new MySqlCommand("SELECT COUNT(*) FROM `user`", connection);
+            await using var cmd = new MySqlCommand("SELECT COUNT(*) FROM `users`", connection);
             var count = Convert.ToInt32(await cmd.ExecuteScalarAsync());
 
             LoggingFactory.Instance.LogDebug($"Total users: {count}");
@@ -538,7 +538,7 @@ public class UserService : ICrudService<User, int>
             using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             connection.Open();
 
-            using var cmd = new MySqlCommand($"SELECT id, username, password_hash FROM `user` WHERE {condition}", connection);
+            using var cmd = new MySqlCommand($"SELECT id, username, password_hash FROM `users` WHERE {condition}", connection);
 
             if (parameters != null)
             {
@@ -591,7 +591,7 @@ public class UserService : ICrudService<User, int>
             await using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             await connection.OpenAsync();
 
-            await using var cmd = new MySqlCommand($"SELECT id, username, password_hash FROM `user` WHERE {condition}", connection);
+            await using var cmd = new MySqlCommand($"SELECT id, username, password_hash FROM `users` WHERE {condition}", connection);
 
             if (parameters != null)
             {
@@ -644,7 +644,7 @@ public class UserService : ICrudService<User, int>
             connection.Open();
 
             using var cmd = new MySqlCommand(
-                "SELECT id, username, password_hash FROM `user` WHERE username = @username",
+                "SELECT id, username, password_hash FROM `users` WHERE username = @username",
                 connection);
             cmd.Parameters.AddWithValue("@username", username);
 
@@ -687,7 +687,7 @@ public class UserService : ICrudService<User, int>
             await connection.OpenAsync();
 
             await using var cmd = new MySqlCommand(
-                "SELECT id, username, password_hash FROM `user` WHERE username = @username",
+                "SELECT id, username, password_hash FROM `users` WHERE username = @username",
                 connection);
             cmd.Parameters.AddWithValue("@username", username);
 
@@ -734,7 +734,7 @@ public class UserService : ICrudService<User, int>
             connection.Open();
 
             using var cmd = new MySqlCommand(
-                "UPDATE `user` SET password_hash = @passwordHash WHERE id = @id",
+                "UPDATE `users` SET password_hash = @passwordHash WHERE id = @id",
                 connection);
 
             cmd.Parameters.AddWithValue("@id", userId);
@@ -777,7 +777,7 @@ public class UserService : ICrudService<User, int>
             await connection.OpenAsync();
 
             await using var cmd = new MySqlCommand(
-                "UPDATE `user` SET password_hash = @passwordHash WHERE id = @id",
+                "UPDATE `users` SET password_hash = @passwordHash WHERE id = @id",
                 connection);
 
             cmd.Parameters.AddWithValue("@id", userId);
