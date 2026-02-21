@@ -152,7 +152,7 @@ public static class DatabaseSetupUtility
             // Check if table already exists
             if (await CheckTableExistsAsync(DemoDatabaseName, "users"))
             {
-                LoggingFactory.Instance.LogDebug("User table already exists");
+                LoggingFactory.Instance.LogDebug("User table already exists.");
                 return true;
             }
 
@@ -164,6 +164,7 @@ public static class DatabaseSetupUtility
                     `id` INT AUTO_INCREMENT PRIMARY KEY,
                     `username` VARCHAR(50) NOT NULL,
                     `password_hash` VARCHAR(255) NOT NULL,
+                    `priority` VARCHAR(20) NOT NULL DEFAULT 'user',
                     UNIQUE KEY `unique_username` (`username`),
                     INDEX `idx_username` (`username`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -175,7 +176,7 @@ public static class DatabaseSetupUtility
             await using var cmd = new MySqlCommand(createTableSql, connection);
             await cmd.ExecuteNonQueryAsync();
 
-            LoggingFactory.Instance.LogDebug("Successfully created user table with id, username, and password_hash fields.");
+            LoggingFactory.Instance.LogDebug("Successfully created user table with id, username, password_hash, and priority fields.");
             return true;
         }
         catch (Exception ex)

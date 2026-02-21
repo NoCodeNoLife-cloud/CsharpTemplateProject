@@ -1,3 +1,4 @@
+using System.Data;
 using System.Security.Cryptography;
 using Client.Database.Models;
 using CustomSerilogImpl.InstanceVal.Service.Services;
@@ -30,11 +31,12 @@ public class UserService : ICrudService<User, int>
             connection.Open();
 
             using var cmd = new MySqlCommand(
-                "INSERT INTO `users` (username, password_hash) VALUES (@username, @passwordHash)",
+                "INSERT INTO `users` (username, password_hash, priority) VALUES (@username, @passwordHash, @priority)",
                 connection);
 
             cmd.Parameters.AddWithValue("@username", entity.Username);
             cmd.Parameters.AddWithValue("@passwordHash", entity.PasswordHash);
+            cmd.Parameters.AddWithValue("@priority", entity.Priority);
 
             var rowsAffected = cmd.ExecuteNonQuery();
 
@@ -68,11 +70,12 @@ public class UserService : ICrudService<User, int>
             await connection.OpenAsync();
 
             await using var cmd = new MySqlCommand(
-                "INSERT INTO `users` (username, password_hash) VALUES (@username, @passwordHash)",
+                "INSERT INTO `users` (username, password_hash, priority) VALUES (@username, @passwordHash, @priority)",
                 connection);
 
             cmd.Parameters.AddWithValue("@username", entity.Username);
             cmd.Parameters.AddWithValue("@passwordHash", entity.PasswordHash);
+            cmd.Parameters.AddWithValue("@priority", entity.Priority);
 
             var rowsAffected = await cmd.ExecuteNonQueryAsync();
 
@@ -106,7 +109,7 @@ public class UserService : ICrudService<User, int>
             connection.Open();
 
             using var cmd = new MySqlCommand(
-                "SELECT id, username, password_hash FROM `users` WHERE id = @id",
+                "SELECT id, username, password_hash, priority FROM `users` WHERE id = @id",
                 connection);
             cmd.Parameters.AddWithValue("@id", id);
 
@@ -117,7 +120,8 @@ public class UserService : ICrudService<User, int>
                 var user = new User(
                     reader.GetInt32("id"),
                     reader.GetString("username"),
-                    reader.GetString("password_hash")
+                    reader.GetString("password_hash"),
+                    reader.IsDBNull("priority") ? "user" : reader.GetString("priority")
                 );
 
                 LoggingFactory.Instance.LogDebug($"User found: {user}");
@@ -149,7 +153,7 @@ public class UserService : ICrudService<User, int>
             await connection.OpenAsync();
 
             await using var cmd = new MySqlCommand(
-                "SELECT id, username, password_hash FROM `users` WHERE id = @id",
+                "SELECT id, username, password_hash, priority FROM `users` WHERE id = @id",
                 connection);
             cmd.Parameters.AddWithValue("@id", id);
 
@@ -160,7 +164,8 @@ public class UserService : ICrudService<User, int>
                 var user = new User(
                     reader.GetInt32("id"),
                     reader.GetString("username"),
-                    reader.GetString("password_hash")
+                    reader.GetString("password_hash"),
+                    reader.IsDBNull("priority") ? "user" : reader.GetString("priority")
                 );
 
                 LoggingFactory.Instance.LogDebug($"User found: {user}");
@@ -193,7 +198,7 @@ public class UserService : ICrudService<User, int>
             connection.Open();
 
             using var cmd = new MySqlCommand(
-                "SELECT id, username, password_hash FROM `users` ORDER BY id DESC",
+                "SELECT id, username, password_hash, priority FROM `users` ORDER BY id DESC",
                 connection);
 
             using var reader = cmd.ExecuteReader();
@@ -203,7 +208,8 @@ public class UserService : ICrudService<User, int>
                 var user = new User(
                     reader.GetInt32("id"),
                     reader.GetString("username"),
-                    reader.GetString("password_hash")
+                    reader.GetString("password_hash"),
+                    reader.IsDBNull("priority") ? "user" : reader.GetString("priority")
                 );
                 users.Add(user);
             }
@@ -234,7 +240,7 @@ public class UserService : ICrudService<User, int>
             await connection.OpenAsync();
 
             await using var cmd = new MySqlCommand(
-                "SELECT id, username, password_hash FROM `users` ORDER BY id DESC",
+                "SELECT id, username, password_hash, priority FROM `users` ORDER BY id DESC",
                 connection);
 
             await using var reader = await cmd.ExecuteReaderAsync();
@@ -244,7 +250,8 @@ public class UserService : ICrudService<User, int>
                 var user = new User(
                     reader.GetInt32("id"),
                     reader.GetString("username"),
-                    reader.GetString("password_hash")
+                    reader.GetString("password_hash"),
+                    reader.IsDBNull("priority") ? "user" : reader.GetString("priority")
                 );
                 users.Add(user);
             }
@@ -274,12 +281,13 @@ public class UserService : ICrudService<User, int>
             connection.Open();
 
             using var cmd = new MySqlCommand(
-                "UPDATE `users` SET username = @username, password_hash = @passwordHash WHERE id = @id",
+                "UPDATE `users` SET username = @username, password_hash = @passwordHash, priority = @priority WHERE id = @id",
                 connection);
 
             cmd.Parameters.AddWithValue("@id", entity.Id);
             cmd.Parameters.AddWithValue("@username", entity.Username);
             cmd.Parameters.AddWithValue("@passwordHash", entity.PasswordHash);
+            cmd.Parameters.AddWithValue("@priority", entity.Priority);
 
             var rowsAffected = cmd.ExecuteNonQuery();
 
@@ -313,12 +321,13 @@ public class UserService : ICrudService<User, int>
             await connection.OpenAsync();
 
             await using var cmd = new MySqlCommand(
-                "UPDATE `users` SET username = @username, password_hash = @passwordHash WHERE id = @id",
+                "UPDATE `users` SET username = @username, password_hash = @passwordHash, priority = @priority WHERE id = @id",
                 connection);
 
             cmd.Parameters.AddWithValue("@id", entity.Id);
             cmd.Parameters.AddWithValue("@username", entity.Username);
             cmd.Parameters.AddWithValue("@passwordHash", entity.PasswordHash);
+            cmd.Parameters.AddWithValue("@priority", entity.Priority);
 
             var rowsAffected = await cmd.ExecuteNonQueryAsync();
 
@@ -538,7 +547,7 @@ public class UserService : ICrudService<User, int>
             using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             connection.Open();
 
-            using var cmd = new MySqlCommand($"SELECT id, username, password_hash FROM `users` WHERE {condition}", connection);
+            using var cmd = new MySqlCommand($"SELECT id, username, password_hash, priority FROM `users` WHERE {condition}", connection);
 
             if (parameters != null)
             {
@@ -559,7 +568,8 @@ public class UserService : ICrudService<User, int>
                 var user = new User(
                     reader.GetInt32("id"),
                     reader.GetString("username"),
-                    reader.GetString("password_hash")
+                    reader.GetString("password_hash"),
+                    reader.IsDBNull("priority") ? "user" : reader.GetString("priority")
                 );
                 users.Add(user);
             }
@@ -591,7 +601,7 @@ public class UserService : ICrudService<User, int>
             await using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
             await connection.OpenAsync();
 
-            await using var cmd = new MySqlCommand($"SELECT id, username, password_hash FROM `users` WHERE {condition}", connection);
+            await using var cmd = new MySqlCommand($"SELECT id, username, password_hash, priority FROM `users` WHERE {condition}", connection);
 
             if (parameters != null)
             {
@@ -612,7 +622,8 @@ public class UserService : ICrudService<User, int>
                 var user = new User(
                     reader.GetInt32("id"),
                     reader.GetString("username"),
-                    reader.GetString("password_hash")
+                    reader.GetString("password_hash"),
+                    reader.IsDBNull("priority") ? "user" : reader.GetString("priority")
                 );
                 users.Add(user);
             }
@@ -644,7 +655,7 @@ public class UserService : ICrudService<User, int>
             connection.Open();
 
             using var cmd = new MySqlCommand(
-                "SELECT id, username, password_hash FROM `users` WHERE username = @username",
+                "SELECT id, username, password_hash, priority FROM `users` WHERE username = @username",
                 connection);
             cmd.Parameters.AddWithValue("@username", username);
 
@@ -655,7 +666,8 @@ public class UserService : ICrudService<User, int>
                 var user = new User(
                     reader.GetInt32("id"),
                     reader.GetString("username"),
-                    reader.GetString("password_hash")
+                    reader.GetString("password_hash"),
+                    reader.IsDBNull("priority") ? "user" : reader.GetString("priority")
                 );
 
                 LoggingFactory.Instance.LogDebug($"User found by username: {user}");
@@ -687,7 +699,7 @@ public class UserService : ICrudService<User, int>
             await connection.OpenAsync();
 
             await using var cmd = new MySqlCommand(
-                "SELECT id, username, password_hash FROM `users` WHERE username = @username",
+                "SELECT id, username, password_hash, priority FROM `users` WHERE username = @username",
                 connection);
             cmd.Parameters.AddWithValue("@username", username);
 
@@ -698,7 +710,8 @@ public class UserService : ICrudService<User, int>
                 var user = new User(
                     reader.GetInt32("id"),
                     reader.GetString("username"),
-                    reader.GetString("password_hash")
+                    reader.GetString("password_hash"),
+                    reader.IsDBNull("priority") ? "user" : reader.GetString("priority")
                 );
 
                 LoggingFactory.Instance.LogDebug($"User found by username: {user}");

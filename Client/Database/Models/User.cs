@@ -21,6 +21,11 @@ public class User
     public string PasswordHash { get; set; } = string.Empty;
 
     /// <summary>
+    /// User priority level (user/admin)
+    /// </summary>
+    public string Priority { get; set; } = "user";
+
+    /// <summary>
     /// Parameterless constructor for ORM and serialization
     /// </summary>
     public User()
@@ -32,10 +37,12 @@ public class User
     /// </summary>
     /// <param name="username">User's username</param>
     /// <param name="passwordHash">User's password hash</param>
-    public User(string username, string passwordHash)
+    /// <param name="priority">User priority level (default: user)</param>
+    public User(string username, string passwordHash, string priority = "user")
     {
         Username = username;
         PasswordHash = passwordHash;
+        Priority = priority;
     }
 
     /// <summary>
@@ -44,11 +51,13 @@ public class User
     /// <param name="id">User ID</param>
     /// <param name="username">User's username</param>
     /// <param name="passwordHash">User's password hash</param>
-    public User(int id, string username, string passwordHash)
+    /// <param name="priority">User priority level</param>
+    public User(int id, string username, string passwordHash, string priority = "user")
     {
         Id = id;
         Username = username;
         PasswordHash = passwordHash;
+        Priority = priority;
     }
 
     /// <summary>
@@ -66,6 +75,6 @@ public class User
     /// <returns>User information string</returns>
     public override string ToString()
     {
-        return $"User[ID={Id}, Username={Username}]";
+        return $"User[ID={Id}, Username={Username}, Priority={Priority}]";
     }
 }
