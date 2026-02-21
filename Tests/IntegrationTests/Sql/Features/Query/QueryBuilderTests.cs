@@ -350,7 +350,7 @@ public class QueryBuilderTests
         var result = queryBuilder
             .Select(["u.id", "u.name", "o.total"])
             .From("users", "u")
-            .InnerJoin("orders", "o", "u.id = o.user_id")
+            .InnerJoin("orders", "u.id = o.user_id", "o")
             .Where("u.status = 'active'")
             .Where("o.total > 100")
             .OrderBy("o.created_at DESC")

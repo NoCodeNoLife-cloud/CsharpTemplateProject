@@ -277,7 +277,7 @@ public class QueryBuilder
     /// <returns>QueryBuilder instance</returns>
     public QueryBuilder Limit(int limit, int offset)
     {
-        return Limit(limit).Offset(offset);
+        return Limit(offset).Offset(limit);
     }
 
     /// <summary>
@@ -287,6 +287,20 @@ public class QueryBuilder
     public string Build()
     {
         var query = new StringBuilder();
+
+        // Check if any clauses are present
+        bool hasClauses = _selectClause.Length > 0 || 
+                         _fromClause.Length > 0 || 
+                         _joinClauses.Length > 0 || 
+                         _whereClause.Length > 0 || 
+                         _groupByClause.Length > 0 || 
+                         _havingClause.Length > 0 || 
+                         _orderByClause.Length > 0 || 
+                         _limit >= 0;
+
+        // If no clauses, return empty string
+        if (!hasClauses)
+            return "";
 
         // Build basic query parts
         if (_selectClause.Length > 0)
@@ -313,11 +327,13 @@ public class QueryBuilder
             query.Append(_orderByClause);
 
         // Add LIMIT and OFFSET
-        if (_limit < 0) return query.ToString().Trim();
-        query.Append($" LIMIT {_limit}");
-        if (_offset >= 0)
+        if (_limit >= 0)
         {
-            query.Append($" OFFSET {_offset}");
+            query.Append($" LIMIT {_limit}");
+            if (_offset >= 0)
+            {
+                query.Append($" OFFSET {_offset}");
+            }
         }
 
         return query.ToString().Trim();

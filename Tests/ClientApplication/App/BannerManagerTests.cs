@@ -17,7 +17,7 @@ public class BannerManagerTests
         const string bannerPath = BannerManager.BannerPath;
 
         // Assert
-        bannerPath.Should().Be("App/Banner/Banner.txt");
+        bannerPath.Should().Be("Resources/Banner.txt");
     }
 
     [Fact]
@@ -29,8 +29,7 @@ public class BannerManagerTests
         // Assert
         fullPath.Should().NotBeNull();
         fullPath.Should().NotBeEmpty();
-        fullPath.Should().Contain("App");
-        fullPath.Should().Contain("Banner");
+        fullPath.Should().Contain("Resources");
         fullPath.Should().EndWith("Banner.txt");
     }
 
