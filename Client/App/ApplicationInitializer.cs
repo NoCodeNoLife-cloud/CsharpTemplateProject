@@ -1,4 +1,3 @@
-using Client.Config;
 using Client.Database;
 using CommonFramework.Aop.Attributes;
 using CommonFramework.Banner;

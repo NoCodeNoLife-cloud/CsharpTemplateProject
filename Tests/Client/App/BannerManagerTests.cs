@@ -1,8 +1,6 @@
 using CommonFramework.Banner;
-using Xunit;
-using FluentAssertions;
 
-namespace Tests.ClientApplication.App;
+namespace Tests.Client.App;
 
 /// <summary>
 /// Banner class unit tests

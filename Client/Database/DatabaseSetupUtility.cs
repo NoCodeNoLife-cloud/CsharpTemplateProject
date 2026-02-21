@@ -1,4 +1,4 @@
-using Client.Config;
+using Client.Database.Config;
 using CustomSerilogImpl.InstanceVal.Service.Services;
 using MySqlConnector;
 

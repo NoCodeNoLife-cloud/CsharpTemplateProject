@@ -1,9 +1,6 @@
-using Client.Config;
 using CommonFramework.Banner;
-using Xunit;
-using FluentAssertions;
 
-namespace Tests.ClientApplication.Config;
+namespace Tests.Client.Config;
 
 /// <summary>
 /// EnvironmentPath class unit tests
