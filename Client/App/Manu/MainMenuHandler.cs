@@ -115,7 +115,14 @@ internal static class MainMenuHandler
         try
         {
             Console.Clear();
-            LoggingFactory.Instance.LogInformation("Please enter your registration information:");
+            LoggingFactory.Instance.LogInformation("Please select your account type first:");
+
+            // Select user priority/permission level first
+            var priority = GetUserPrioritySelection();
+            if (string.IsNullOrEmpty(priority)) return;
+
+            Console.Clear();
+            LoggingFactory.Instance.LogInformation($"Creating new {priority} account:");
 
             // Get username with validation
             var username = InputValidator.GetUserInput(UsernameField, MinUsernameLength, MaxUsernameLength);
@@ -137,10 +144,6 @@ internal static class MainMenuHandler
                 Console.ReadLine();
                 return;
             }
-
-            // Select user priority/permission level
-            var priority = GetUserPrioritySelection();
-            if (string.IsNullOrEmpty(priority)) return;
 
             // Show registration progress
             LoggingFactory.Instance.LogDebug($"Attempting to register new user '{username}' with {priority} permissions...");
@@ -192,7 +195,7 @@ internal static class MainMenuHandler
         {
             Console.Clear();
             Console.WriteLine("=== Select Account Type ===");
-            Console.WriteLine("Please choose your account permission level:");
+            Console.WriteLine("Please choose the type of account you want to create:");
             Console.WriteLine("");
             
             Console.Write("[1] ");
