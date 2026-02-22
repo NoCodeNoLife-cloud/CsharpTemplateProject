@@ -1,3 +1,4 @@
+using Client.Database.UserAuthentication;
 using CustomSerilogImpl.InstanceVal.Service.Services;
 
 namespace Client.App.Manu;
@@ -22,33 +23,60 @@ internal static class MenuNavigator
 
                 var choice = MainMenuHandler.GetUserMenuChoice();
 
-                switch (choice)
+                // Handle menu choices based on login status
+                if (UserAuthenticationService.CurrentUserStatus == LoginStatus.NotLoggedIn)
                 {
-                    case "1":
-                        await MainMenuHandler.HandleUserLoginAsync();
-                        break;
-                    case "2":
-                        await MainMenuHandler.HandleUserRegistrationAsync();
-                        break;
-                    case "3":
-                        await UserManagementMenuHandler.HandleUserManagementMenuAsync();
-                        break;
-                    case "4":
-                        LoggingFactory.Instance.LogInformation("Thank you for using our application. Goodbye!");
-                        return; // Exit application
-                    default:
-                        LoggingFactory.Instance.LogWarning("Invalid option selected!");
-                        break;
+                    // Not logged in - handle options 1, 2, 3
+                    switch (choice)
+                    {
+                        case "1":
+                            await MainMenuHandler.HandleUserLoginAsync();
+                            break;
+                        case "2":
+                            await MainMenuHandler.HandleUserRegistrationAsync();
+                            break;
+                        case "3":
+                            LoggingFactory.Instance.LogInformation("Thank you for using our application. Goodbye!");
+                            return; // Exit application
+                        default:
+                            LoggingFactory.Instance.LogWarning("Invalid choice. Please select a valid option.");
+                            Console.WriteLine("Press Enter to continue...");
+                            Console.ReadLine();
+                            break;
+                    }
                 }
-
-                if (choice == "4") continue;
+                else
+                {
+                    // Logged in - handle options 1, 2, 3
+                    switch (choice)
+                    {
+                        case "1":
+                            await UserManagementMenuHandler.HandleUserManagementMenuAsync();
+                            break;
+                        case "2":
+                            // Handle logout
+                            UserAuthenticationService.Logout();
+                            LoggingFactory.Instance.LogInformation("You have been logged out successfully.");
+                            await Task.Delay(1500); // Brief pause to show logout message
+                            break;
+                        case "3":
+                            LoggingFactory.Instance.LogInformation("Thank you for using our application. Goodbye!");
+                            return; // Exit application
+                        default:
+                            LoggingFactory.Instance.LogWarning("Invalid choice. Please select a valid option.");
+                            Console.WriteLine("Press Enter to continue...");
+                            Console.ReadLine();
+                            break;
+                    }
+                }
                 // Auto continue to next iteration
             }
         }
         catch (Exception ex)
         {
-            LoggingFactory.Instance.LogError($"Unexpected error during menu navigation: {ex.Message}", ex);
-            LoggingFactory.Instance.LogDebug("Press Enter to exit...");
+            LoggingFactory.Instance.LogError($"Error in main menu navigation: {ex.Message}", ex);
+            LoggingFactory.Instance.LogError($"Navigation error: {ex.Message}");
+            Console.WriteLine("Press Enter to continue...");
             Console.ReadLine();
         }
     }

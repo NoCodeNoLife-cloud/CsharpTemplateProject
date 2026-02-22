@@ -15,23 +15,39 @@ internal static class MainMenuHandler
     private const int MaxPasswordLength = 100;
 
     /// <summary>
-    /// Displays the main menu
+    /// Displays the main menu based on current login status
     /// </summary>
     public static void DisplayMainMenu()
     {
         LoggingFactory.Instance.LogInformation("Displaying main menu");
         Console.WriteLine("\n=== User Management System ===");
-        Console.Write("[1] ");
-        Console.WriteLine($"Login with existing account");
+        
+        // Check current login status to determine which options to show
+        if (UserAuthenticationService.CurrentUserStatus == LoginStatus.NotLoggedIn)
+        {
+            // User not logged in - show login and registration options
+            Console.Write("[1] ");
+            Console.WriteLine($"Login with existing account");
 
-        Console.Write("[2] ");
-        Console.WriteLine($"Register new account");
+            Console.Write("[2] ");
+            Console.WriteLine($"Register new account");
 
-        Console.Write("[3] ");
-        Console.WriteLine($"User Management (Admin Operations)");
+            Console.Write("[3] ");
+            Console.WriteLine($"Exit application");
+        }
+        else
+        {
+            // User logged in - show admin operations and exit
+            Console.Write("[1] ");
+            Console.WriteLine($"User Management (Admin Operations)");
+            
+            Console.Write("[2] ");
+            Console.WriteLine($"Logout");
 
-        Console.Write("[4] ");
-        Console.WriteLine($"Exit application");
+            Console.Write("[3] ");
+            Console.WriteLine($"Exit application");
+        }
+        
         Console.WriteLine("===============================");
     }
 
