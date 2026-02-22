@@ -87,21 +87,21 @@ internal static class MainMenuHandler
         {
             LoggingFactory.Instance.LogError($"Database error during login: {dbEx.Message}", dbEx);
             LoggingFactory.Instance.LogError($"Database connection error: {dbEx.Message}");
-            LoggingFactory.Instance.LogDebug("Press Enter to continue...");
+            Console.WriteLine("Press Enter to continue...");
             Console.ReadLine();
         }
         catch (InvalidOperationException ioEx)
         {
             LoggingFactory.Instance.LogError($"Invalid operation during login: {ioEx.Message}", ioEx);
             LoggingFactory.Instance.LogError($"Invalid operation: {ioEx.Message}");
-            LoggingFactory.Instance.LogDebug("Press Enter to continue...");
+            Console.WriteLine("Press Enter to continue...");
             Console.ReadLine();
         }
         catch (Exception ex)
         {
             LoggingFactory.Instance.LogError($"Unexpected error during user login: {ex.Message}", ex);
             LoggingFactory.Instance.LogError($"Unexpected error: {ex.Message}");
-            LoggingFactory.Instance.LogDebug("Press Enter to continue...");
+            Console.WriteLine("Press Enter to continue...");
             Console.ReadLine();
         }
     }
@@ -140,8 +140,7 @@ internal static class MainMenuHandler
             {
                 LoggingFactory.Instance.LogError($"Passwords do not match!");
                 LoggingFactory.Instance.LogWarning("Passwords do not match! Please try again.");
-                LoggingFactory.Instance.LogDebug("Press Enter to continue...");
-                Console.ReadLine();
+                await Task.Delay(2000); // Auto continue after showing error
                 return;
             }
 
@@ -155,6 +154,8 @@ internal static class MainMenuHandler
                 LoggingFactory.Instance.LogInformation("Registration successful!");
                 LoggingFactory.Instance.LogInformation($"Your account has been created. (User ID: {userId})");
                 LoggingFactory.Instance.LogInformation("You can now login with your new account.");
+                // Auto continue to main menu
+                await Task.Delay(2000); // Give user time to read the message
             }
             else
             {
@@ -166,21 +167,21 @@ internal static class MainMenuHandler
         {
             LoggingFactory.Instance.LogError($"Database error during registration: {dbEx.Message}", dbEx);
             LoggingFactory.Instance.LogError($"Database connection error: {dbEx.Message}");
-            LoggingFactory.Instance.LogDebug("Press Enter to continue...");
+            Console.WriteLine("Press Enter to continue...");
             Console.ReadLine();
         }
         catch (InvalidOperationException ioEx)
         {
             LoggingFactory.Instance.LogError($"Invalid operation during registration: {ioEx.Message}", ioEx);
             LoggingFactory.Instance.LogError($"Invalid operation: {ioEx.Message}");
-            LoggingFactory.Instance.LogDebug("Press Enter to continue...");
+            Console.WriteLine("Press Enter to continue...");
             Console.ReadLine();
         }
         catch (Exception ex)
         {
             LoggingFactory.Instance.LogError($"Unexpected error during user registration: {ex.Message}", ex);
             LoggingFactory.Instance.LogError($"Unexpected error: {ex.Message}");
-            LoggingFactory.Instance.LogDebug("Press Enter to continue...");
+            Console.WriteLine("Press Enter to continue...");
             Console.ReadLine();
         }
     }

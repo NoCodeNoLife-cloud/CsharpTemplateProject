@@ -14,6 +14,21 @@ public static class UserAuthenticationService
     private const int SaltSize = 32;
     private const int HashSize = 32;
     private const int Pbkdf2Iterations = 10000;
+    
+    /// <summary>
+    /// Current user's login status
+    /// </summary>
+    public static LoginStatus CurrentUserStatus { get; private set; } = LoginStatus.NotLoggedIn;
+    
+    /// <summary>
+    /// Current logged-in user ID
+    /// </summary>
+    public static int? CurrentUserId { get; private set; }
+    
+    /// <summary>
+    /// Current logged-in username
+    /// </summary>
+    public static string? CurrentUsername { get; private set; }
 
     /// <summary>
     /// Authenticates a user by username and password using secure hashing
@@ -46,7 +61,18 @@ public static class UserAuthenticationService
                 // Verify password using secure hash comparison
                 if (VerifyPassword(password, storedHash))
                 {
-                    LoggingFactory.Instance.LogDebug($"User authentication successful: ID={userId}, Username={foundUsername}");
+                    // Update current user status based on user priority
+                    var userPriority = await GetUserPriorityAsync(userId);
+                    CurrentUserStatus = userPriority?.ToLower() switch
+                    {
+                        "admin" => LoginStatus.Administrator,
+                        "super" => LoginStatus.SuperAdministrator,
+                        _ => LoginStatus.RegularUser
+                    };
+                    CurrentUserId = userId;
+                    CurrentUsername = foundUsername;
+                    
+                    LoggingFactory.Instance.LogDebug($"User authentication successful: ID={userId}, Username={foundUsername}, Status={CurrentUserStatus}");
                     return (true, userId, foundUsername);
                 }
                 else
@@ -113,6 +139,32 @@ public static class UserAuthenticationService
         }
 
         return true;
+    }
+    
+    /// <summary>
+    /// Gets user priority level
+    /// </summary>
+    /// <param name="userId">User ID</param>
+    /// <returns>User priority level</returns>
+    private static async Task<string?> GetUserPriorityAsync(int userId)
+    {
+        try
+        {
+            await using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
+            await connection.OpenAsync();
+
+            await using var cmd = new MySqlCommand(
+                "SELECT priority FROM `users` WHERE id = @userId", connection);
+            cmd.Parameters.AddWithValue("@userId", userId);
+
+            var result = await cmd.ExecuteScalarAsync();
+            return result?.ToString();
+        }
+        catch (Exception ex)
+        {
+            LoggingFactory.Instance.LogError($"Failed to get user priority for ID {userId}: {ex.Message}");
+            return null;
+        }
     }
 
     
@@ -284,5 +336,47 @@ public static class UserAuthenticationService
             LoggingFactory.Instance.LogError($"Failed to delete user ID {userId}: {ex.Message}");
             return false;
         }
+    }
+    
+    /// <summary>
+    /// Logs out current user and resets login status
+    /// </summary>
+    public static void Logout()
+    {
+        LoggingFactory.Instance.LogDebug($"User logged out: ID={CurrentUserId}, Username={CurrentUsername}, Status={CurrentUserStatus}");
+        
+        CurrentUserStatus = LoginStatus.NotLoggedIn;
+        CurrentUserId = null;
+        CurrentUsername = null;
+        
+        LoggingFactory.Instance.LogInformation("User logout successful");
+    }
+    
+    /// <summary>
+    /// Checks if current user is logged in
+    /// </summary>
+    /// <returns>True if user is logged in, false otherwise</returns>
+    public static bool IsUserLoggedIn()
+    {
+        return CurrentUserStatus != LoginStatus.NotLoggedIn;
+    }
+    
+    /// <summary>
+    /// Checks if current user has administrator permissions
+    /// </summary>
+    /// <returns>True if user is administrator or super administrator, false otherwise</returns>
+    public static bool IsUserAdministrator()
+    {
+        return CurrentUserStatus == LoginStatus.Administrator || 
+               CurrentUserStatus == LoginStatus.SuperAdministrator;
+    }
+    
+    /// <summary>
+    /// Checks if current user is super administrator
+    /// </summary>
+    /// <returns>True if user is super administrator, false otherwise</returns>
+    public static bool IsUserSuperAdministrator()
+    {
+        return CurrentUserStatus == LoginStatus.SuperAdministrator;
     }
 }

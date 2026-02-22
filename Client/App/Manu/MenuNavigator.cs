@@ -42,8 +42,7 @@ internal static class MenuNavigator
                 }
 
                 if (choice == "4") continue;
-                LoggingFactory.Instance.LogDebug("Press Enter to continue...");
-                Console.ReadLine();
+                // Auto continue to next iteration
             }
         }
         catch (Exception ex)
