@@ -9,5 +9,8 @@
 	<s:Boolean x:Key="/Default/Environment/UnitTesting/CreateUnitTestDialog/ShowAdvancedOptions/@EntryValue">True</s:Boolean>
 	<s:String x:Key="/Default/Environment/UnitTesting/CreateUnitTestDialog/TestProjectMapping/=0A598E9C_002DE0B0_002D4B07_002DAF79_002D9A3722D613CD/@EntryIndexedValue">F1C8609F-1479-4E08-88FB-255F4CEFAAE1</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/CreateUnitTestDialog/TestTemplateMapping/=xUnit/@EntryIndexedValue">33ff99d8-b1ad-4ed5-a4fd-376b97c2c841</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=5fad9efb_002Da34a_002D4c66_002D8670_002D0c927008489f/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="&amp;lt;Tests&amp;gt; 中的所有测试" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;Project Location="E:\GitHub\CsharpTemplateProject\Tests" Presentation="&amp;lt;Tests&amp;gt;" /&gt;&#xD;
+&lt;/SessionState&gt;</s:String>
 	
 	</wpf:ResourceDictionary>

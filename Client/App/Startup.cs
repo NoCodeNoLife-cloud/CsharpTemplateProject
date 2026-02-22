@@ -9,7 +9,7 @@ namespace Client.App;
 /// <summary>
 /// Contains the main entry point of the application
 /// </summary>
-internal static class Program
+internal static class Startup
 {
     /// <summary>
     /// Entry point of the application
