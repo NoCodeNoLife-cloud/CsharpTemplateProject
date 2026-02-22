@@ -7,4 +7,23 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\Log\Log.csproj"/>
+        <ProjectReference Include="..\FrameWork\FrameWork.csproj"/>
+        <ProjectReference Include="..\Sql\Sql.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="Resources\**" CopyToOutputDirectory="PreserveNewest"/>
+        <None Update="Resources\Banner.txt">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\Banner.txt">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MrAdvice" Version="2.20.1"/>
+    </ItemGroup>
 </Project>
