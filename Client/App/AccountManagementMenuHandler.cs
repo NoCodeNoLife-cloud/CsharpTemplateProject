@@ -232,24 +232,14 @@ internal static class AccountManagementMenuHandler
             // Update username
             currentUser.Username = newUsername;
             var userService = new UserService();
-            var updatedUser = await userService.UpdateAsync(currentUser);
+            await userService.UpdateAsync(currentUser);
 
-            if (updatedUser != null)
-            {
-                // Update the current username in authentication service
-                UserAuthenticationService.CurrentUsername = newUsername;
+            // Update the current username in authentication service
+            UserAuthenticationService.CurrentUsername = newUsername;
                 
-                LoggingFactory.Instance.LogInformation($"Username changed successfully from '{currentUser.Username}' to '{newUsername}' (ID: {currentUserId})");
-                Console.WriteLine($"Username changed successfully to: {newUsername}");
-                await Task.Delay(2000); // Auto continue after success
-            }
-            else
-            {
-                LoggingFactory.Instance.LogError($"Failed to change username for user ID {currentUserId}");
-                Console.WriteLine("Error: Failed to update username.");
-                Console.WriteLine("Press Enter to continue...");
-                Console.ReadLine();
-            }
+            LoggingFactory.Instance.LogInformation($"Username changed successfully from '{currentUser.Username}' to '{newUsername}' (ID: {currentUserId})");
+            Console.WriteLine($"Username changed successfully to: {newUsername}");
+            await Task.Delay(2000); // Auto continue after success
         }
         catch (Exception ex)
         {
@@ -336,7 +326,6 @@ internal static class AccountManagementMenuHandler
                 // Auto logout after account deletion
                 UserAuthenticationService.Logout();
                 await Task.Delay(2000);
-                return; // Exit to main menu
             }
             else
             {
