@@ -21,7 +21,7 @@ internal static class MainMenuHandler
     {
         LoggingFactory.Instance.LogInformation("Displaying main menu");
         Console.WriteLine("\n=== User Management System ===");
-        
+
         // Check current login status to determine which options to show
         if (UserAuthenticationService.CurrentUserStatus == LoginStatus.NotLoggedIn)
         {
@@ -37,30 +37,34 @@ internal static class MainMenuHandler
         }
         else
         {
-            // User logged in - check permission level to determine options
+            // User logged in - show account management for all users
+            Console.Write("[1] ");
+            Console.WriteLine($"Account Management");
+
+            // Show additional options based on permission level
             if (UserAuthenticationService.IsUserAdministrator())
             {
                 // Administrator or Super Administrator - show admin operations
-                Console.Write("[1] ");
+                Console.Write("[2] ");
                 Console.WriteLine($"User Management (Admin Operations)");
-                
+
+                Console.Write("[3] ");
+                Console.WriteLine($"Logout");
+
+                Console.Write("[4] ");
+                Console.WriteLine($"Exit application");
+            }
+            else
+            {
+                // Regular user - show logout and exit
                 Console.Write("[2] ");
                 Console.WriteLine($"Logout");
 
                 Console.Write("[3] ");
                 Console.WriteLine($"Exit application");
             }
-            else
-            {
-                // Regular user - only show logout and exit
-                Console.Write("[1] ");
-                Console.WriteLine($"Logout");
-
-                Console.Write("[2] ");
-                Console.WriteLine($"Exit application");
-            }
         }
-        
+
         Console.WriteLine("===============================");
     }
 
@@ -218,7 +222,7 @@ internal static class MainMenuHandler
     /// <summary>
     /// Gets user priority selection from interactive menu
     /// </summary>
-    /// <returns>Selected priority ("user" or "admin"), or null if cancelled</returns>
+    /// <returns>Selected priority ("user" or "admin"), or null if canceled</returns>
     private static string? GetUserPrioritySelection()
     {
         try
@@ -227,20 +231,20 @@ internal static class MainMenuHandler
             Console.WriteLine("=== Select Account Type ===");
             Console.WriteLine("Please choose the type of account you want to create:");
             Console.WriteLine("");
-            
+
             Console.Write("[1] ");
             Console.WriteLine("Regular User (Standard permissions)");
-            
+
             Console.Write("[2] ");
             Console.WriteLine("Administrator (Full permissions)");
-            
+
             Console.WriteLine("");
             Console.Write("Enter your choice (1 or 2): ");
-            
+
             while (true)
             {
                 var choice = Console.ReadLine()?.Trim();
-                
+
                 switch (choice)
                 {
                     case "1":
@@ -256,7 +260,7 @@ internal static class MainMenuHandler
                         Console.WriteLine("Invalid choice. Please enter 1 or 2.");
                         break;
                 }
-                
+
                 Console.Write("Enter your choice (1 or 2): ");
             }
         }

@@ -28,7 +28,7 @@ public static class UserAuthenticationService
     /// <summary>
     /// Current logged-in username
     /// </summary>
-    public static string? CurrentUsername { get; private set; }
+    public static string? CurrentUsername { get; set; }
 
     /// <summary>
     /// Authenticates a user by username and password using secure hashing
