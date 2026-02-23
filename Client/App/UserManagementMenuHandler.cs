@@ -49,6 +49,16 @@ internal static class UserManagementMenuHandler
     [Obsolete("Obsolete")]
     public static async Task HandleUserManagementMenuAsync()
     {
+        // Security check - ensure only administrators can access this menu
+        if (!UserAuthenticationService.IsUserAdministrator())
+        {
+            LoggingFactory.Instance.LogWarning("Access denied: User management requires administrator privileges");
+            Console.WriteLine("Access denied: This feature requires administrator privileges.");
+            Console.WriteLine("Press Enter to continue...");
+            Console.ReadLine();
+            return;
+        }
+
         try
         {
             while (true)

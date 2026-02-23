@@ -37,15 +37,28 @@ internal static class MainMenuHandler
         }
         else
         {
-            // User logged in - show admin operations and exit
-            Console.Write("[1] ");
-            Console.WriteLine($"User Management (Admin Operations)");
-            
-            Console.Write("[2] ");
-            Console.WriteLine($"Logout");
+            // User logged in - check permission level to determine options
+            if (UserAuthenticationService.IsUserAdministrator())
+            {
+                // Administrator or Super Administrator - show admin operations
+                Console.Write("[1] ");
+                Console.WriteLine($"User Management (Admin Operations)");
+                
+                Console.Write("[2] ");
+                Console.WriteLine($"Logout");
 
-            Console.Write("[3] ");
-            Console.WriteLine($"Exit application");
+                Console.Write("[3] ");
+                Console.WriteLine($"Exit application");
+            }
+            else
+            {
+                // Regular user - only show logout and exit
+                Console.Write("[1] ");
+                Console.WriteLine($"Logout");
+
+                Console.Write("[2] ");
+                Console.WriteLine($"Exit application");
+            }
         }
         
         Console.WriteLine("===============================");

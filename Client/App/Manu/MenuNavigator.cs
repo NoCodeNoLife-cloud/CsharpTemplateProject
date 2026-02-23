@@ -47,26 +47,51 @@ internal static class MenuNavigator
                 }
                 else
                 {
-                    // Logged in - handle options 1, 2, 3
-                    switch (choice)
+                    // Logged in - handle menu based on permission level
+                    if (UserAuthenticationService.IsUserAdministrator())
                     {
-                        case "1":
-                            await UserManagementMenuHandler.HandleUserManagementMenuAsync();
-                            break;
-                        case "2":
-                            // Handle logout
-                            UserAuthenticationService.Logout();
-                            LoggingFactory.Instance.LogInformation("You have been logged out successfully.");
-                            await Task.Delay(1500); // Brief pause to show logout message
-                            break;
-                        case "3":
-                            LoggingFactory.Instance.LogInformation("Thank you for using our application. Goodbye!");
-                            return; // Exit application
-                        default:
-                            LoggingFactory.Instance.LogWarning("Invalid choice. Please select a valid option.");
-                            Console.WriteLine("Press Enter to continue...");
-                            Console.ReadLine();
-                            break;
+                        // Administrator or Super Administrator menu
+                        switch (choice)
+                        {
+                            case "1":
+                                await UserManagementMenuHandler.HandleUserManagementMenuAsync();
+                                break;
+                            case "2":
+                                // Handle logout
+                                UserAuthenticationService.Logout();
+                                LoggingFactory.Instance.LogInformation("You have been logged out successfully.");
+                                await Task.Delay(1500); // Brief pause to show logout message
+                                break;
+                            case "3":
+                                LoggingFactory.Instance.LogInformation("Thank you for using our application. Goodbye!");
+                                return; // Exit application
+                            default:
+                                LoggingFactory.Instance.LogWarning("Invalid choice. Please select a valid option.");
+                                Console.WriteLine("Press Enter to continue...");
+                                Console.ReadLine();
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        // Regular user menu
+                        switch (choice)
+                        {
+                            case "1":
+                                // Handle logout
+                                UserAuthenticationService.Logout();
+                                LoggingFactory.Instance.LogInformation("You have been logged out successfully.");
+                                await Task.Delay(1500); // Brief pause to show logout message
+                                break;
+                            case "2":
+                                LoggingFactory.Instance.LogInformation("Thank you for using our application. Goodbye!");
+                                return; // Exit application
+                            default:
+                                LoggingFactory.Instance.LogWarning("Invalid choice. Please select a valid option.");
+                                Console.WriteLine("Press Enter to continue...");
+                                Console.ReadLine();
+                                break;
+                        }
                     }
                 }
                 // Auto continue to next iteration
