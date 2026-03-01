@@ -19,7 +19,24 @@ public class LogAttribute : Attribute, IMethodAdvice
     public bool LogMethodException { get; set; } = true; // Method exception logging
     public bool LogParameters { get; set; } // Method parameters logging
     public bool LogReturnValue { get; set; } // Method return value logging
-    public bool LogExecutionTime { get; set; } // Execution time logging
+
+    /// <summary>
+    /// Gets or sets whether to log method execution time.
+    /// When set to true, automatically enables LogMethodExit as well.
+    /// </summary>
+    public bool LogExecutionTime
+    {
+        get;
+        set
+        {
+            field = value;
+            // Automatically enable method exit logging when execution time logging is enabled
+            if (value)
+            {
+                LogMethodExit = true;
+            }
+        }
+    }
 
     // Thread-static field to track recently logged exceptions and avoid duplicates
     [ThreadStatic] private static HashSet<Exception>? _recentlyLoggedExceptions;

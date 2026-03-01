@@ -13,20 +13,29 @@ internal static class Startup
     /// <summary>
     /// Entry point of the application
     /// </summary>
-    [Log(LogLevel = LogLevel.Debug, LogMethodEntry = false)]
+    [Log(LogLevel = LogLevel.Debug, LogMethodEntry = false, LogExecutionTime = true)]
     [Obsolete("Obsolete")]
-    private static async Task Main()
+    private static Task Main()
     {
         try
         {
-            // Print enhanced Banner
-            BannerManager.PrintBanner();
+            try
+            {
+                // Print enhanced Banner
+                BannerManager.PrintBanner();
+            }
+            catch (Exception ex)
+            {
+                LoggingFactory.Instance.LogError($"Application startup failed: {ex.Message}", ex);
+                LoggingFactory.Instance.LogDebug("Press Enter to exit...");
+                Console.ReadLine();
+            }
+
+            return Task.CompletedTask;
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            LoggingFactory.Instance.LogError($"Application startup failed: {ex.Message}", ex);
-            LoggingFactory.Instance.LogDebug("Press Enter to exit...");
-            Console.ReadLine();
+            return Task.FromException(exception);
         }
     }
 }
