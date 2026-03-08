@@ -43,5 +43,7 @@
 
     <ItemGroup>
       <Folder Include="FrameWork\" />
+      <Folder Include="IntegrationTests\Sql\Features\Connection\" />
+      <Folder Include="IntegrationTests\Sql\Infrastructure\" />
     </ItemGroup>
 </Project>

@@ -1,6 +1,6 @@
 using CustomSerilogImpl.InstanceVal.Service.Services;
 
-namespace Client.Database.UserAuthentication;
+namespace Server.Database.UserAuthentication;
 
 /// <summary>
 /// Validates user login credentials and prevents duplicate entries

@@ -5,6 +5,8 @@ using CustomSerilogImpl.InstanceVal.Service.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Server.Database;
+using Server.Database.UserAuthentication;
 
 namespace Server.App;
 
@@ -29,7 +31,27 @@ internal static class Startup
             .UseUrls("http://localhost:5000")
             .Configure(app =>
             {
-                // Default handler for other paths
+                // Define endpoint configurations
+                var endpoints = new List<EndpointConfig>
+                {
+                    // User Authentication API endpoints
+                    new() { Path = "/api/auth/login", Method = "POST", Handler = UserAuthApiService.HandleLoginAsync, ContentType = "application/json" },
+                    new() { Path = "/api/auth/register", Method = "POST", Handler = UserAuthApiService.HandleRegisterAsync, ContentType = "application/json" },
+                    new() { Path = "/api/auth/logout", Method = "POST", Handler = UserAuthApiService.HandleLogoutAsync, ContentType = "application/json" },
+                    new() { Path = "/api/user", Method = "GET", Handler = UserAuthApiService.HandleGetUserInfoAsync, ContentType = "application/json" },
+                    new() { Path = "/api/user/password", Method = "PUT", Handler = UserAuthApiService.HandleChangePasswordAsync, ContentType = "application/json" },
+                    new() { Path = "/api/users", Method = "GET", Handler = UserAuthApiService.HandleGetAllUsersAsync, ContentType = "application/json", RequireAuth = true },
+                    new() { Path = "/api/users", Method = "DELETE", Handler = UserAuthApiService.HandleDeleteUserAsync, ContentType = "application/json", RequireAuth = true },
+                    
+                    // Database Management API endpoints
+                    new() { Path = "/api/db/setup", Method = "POST", Handler = DatabaseManagementApiService.HandleSetupDatabaseAsync, ContentType = "application/json" },
+                    new() { Path = "/api/db/test", Method = "GET", Handler = DatabaseManagementApiService.HandleTestDatabaseConnectionAsync, ContentType = "application/json" }
+                };
+
+                // Register endpoints via loop
+                EndpointRegistrar.RegisterEndpoints(app, endpoints);
+
+                // Default handler (must be last)
                 app.Run(async context =>
                 {
                     LoggingFactory.Instance.LogInformation($"Received request: {context.Request.Method} {context.Request.Path}");
@@ -44,6 +66,7 @@ internal static class Startup
     /// </summary>
     [Log(LogLevel = LogLevel.Debug, LogMethodEntry = false)]
     [Obsolete("Obsolete")]
+    // ReSharper disable once UnusedParameter.Local
     private static async Task Main(string[] args)
     {
         try

@@ -1,4 +1,6 @@
-namespace Client.Database.Models;
+using System.ComponentModel.DataAnnotations;
+
+namespace Common.Models;
 
 /// <summary>
 /// Admin entity model representing administrator data structure
@@ -8,40 +10,50 @@ public class Admin
     /// <summary>
     /// Admin unique identifier
     /// </summary>
+    [Key]
     public int Id { get; set; }
 
     /// <summary>
     /// Admin's username (must be unique)
     /// </summary>
+    [Required]
+    [StringLength(50, MinimumLength = 3)]
     public string Username { get; set; } = string.Empty;
 
     /// <summary>
     /// Admin's password hash (securely stored)
     /// </summary>
+    [Required]
+    [StringLength(255)]
     public string PasswordHash { get; set; } = string.Empty;
 
     /// <summary>
     /// Admin role level (super/senior/junior)
     /// </summary>
+    [Required]
+    [StringLength(20)]
     public string Role { get; set; } = "junior";
 
     /// <summary>
     /// Admin department or division
     /// </summary>
+    [StringLength(100)]
     public string Department { get; set; } = string.Empty;
 
     /// <summary>
     /// Admin contact email
     /// </summary>
+    [EmailAddress]
+    [StringLength(100)]
     public string Email { get; set; } = string.Empty;
 
     /// <summary>
-    /// Admin creation timestamp
+    /// Admin creation timestamp (UTC)
     /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
-    /// Last login timestamp
+    /// Last login timestamp (UTC)
     /// </summary>
     public DateTime? LastLogin { get; set; }
 
@@ -55,41 +67,6 @@ public class Admin
     /// </summary>
     public Admin()
     {
-    }
-
-    /// <summary>
-    /// Constructor with required parameters
-    /// </summary>
-    /// <param name="username">Admin's username</param>
-    /// <param name="passwordHash">Admin's password hash</param>
-    /// <param name="role">Admin role level (default: junior)</param>
-    public Admin(string username, string passwordHash, string role = "junior")
-    {
-        Username = username;
-        PasswordHash = passwordHash;
-        Role = role;
-        CreatedAt = DateTime.UtcNow;
-    }
-
-    /// <summary>
-    /// Constructor with all parameters
-    /// </summary>
-    /// <param name="id">Admin ID</param>
-    /// <param name="username">Admin's username</param>
-    /// <param name="passwordHash">Admin's password hash</param>
-    /// <param name="role">Admin role level</param>
-    /// <param name="department">Admin department</param>
-    /// <param name="email">Admin email</param>
-    public Admin(int id, string username, string passwordHash, string role = "junior", 
-                 string department = "", string email = "")
-    {
-        Id = id;
-        Username = username;
-        PasswordHash = passwordHash;
-        Role = role;
-        Department = department;
-        Email = email;
-        CreatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -140,7 +117,7 @@ public class Admin
     /// <returns>True if senior admin</returns>
     public bool IsSeniorAdmin()
     {
-        return Role.Equals("senior", StringComparison.OrdinalIgnoreCase) || 
+        return Role.Equals("senior", StringComparison.OrdinalIgnoreCase) ||
                Role.Equals("super", StringComparison.OrdinalIgnoreCase);
     }
 

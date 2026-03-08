@@ -1,382 +1,108 @@
-using System.Security.Cryptography;
-using Client.Database.Models;
-using Client.Database.Services;
 using CustomSerilogImpl.InstanceVal.Service.Services;
-using MySqlConnector;
 
 namespace Client.Database.UserAuthentication;
 
 /// <summary>
-/// Service class for user authentication and login operations
+/// Local user authentication service for managing authentication state in Client application
 /// </summary>
 public static class UserAuthenticationService
 {
-    private const int SaltSize = 32;
-    private const int HashSize = 32;
-    private const int Pbkdf2Iterations = 10000;
-    
+    private static int? _currentUserId;
+    private static string? _currentUsername;
+    private static LoginStatus _currentUserStatus = LoginStatus.NotLoggedIn;
+
     /// <summary>
-    /// Current user's login status
+    /// Get current user ID
     /// </summary>
-    public static LoginStatus CurrentUserStatus { get; private set; } = LoginStatus.NotLoggedIn;
-    
+    public static int? CurrentUserId => _currentUserId;
+
     /// <summary>
-    /// Current logged-in user ID
+    /// Get current username
     /// </summary>
-    public static int? CurrentUserId { get; private set; }
-    
+    public static string? CurrentUsername => _currentUsername;
+
     /// <summary>
-    /// Current logged-in username
+    /// Get current user login status
     /// </summary>
-    public static string? CurrentUsername { get; set; }
+    public static LoginStatus CurrentUserStatus => _currentUserStatus;
 
     /// <summary>
-    /// Authenticates a user by username and password using secure hashing
-    /// </summary>
-    /// <param name="username">Username to authenticate</param>
-    /// <param name="password">Password to verify</param>
-    /// <returns>Tuple containing (success, userId, username) - success indicates if authentication was successful</returns>
-    [Obsolete("Obsolete")]
-    public static async Task<(bool success, int? userId, string? username)> AuthenticateUserAsync(string username, string password)
-    {
-        try
-        {
-            LoggingFactory.Instance.LogDebug($"Authenticating user '{username}' with provided password...");
-
-            await using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
-            await connection.OpenAsync();
-
-            await using var cmd = new MySqlCommand(
-                "SELECT id, username, password_hash FROM `users` WHERE username = @username", connection);
-            cmd.Parameters.AddWithValue("@username", username);
-
-            await using var reader = await cmd.ExecuteReaderAsync();
-
-            if (await reader.ReadAsync())
-            {
-                var userId = reader.GetInt32("id");
-                var foundUsername = reader.GetString("username");
-                var storedHash = reader.GetString("password_hash");
-
-                // Verify password using secure hash comparison
-                if (VerifyPassword(password, storedHash))
-                {
-                    // Update current user status based on user priority
-                    var userPriority = await GetUserPriorityAsync(userId);
-                    CurrentUserStatus = userPriority?.ToLower() switch
-                    {
-                        "admin" => LoginStatus.Administrator,
-                        "super" => LoginStatus.SuperAdministrator,
-                        _ => LoginStatus.RegularUser
-                    };
-                    CurrentUserId = userId;
-                    CurrentUsername = foundUsername;
-                    
-                    LoggingFactory.Instance.LogDebug($"User authentication successful: ID={userId}, Username={foundUsername}, Status={CurrentUserStatus}");
-                    return (true, userId, foundUsername);
-                }
-                else
-                {
-                    LoggingFactory.Instance.LogDebug($"Password mismatch for user '{username}'");
-                    return (false, null, null);
-                }
-            }
-            else
-            {
-                LoggingFactory.Instance.LogDebug($"User '{username}' not found in database");
-                return (false, null, null);
-            }
-        }
-        catch (Exception ex)
-        {
-            LoggingFactory.Instance.LogError($"Failed to authenticate user '{username}': {ex.Message}");
-            return (false, null, null);
-        }
-    }
-
-    /// <summary>
-    /// Hashes a password using PBKDF2 with salt
-    /// </summary>
-    /// <param name="password">Plain text password</param>
-    /// <returns>Base64 encoded hashed password</returns>
-    [Obsolete("Obsolete")]
-    public static string HashPassword(string password)
-    {
-        using var rng = RandomNumberGenerator.Create();
-        var salt = new byte[SaltSize];
-        rng.GetBytes(salt);
-
-        using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Pbkdf2Iterations, HashAlgorithmName.SHA256);
-        var hash = pbkdf2.GetBytes(HashSize);
-
-        var hashBytes = new byte[SaltSize + HashSize];
-        Array.Copy(salt, 0, hashBytes, 0, SaltSize);
-        Array.Copy(hash, 0, hashBytes, SaltSize, HashSize);
-
-        return Convert.ToBase64String(hashBytes);
-    }
-
-    /// <summary>
-    /// Verifies a password against its hash
-    /// </summary>
-    /// <param name="password">Plain text password</param>
-    /// <param name="hash">Stored hash</param>
-    /// <returns>True if password matches hash</returns>
-    [Obsolete("Obsolete")]
-    public static bool VerifyPassword(string password, string hash)
-    {
-        var hashBytes = Convert.FromBase64String(hash);
-        var salt = new byte[SaltSize];
-        Array.Copy(hashBytes, 0, salt, 0, SaltSize);
-
-        using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Pbkdf2Iterations, HashAlgorithmName.SHA256);
-        var hashToCheck = pbkdf2.GetBytes(HashSize);
-
-        for (var i = 0; i < HashSize; i++)
-        {
-            if (hashBytes[i + SaltSize] != hashToCheck[i])
-                return false;
-        }
-
-        return true;
-    }
-    
-    /// <summary>
-    /// Gets user priority level
+    /// Set logged in user information
     /// </summary>
     /// <param name="userId">User ID</param>
-    /// <returns>User priority level</returns>
-    private static async Task<string?> GetUserPriorityAsync(int userId)
+    /// <param name="username">Username</param>
+    /// <param name="status">Login status string ("RegularUser", "Administrator", etc.)</param>
+    public static void SetLoggedInUser(int userId, string username, string status)
     {
-        try
+        _currentUserId = userId;
+        _currentUsername = username;
+        
+        // Parse status string to LoginStatus enum
+        _currentUserStatus = status.ToLower() switch
         {
-            await using var connection = new MySqlConnection(DatabaseSetupUtility.DemoConnectionString);
-            await connection.OpenAsync();
-
-            await using var cmd = new MySqlCommand(
-                "SELECT priority FROM `users` WHERE id = @userId", connection);
-            cmd.Parameters.AddWithValue("@userId", userId);
-
-            var result = await cmd.ExecuteScalarAsync();
-            return result?.ToString();
-        }
-        catch (Exception ex)
-        {
-            LoggingFactory.Instance.LogError($"Failed to get user priority for ID {userId}: {ex.Message}");
-            return null;
-        }
-    }
-
-    
-    
-    /// <summary>
-    /// Registers a new user with username and password
-    /// </summary>
-    /// <param name="username">Username for new account</param>
-    /// <param name="password">Password for new account</param>
-    /// <param name="priority">Priority level for the new user (default is "user")</param>
-    /// <returns>Tuple containing (success, userId, errorMessage) - success indicates if registration was successful</returns>
-    [Obsolete("Obsolete")]
-    public static async Task<(bool success, int? userId, string? errorMessage)> RegisterUserAsync(string username, string password, string priority = "user")
-    {
-        try
-        {
-            LoggingFactory.Instance.LogDebug($"Attempting to register new user '{username}' with {priority} permissions...");
-
-            // Use UserService for registration to leverage CRUD functionality
-            var userService = new UserService();
-
-            // First check if username already exists
-            var existingUser = await UserService.FindByUsernameAsync(username);
-            if (existingUser != null)
-            {
-                LoggingFactory.Instance.LogWarning($"Registration failed: Username '{username}' already exists");
-                return (false, null, "Username already exists");
-            }
-
-            // Hash the password
-            var hashedPassword = HashPassword(password);
-
-            // Create user entity with specified priority
-            var newUser = new User(username, hashedPassword, priority);
-
-            // Save user using CRUD service
-            var createdUser = await userService.CreateAsync(newUser);
-
-            if (createdUser.Id > 0)
-            {
-                LoggingFactory.Instance.LogInformation($"User registration successful: ID={createdUser.Id}, Username={username}, Priority={priority}");
-                return (true, createdUser.Id, null);
-            }
-            else
-            {
-                LoggingFactory.Instance.LogError($"Failed to insert user '{username}' into database");
-                return (false, null, "Failed to create user account");
-            }
-        }
-        catch (Exception ex)
-        {
-            LoggingFactory.Instance.LogError($"Failed to register user '{username}': {ex.Message}");
-            return (false, null, $"Registration error: {ex.Message}");
-        }
+            "regularuser" or "user" => LoginStatus.RegularUser,
+            "administrator" or "admin" => LoginStatus.Administrator,
+            "superadministrator" or "superadmin" => LoginStatus.SuperAdministrator,
+            _ => LoginStatus.RegularUser // Default to RegularUser
+        };
+        
+        LoggingFactory.Instance.LogDebug($"User set: ID={userId}, Username={username}, Status={_currentUserStatus}");
     }
 
     /// <summary>
-    /// Updates a user's password
-    /// </summary>
-    /// <param name="userId">User ID</param>
-    /// <param name="newPassword">New password</param>
-    /// <returns>True if update successful, false otherwise</returns>
-    [Obsolete("Obsolete")]
-    public static async Task<bool> UpdateUserPasswordAsync(int userId, string newPassword)
-    {
-        try
-        {
-            LoggingFactory.Instance.LogDebug($"Updating password for user ID {userId}...");
-
-            var result = await UserService.UpdatePasswordAsync(userId, newPassword);
-
-            if (result)
-            {
-                LoggingFactory.Instance.LogInformation($"Password updated successfully for user ID {userId}");
-            }
-            else
-            {
-                LoggingFactory.Instance.LogWarning($"Failed to update password for user ID {userId}");
-            }
-
-            return result;
-        }
-        catch (Exception ex)
-        {
-            LoggingFactory.Instance.LogError($"Failed to update password for user ID {userId}: {ex.Message}");
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// Gets a user by ID
-    /// </summary>
-    /// <param name="userId">User ID</param>
-    /// <returns>User entity if found, null otherwise</returns>
-    [Obsolete("Obsolete")]
-    public static async Task<User?> GetUserByIdAsync(int userId)
-    {
-        try
-        {
-            LoggingFactory.Instance.LogDebug($"Getting user by ID {userId}...");
-
-            var userService = new UserService();
-            var user = await userService.GetByIdAsync(userId);
-
-            LoggingFactory.Instance.LogDebug(user != null ? $"User found: {user}" : $"User with ID {userId} not found");
-
-            return user;
-        }
-        catch (Exception ex)
-        {
-            LoggingFactory.Instance.LogError($"Failed to get user by ID {userId}: {ex.Message}");
-            return null;
-        }
-    }
-
-    /// <summary>
-    /// Gets all users
-    /// </summary>
-    /// <returns>Collection of all users</returns>
-    [Obsolete("Obsolete")]
-    public static async Task<IEnumerable<User>> GetAllUsersAsync()
-    {
-        try
-        {
-            LoggingFactory.Instance.LogDebug("Getting all users...");
-
-            var userService = new UserService();
-            var users = await userService.GetAllAsync();
-
-            var allUsersAsync = users as User[] ?? users.ToArray();
-            LoggingFactory.Instance.LogDebug($"Retrieved {allUsersAsync.Length} users");
-            return allUsersAsync;
-        }
-        catch (Exception ex)
-        {
-            LoggingFactory.Instance.LogError($"Failed to get all users: {ex.Message}");
-            return Enumerable.Empty<User>();
-        }
-    }
-
-    /// <summary>
-    /// Deletes a user by ID
-    /// </summary>
-    /// <param name="userId">User ID</param>
-    /// <returns>True if deletion successful, false otherwise</returns>
-    [Obsolete("Obsolete")]
-    public static async Task<bool> DeleteUserAsync(int userId)
-    {
-        try
-        {
-            LoggingFactory.Instance.LogDebug($"Deleting user ID {userId}...");
-
-            var userService = new UserService();
-            var result = await userService.DeleteAsync(userId);
-
-            if (result)
-            {
-                LoggingFactory.Instance.LogInformation($"User deleted successfully: ID={userId}");
-            }
-            else
-            {
-                LoggingFactory.Instance.LogWarning($"Failed to delete user ID {userId}");
-            }
-
-            return result;
-        }
-        catch (Exception ex)
-        {
-            LoggingFactory.Instance.LogError($"Failed to delete user ID {userId}: {ex.Message}");
-            return false;
-        }
-    }
-    
-    /// <summary>
-    /// Logs out current user and resets login status
+    /// Logout current user
     /// </summary>
     public static void Logout()
     {
-        LoggingFactory.Instance.LogDebug($"User logged out: ID={CurrentUserId}, Username={CurrentUsername}, Status={CurrentUserStatus}");
-        
-        CurrentUserStatus = LoginStatus.NotLoggedIn;
-        CurrentUserId = null;
-        CurrentUsername = null;
-        
-        LoggingFactory.Instance.LogInformation("User logout successful");
+        LoggingFactory.Instance.LogDebug($"Logging out user: {_currentUsername}");
+        _currentUserId = null;
+        _currentUsername = null;
+        _currentUserStatus = LoginStatus.NotLoggedIn;
     }
-    
+
     /// <summary>
-    /// Checks if current user is logged in
+    /// Check if user is logged in
     /// </summary>
-    /// <returns>True if user is logged in, false otherwise</returns>
+    /// <returns>True if user is logged in</returns>
     public static bool IsUserLoggedIn()
     {
-        return CurrentUserStatus != LoginStatus.NotLoggedIn;
+        return _currentUserStatus != LoginStatus.NotLoggedIn && _currentUserId.HasValue;
     }
-    
+
     /// <summary>
-    /// Checks if current user has administrator permissions
+    /// Check if current user is administrator
     /// </summary>
-    /// <returns>True if user is administrator or super administrator, false otherwise</returns>
+    /// <returns>True if user has administrator permissions</returns>
     public static bool IsUserAdministrator()
     {
-        return CurrentUserStatus == LoginStatus.Administrator || 
-               CurrentUserStatus == LoginStatus.SuperAdministrator;
+        return _currentUserStatus == LoginStatus.Administrator || 
+               _currentUserStatus == LoginStatus.SuperAdministrator;
     }
-    
+
     /// <summary>
-    /// Checks if current user is super administrator
+    /// Verify password against stored hash (placeholder for local validation if needed)
     /// </summary>
-    /// <returns>True if user is super administrator, false otherwise</returns>
-    public static bool IsUserSuperAdministrator()
+    /// <param name="password">Plain text password</param>
+    /// <param name="passwordHash">Stored password hash</param>
+    /// <returns>True if password matches</returns>
+    public static bool VerifyPassword(string password, string passwordHash)
     {
-        return CurrentUserStatus == LoginStatus.SuperAdministrator;
+        // This is a placeholder - in HTTP API mode, password verification happens on server
+        // If you need local validation, implement BCrypt or similar here
+        LoggingFactory.Instance.LogWarning("VerifyPassword called but not implemented for HTTP API mode");
+        return false;
+    }
+
+    /// <summary>
+    /// Get user by ID from local cache (placeholder)
+    /// </summary>
+    /// <param name="userId">User ID</param>
+    /// <returns>User info or null</returns>
+    public static async Task<object?> GetUserByIdAsync(int userId)
+    {
+        // In HTTP API mode, this should call ServerAuthService.GetUserInfoAsync(userId)
+        // This method is kept for backward compatibility
+        LoggingFactory.Instance.LogWarning("GetUserByIdAsync called - use ServerAuthService instead");
+        return await Task.FromResult<object?>(null);
     }
 }

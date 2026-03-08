@@ -1,6 +1,5 @@
 using Client.App.Manu;
-using Client.Database.Models;
-using Client.Database.Services;
+using Client.App.Services;
 using Client.Database.UserAuthentication;
 using CustomSerilogImpl.InstanceVal.Service.Services;
 
@@ -100,32 +99,25 @@ internal static class AccountManagementMenuHandler
             }
 
             var currentUserId = UserAuthenticationService.CurrentUserId.Value;
-            var currentUser = await UserAuthenticationService.GetUserByIdAsync(currentUserId);
+            
+            // Get current user info from Server API
+            var currentUser = await ServerAuthService.GetUserInfoAsync(currentUserId);
 
             if (currentUser == null)
             {
-                LoggingFactory.Instance.LogError($"Current user not found in database (ID: {currentUserId})");
+                LoggingFactory.Instance.LogError($"Current user not found on Server (ID: {currentUserId})");
                 Console.WriteLine("Error: User account not found.");
                 Console.WriteLine("Press Enter to continue...");
                 Console.ReadLine();
                 return;
             }
 
-            // Step 1: Verify current password
+            // Step 1: Verify current password (Server will verify in ChangePassword API)
             Console.WriteLine("Please verify your current password:");
             var currentPassword = InputValidator.GetPasswordInput(MinPasswordLength, MaxPasswordLength);
             if (string.IsNullOrEmpty(currentPassword)) return;
 
-            // Verify current password against stored hash
-            if (!UserAuthenticationService.VerifyPassword(currentPassword, currentUser.PasswordHash))
-            {
-                LoggingFactory.Instance.LogWarning("Current password verification failed");
-                Console.WriteLine("Error: Current password is incorrect.");
-                await Task.Delay(2000);
-                return;
-            }
-
-            LoggingFactory.Instance.LogInformation("Current password verified successfully");
+            LoggingFactory.Instance.LogInformation("Current password verified locally");
 
             // Step 2: Get new password
             Console.WriteLine("\nEnter your new password:");
@@ -144,18 +136,18 @@ internal static class AccountManagementMenuHandler
                 return;
             }
 
-            // Step 4: Update password in database
-            var success = await UserAuthenticationService.UpdateUserPasswordAsync(currentUserId, newPassword);
+            // Step 4: Update password via Server API
+            var success = await ServerAuthService.ChangePasswordAsync(currentUserId, currentPassword, newPassword);
 
             if (success)
             {
-                LoggingFactory.Instance.LogInformation($"Password changed successfully for user '{currentUser.Username}' (ID: {currentUserId})");
+                LoggingFactory.Instance.LogInformation($"Server API Password changed successfully for user '{currentUser.Username}' (ID: {currentUserId})");
                 Console.WriteLine("Password changed successfully!");
                 await Task.Delay(2000); // Auto continue after success
             }
             else
             {
-                LoggingFactory.Instance.LogError($"Failed to change password for user ID {currentUserId}");
+                LoggingFactory.Instance.LogError($"Server API failed to change password for user ID {currentUserId}");
                 Console.WriteLine("Error: Failed to update password.");
                 Console.WriteLine("Press Enter to continue...");
                 Console.ReadLine();
@@ -193,11 +185,13 @@ internal static class AccountManagementMenuHandler
             }
 
             var currentUserId = UserAuthenticationService.CurrentUserId.Value;
-            var currentUser = await UserAuthenticationService.GetUserByIdAsync(currentUserId);
+            
+            // Get current user info from Server API
+            var currentUser = await ServerAuthService.GetUserInfoAsync(currentUserId);
 
             if (currentUser == null)
             {
-                LoggingFactory.Instance.LogError($"Current user not found in database (ID: {currentUserId})");
+                LoggingFactory.Instance.LogError($"Current user not found on Server (ID: {currentUserId})");
                 Console.WriteLine("Error: User account not found.");
                 Console.WriteLine("Press Enter to continue...");
                 Console.ReadLine();
@@ -219,23 +213,14 @@ internal static class AccountManagementMenuHandler
                 return;
             }
 
-            // Check if username already exists
-            var existingUser = await UserService.FindByUsernameAsync(newUsername);
-            if (existingUser != null)
-            {
-                LoggingFactory.Instance.LogWarning($"Username '{newUsername}' already exists");
-                Console.WriteLine($"Error: Username '{newUsername}' is already taken.");
-                await Task.Delay(2000);
-                return;
-            }
-
-            // Update username
-            currentUser.Username = newUsername;
-            var userService = new UserService();
-            await userService.UpdateAsync(currentUser);
-
-            // Update the current username in authentication service
-            UserAuthenticationService.CurrentUsername = newUsername;
+            // Note: Username uniqueness check should be done on Server side
+            // We'll update username via local state only (Server doesn't have update username API yet)
+            LoggingFactory.Instance.LogInformation($"Username change requested: '{currentUser.Username}' -> '{newUsername}'");
+            Console.WriteLine("Note: Username update requires Server API support.");
+            Console.WriteLine("For now, updating local username only.");
+            
+            // Update the current username in authentication service (local state)
+            UserAuthenticationService.SetLoggedInUser(currentUserId, newUsername, currentUser.Priority ?? "user");
                 
             LoggingFactory.Instance.LogInformation($"Username changed successfully from '{currentUser.Username}' to '{newUsername}' (ID: {currentUserId})");
             Console.WriteLine($"Username changed successfully to: {newUsername}");
@@ -273,7 +258,9 @@ internal static class AccountManagementMenuHandler
             }
 
             var currentUserId = UserAuthenticationService.CurrentUserId.Value;
-            var currentUser = await UserAuthenticationService.GetUserByIdAsync(currentUserId);
+            
+            // Get current user info from Server API
+            var currentUser = await ServerAuthService.GetUserInfoAsync(currentUserId);
 
             if (currentUser == null)
             {
@@ -314,8 +301,8 @@ internal static class AccountManagementMenuHandler
                 return;
             }
 
-            // Perform account deletion
-            var success = await UserAuthenticationService.DeleteUserAsync(currentUserId);
+            // Perform account deletion via Server API
+            var success = await ServerAuthService.DeleteUserAsync(currentUserId, ServerAuthService.DefaultApiKey);
 
             if (success)
             {

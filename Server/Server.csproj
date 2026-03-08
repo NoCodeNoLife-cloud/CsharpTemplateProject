@@ -8,6 +8,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Client\Client.csproj" />
+        <ProjectReference Include="..\Common\Common.csproj"/>
         <ProjectReference Include="..\Log\Log.csproj"/>
         <ProjectReference Include="..\FrameWork\FrameWork.csproj"/>
         <ProjectReference Include="..\Sql\Sql.csproj"/>
@@ -18,17 +20,14 @@
         <None Update="Resources\Banner.txt">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-        <None Update="Resources\Banner.txt">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore" Version="2.2.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
-        <PackageReference Include="Microsoft.AspNetCore.Routing" Version="2.2.2" />
-        <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore" Version="2.2.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7"/>
+        <PackageReference Include="Microsoft.AspNetCore.Routing" Version="2.2.2"/>
+        <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0"/>
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0"/>
         <PackageReference Include="MrAdvice" Version="2.20.1"/>
     </ItemGroup>
 </Project>

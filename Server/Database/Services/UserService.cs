@@ -1,11 +1,11 @@
 using System.Data;
 using System.Security.Cryptography;
-using Client.Database.Models;
+using Common.Models;
 using CustomSerilogImpl.InstanceVal.Service.Services;
 using MySqlConnector;
 using Sql.Interfaces;
 
-namespace Client.Database.Services;
+namespace Server.Database.Services;
 
 /// <summary>
 /// User service implementing CRUD operations for user management

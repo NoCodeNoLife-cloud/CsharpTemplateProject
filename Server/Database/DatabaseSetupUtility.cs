@@ -1,8 +1,8 @@
-using Client.Database.Config;
+using Server.Database.Config;
 using CustomSerilogImpl.InstanceVal.Service.Services;
 using MySqlConnector;
 
-namespace Client.Database;
+namespace Server.Database;
 
 /// <summary>
 /// Database setup utility for initializing and verifying MySQL database environment

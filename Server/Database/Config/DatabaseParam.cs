@@ -1,4 +1,4 @@
-namespace Client.Database.Config;
+namespace Server.Database.Config;
 
 /// <summary>
 /// Database parameter configuration class

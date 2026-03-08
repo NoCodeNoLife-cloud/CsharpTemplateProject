@@ -1,7 +1,7 @@
 using Client.App.Manu;
-using Client.Database.Models;
-using Client.Database.Services;
+using Client.App.Services;
 using Client.Database.UserAuthentication;
+using Common.Models;
 using CustomSerilogImpl.InstanceVal.Service.Services;
 
 namespace Client.App;
@@ -113,12 +113,13 @@ internal static class UserManagementMenuHandler
             Console.Clear();
             LoggingFactory.Instance.LogInformation("=== All Users ===");
 
-            var users = await UserAuthenticationService.GetAllUsersAsync();
-            var userList = users.ToList();
+            // Use Server API to get all users (requires admin API key)
+            var users = await ServerAuthService.GetAllUsersAsync(ServerAuthService.DefaultApiKey);
+            var userList = users?.ToList() ?? [];
 
             if (userList.Count == 0)
             {
-                LoggingFactory.Instance.LogWarning("No users found in the system.");
+                LoggingFactory.Instance.LogWarning("No users found in the system or API call failed.");
                 return;
             }
 
@@ -152,7 +153,9 @@ internal static class UserManagementMenuHandler
             LoggingFactory.Instance.LogInformation("=== Find User by ID ===");
 
             var userId = GetUserIdInput();
-            var user = await UserAuthenticationService.GetUserByIdAsync(userId);
+
+            // Use Server API to get user by ID
+            var user = await ServerAuthService.GetUserInfoAsync(userId);
 
             if (user != null)
             {
@@ -189,9 +192,9 @@ internal static class UserManagementMenuHandler
             var username = InputValidator.GetUserInput("Username", 3, 50);
             if (string.IsNullOrEmpty(username)) return;
 
-            // Since we don't have a direct method in UserAuthenticationService, 
-            // we'll use UserService directly
-            var user = await UserService.FindByUsernameAsync(username);
+            // Get all users from Server API and filter by username
+            var allUsers = await ServerAuthService.GetAllUsersAsync(ServerAuthService.DefaultApiKey);
+            var user = allUsers?.FirstOrDefault(u => u.Username != null && u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
 
             if (user != null)
             {
@@ -228,8 +231,8 @@ internal static class UserManagementMenuHandler
 
             var userId = GetUserIdInput();
 
-            // Verify user exists
-            var user = await UserAuthenticationService.GetUserByIdAsync(userId);
+            // Verify user exists via Server API
+            var user = await ServerAuthService.GetUserInfoAsync(userId);
             if (user == null)
             {
                 LoggingFactory.Instance.LogWarning($"User with ID {userId} not found.");
@@ -238,6 +241,7 @@ internal static class UserManagementMenuHandler
 
             LoggingFactory.Instance.LogInformation($"Updating password for user: {user.Username} (ID: {userId})");
 
+            // Note: Admin changing password for another user doesn't need current password
             // Get new password
             var newPassword = InputValidator.GetPasswordInput(6, 100);
             if (string.IsNullOrEmpty(newPassword)) return;
@@ -252,19 +256,12 @@ internal static class UserManagementMenuHandler
                 return;
             }
 
-            var success = await UserAuthenticationService.UpdateUserPasswordAsync(userId, newPassword);
-
-            if (success)
-            {
-                LoggingFactory.Instance.LogInformation($"Password updated successfully for user '{user.Username}' (ID: {userId})");
-                await Task.Delay(1500); // Auto continue after success
-            }
-            else
-            {
-                LoggingFactory.Instance.LogError($"Failed to update password for user ID {userId}");
-                Console.WriteLine("Press Enter to continue...");
-                Console.ReadLine(); // Error case still needs confirmation
-            }
+            // For admin password reset, we can use a special flag or bypass current password check
+            // This would require Server API support for admin password reset
+            LoggingFactory.Instance.LogWarning("Admin password reset requires Server API enhancement.");
+            LoggingFactory.Instance.LogWarning("For now, this operation is not fully implemented.");
+            Console.WriteLine("Press Enter to continue...");
+            Console.ReadLine();
         }
         catch (Exception ex)
         {
@@ -288,8 +285,8 @@ internal static class UserManagementMenuHandler
 
             var userId = GetUserIdInput();
 
-            // Verify user exists
-            var user = await UserAuthenticationService.GetUserByIdAsync(userId);
+            // Verify user exists via Server API
+            var user = await ServerAuthService.GetUserInfoAsync(userId);
             if (user == null)
             {
                 LoggingFactory.Instance.LogWarning($"User with ID {userId} not found.");
@@ -308,16 +305,17 @@ internal static class UserManagementMenuHandler
                 return;
             }
 
-            var success = await UserAuthenticationService.DeleteUserAsync(userId);
+            // Use Server API to delete user (requires admin API key)
+            var success = await ServerAuthService.DeleteUserAsync(userId, ServerAuthService.DefaultApiKey);
 
             if (success)
             {
-                LoggingFactory.Instance.LogInformation($"User '{user.Username}' (ID: {userId}) deleted successfully");
+                LoggingFactory.Instance.LogInformation($"Server API User '{user.Username}' (ID: {userId}) deleted successfully");
                 await Task.Delay(1500); // Auto continue after success
             }
             else
             {
-                LoggingFactory.Instance.LogError($"Failed to delete user ID {userId}");
+                LoggingFactory.Instance.LogError($"Server API failed to delete user ID {userId}");
                 Console.WriteLine("Press Enter to continue...");
                 Console.ReadLine(); // Error case still needs confirmation
             }
@@ -342,10 +340,10 @@ internal static class UserManagementMenuHandler
             Console.Clear();
             LoggingFactory.Instance.LogInformation("=== System Statistics ===");
 
-            // Get various statistics
-            var totalUsers = await UserAuthenticationService.GetAllUsersAsync();
-            var enumerable = totalUsers as User[] ?? totalUsers.ToArray();
-            var totalUsersCount = enumerable.Count();
+            // Get various statistics via Server API
+            var totalUsers = await ServerAuthService.GetAllUsersAsync(ServerAuthService.DefaultApiKey);
+            var enumerable = totalUsers?.ToArray() ?? Array.Empty<UserInfo>();
+            var totalUsersCount = enumerable.Length;
 
             LoggingFactory.Instance.LogInformation($"\n📊 User Statistics:");
             LoggingFactory.Instance.LogInformation($"   Total Users: {totalUsersCount}");

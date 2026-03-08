@@ -1,4 +1,4 @@
-using Client.Database;
+using Client.App.Services;
 using CommonFramework.Aop.Attributes;
 using CommonFramework.Banner;
 using CustomSerilogImpl.InstanceVal.Service.Enums;
@@ -21,32 +21,33 @@ internal static class ApplicationInitializer
         await Task.Delay(500); // Simulate work
         LoggingFactory.Instance.LogInformation("Environment configured");
 
-        // Step 2: Database setup
-        LoggingFactory.Instance.LogDebug("Starting database environment setup...");
-        var databaseSetupSuccess = await DatabaseSetupUtility.SetupDemoDatabaseAsync();
+        // Step 2: Database setup via Server API
+        LoggingFactory.Instance.LogDebug("Requesting database setup from Server...");
+        var (setupSuccess, setupMessage) = await ServerAuthService.SetupDatabaseAsync();
         await Task.Delay(800); // Simulate work
 
-        if (databaseSetupSuccess)
+        if (setupSuccess)
         {
-            LoggingFactory.Instance.LogInformation("Database environment ready");
+            LoggingFactory.Instance.LogInformation($"Database environment ready: {setupMessage}");
         }
         else
         {
-            LoggingFactory.Instance.LogError("Database setup failed");
-            throw new InvalidOperationException("Failed to setup database environment");
+            LoggingFactory.Instance.LogError($"Database setup failed: {setupMessage}");
+            throw new InvalidOperationException($"Failed to setup database environment: {setupMessage}");
         }
 
-        // Step 3: Connection test
-        var connectionTest = await DatabaseSetupUtility.TestDemoDatabaseConnectionAsync();
+        // Step 3: Connection test via Server API
+        LoggingFactory.Instance.LogDebug("Requesting database connection test from Server...");
+        var (testSuccess, isConnected, databaseName, testedAt, testMessage) = await ServerAuthService.TestDatabaseConnectionAsync();
         await Task.Delay(300); // Simulate work
 
-        if (connectionTest)
+        if (testSuccess && isConnected == true)
         {
-            LoggingFactory.Instance.LogInformation("Database connection established and test successful");
+            LoggingFactory.Instance.LogInformation($"Database connection established and test successful (Database: {databaseName}, Tested at: {testedAt?.ToLocalTime()})");
         }
         else
         {
-            LoggingFactory.Instance.LogWarning("Database connection test failed, but setup completed");
+            LoggingFactory.Instance.LogWarning($"Database connection test failed: {testMessage}");
         }
 
         // Step 4: Final initialization

@@ -1,7 +1,8 @@
-namespace Client.Database.UserAuthentication;
+namespace Server.Database.UserAuthentication;
 
 /// <summary>
-/// Login status enumeration
+/// User login status enumeration
+/// Represents the current login status and permission level of users
 /// </summary>
 public enum LoginStatus
 {

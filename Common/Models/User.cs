@@ -1,4 +1,4 @@
-namespace Client.Database.Models;
+namespace Common.Models;
 
 /// <summary>
 /// User entity model representing user data structure

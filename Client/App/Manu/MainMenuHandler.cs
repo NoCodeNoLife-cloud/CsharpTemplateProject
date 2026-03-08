@@ -1,3 +1,4 @@
+using Client.App.Services;
 using Client.Database.UserAuthentication;
 using CustomSerilogImpl.InstanceVal.Service.Services;
 
@@ -13,7 +14,6 @@ internal static class MainMenuHandler
     private const int MaxUsernameLength = 50;
     private const int MinPasswordLength = 6;
     private const int MaxPasswordLength = 100;
-
     /// <summary>
     /// Displays the main menu based on current login status
     /// </summary>
@@ -102,31 +102,27 @@ internal static class MainMenuHandler
             if (string.IsNullOrEmpty(password)) return;
 
             // Show processing indicator
-            LoggingFactory.Instance.LogDebug($"Verifying credentials for user '{username}'...");
-            var (success, userId, foundUsername) = await UserAuthenticationService.AuthenticateUserAsync(username, password);
+            LoggingFactory.Instance.LogDebug($"Calling Server API for user '{username}'...");
+            var (success, userId, foundUsername, status) = await ServerAuthService.LoginAsync(username, password);
 
-            if (success)
+            if (success && userId.HasValue)
             {
-                LoggingFactory.Instance.LogInformation($"User authentication successful: ID={userId}, Username={foundUsername}, welcome back");
+                // Update local authentication state
+                UserAuthenticationService.SetLoggedInUser(userId.Value, foundUsername ?? username, status ?? "LoggedIn");
+                
+                LoggingFactory.Instance.LogInformation($"Server API Login successful: ID={userId}, Username={foundUsername}");
                 LoggingFactory.Instance.LogInformation($"Welcome back, {foundUsername}! (User ID: {userId})");
             }
             else
             {
-                LoggingFactory.Instance.LogWarning($"User authentication failed: Username '{username}' does not exist or password is incorrect");
+                LoggingFactory.Instance.LogWarning($"Server API Login failed: Invalid credentials for '{username}'");
                 LoggingFactory.Instance.LogWarning("Authentication failed. Please check your credentials.");
             }
         }
-        catch (MySqlConnector.MySqlException dbEx)
+        catch (HttpRequestException httpEx)
         {
-            LoggingFactory.Instance.LogError($"Database error during login: {dbEx.Message}", dbEx);
-            LoggingFactory.Instance.LogError($"Database connection error: {dbEx.Message}");
-            Console.WriteLine("Press Enter to continue...");
-            Console.ReadLine();
-        }
-        catch (InvalidOperationException ioEx)
-        {
-            LoggingFactory.Instance.LogError($"Invalid operation during login: {ioEx.Message}", ioEx);
-            LoggingFactory.Instance.LogError($"Invalid operation: {ioEx.Message}");
+            LoggingFactory.Instance.LogError($"HTTP request error during login: {httpEx.Message}", httpEx);
+            LoggingFactory.Instance.LogError("Please ensure the Server is running on http://localhost:5000");
             Console.WriteLine("Press Enter to continue...");
             Console.ReadLine();
         }
@@ -178,12 +174,12 @@ internal static class MainMenuHandler
             }
 
             // Show registration progress
-            LoggingFactory.Instance.LogDebug($"Attempting to register new user '{username}' with {priority} permissions...");
-            var (success, userId, errorMessage) = await UserAuthenticationService.RegisterUserAsync(username, password, priority);
+            LoggingFactory.Instance.LogDebug($"Calling Server API to register new user '{username}' with {priority} permissions...");
+            var (success, userId, errorMessage) = await ServerAuthService.RegisterAsync(username, password, priority);
 
-            if (success)
+            if (success && userId.HasValue)
             {
-                LoggingFactory.Instance.LogInformation($"User registration successful: ID={userId}, Username={username}");
+                LoggingFactory.Instance.LogInformation($"Server API Registration successful: ID={userId}, Username={username}");
                 LoggingFactory.Instance.LogInformation("Registration successful!");
                 LoggingFactory.Instance.LogInformation($"Your account has been created. (User ID: {userId})");
                 LoggingFactory.Instance.LogInformation("You can now login with your new account.");
@@ -192,21 +188,14 @@ internal static class MainMenuHandler
             }
             else
             {
-                LoggingFactory.Instance.LogWarning($"User registration failed: {errorMessage}");
+                LoggingFactory.Instance.LogWarning($"Server API Registration failed: {errorMessage}");
                 LoggingFactory.Instance.LogWarning($"Registration failed! {errorMessage}");
             }
         }
-        catch (MySqlConnector.MySqlException dbEx)
+        catch (HttpRequestException httpEx)
         {
-            LoggingFactory.Instance.LogError($"Database error during registration: {dbEx.Message}", dbEx);
-            LoggingFactory.Instance.LogError($"Database connection error: {dbEx.Message}");
-            Console.WriteLine("Press Enter to continue...");
-            Console.ReadLine();
-        }
-        catch (InvalidOperationException ioEx)
-        {
-            LoggingFactory.Instance.LogError($"Invalid operation during registration: {ioEx.Message}", ioEx);
-            LoggingFactory.Instance.LogError($"Invalid operation: {ioEx.Message}");
+            LoggingFactory.Instance.LogError($"HTTP request error during registration: {httpEx.Message}", httpEx);
+            LoggingFactory.Instance.LogError("Please ensure the Server is running on http://localhost:5000");
             Console.WriteLine("Press Enter to continue...");
             Console.ReadLine();
         }
