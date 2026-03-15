@@ -1,4 +1,4 @@
-namespace Common.Models;
+namespace Common.Models.Responses;
 
 /// <summary>
 /// User info response model
@@ -8,15 +8,15 @@ public class UserInfoResponse
     /// <summary>
     /// User ID
     /// </summary>
-    public int Id { get; set; }
+    public int Id { get; init; }
     
     /// <summary>
     /// Username
     /// </summary>
-    public string? Username { get; set; }
+    public string? Username { get; init; }
     
     /// <summary>
     /// User priority/role
     /// </summary>
-    public string? Priority { get; set; }
+    public string? Priority { get; init; }
 }

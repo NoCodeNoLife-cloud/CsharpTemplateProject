@@ -1,6 +1,6 @@
 using System.Data;
 using System.Security.Cryptography;
-using Common.Models;
+using Common.Models.Entities;
 using CustomSerilogImpl.InstanceVal.Service.Services;
 using MySqlConnector;
 using Sql.Interfaces;

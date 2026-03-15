@@ -1,4 +1,4 @@
-namespace Common.Models;
+namespace Common.Models.Entities;
 
 /// <summary>
 /// User entity model representing user data structure

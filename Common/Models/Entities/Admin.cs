@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Common.Models;
+namespace Common.Models.Entities;
 
 /// <summary>
 /// Admin entity model representing administrator data structure

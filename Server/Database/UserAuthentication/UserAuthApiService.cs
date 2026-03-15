@@ -1,5 +1,6 @@
 using System.Text.Json;
-using Common.Models;
+using Common.Models.Requests;
+using Common.Models.Responses;
 using Microsoft.AspNetCore.Http;
 
 namespace Server.Database.UserAuthentication;
@@ -18,22 +19,22 @@ public static class UserAuthApiService
         {
             var requestBody = await new StreamReader(context.Request.Body).ReadToEndAsync();
             var loginRequest = JsonSerializer.Deserialize<LoginRequest>(requestBody);
-            
+
             if (string.IsNullOrEmpty(loginRequest?.Username) || string.IsNullOrEmpty(loginRequest.Password))
             {
-                await WriteJsonResponse(context, 400, new ApiResponse<object> 
-                { 
-                    Success = false, 
-                    Message = "Username and password are required" 
+                await WriteJsonResponse(context, 400, new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Username and password are required"
                 });
                 return;
             }
-            
+
             var (success, userId, username) = await UserAuthenticationService.AuthenticateUserAsync(
-                loginRequest.Username, 
+                loginRequest.Username,
                 loginRequest.Password
             );
-            
+
             if (success)
             {
                 var status = UserAuthenticationService.CurrentUserStatus.ToString();
@@ -68,7 +69,7 @@ public static class UserAuthApiService
             });
         }
     }
-    
+
     /// <summary>
     /// Handle register request
     /// </summary>
@@ -78,7 +79,7 @@ public static class UserAuthApiService
         {
             var requestBody = await new StreamReader(context.Request.Body).ReadToEndAsync();
             var registerRequest = JsonSerializer.Deserialize<RegisterRequest>(requestBody);
-            
+
             if (string.IsNullOrEmpty(registerRequest?.Username) || string.IsNullOrEmpty(registerRequest.Password))
             {
                 await WriteJsonResponse(context, 400, new ApiResponse<object>
@@ -88,13 +89,13 @@ public static class UserAuthApiService
                 });
                 return;
             }
-            
+
             var (success, userId, errorMessage) = await UserAuthenticationService.RegisterUserAsync(
                 registerRequest.Username,
                 registerRequest.Password,
                 registerRequest.Priority ?? "user"
             );
-            
+
             if (success)
             {
                 await WriteJsonResponse(context, 201, new ApiResponse<LoginResponse>
@@ -127,7 +128,7 @@ public static class UserAuthApiService
             });
         }
     }
-    
+
     /// <summary>
     /// Handle logout request
     /// </summary>
@@ -151,7 +152,7 @@ public static class UserAuthApiService
             });
         }
     }
-    
+
     /// <summary>
     /// Handle get user info request
     /// </summary>
@@ -160,7 +161,7 @@ public static class UserAuthApiService
         try
         {
             var userIdParam = context.Request.Query["userId"].ToString();
-            
+
             if (!int.TryParse(userIdParam, out var userId))
             {
                 await WriteJsonResponse(context, 400, new ApiResponse<object>
@@ -170,9 +171,9 @@ public static class UserAuthApiService
                 });
                 return;
             }
-            
+
             var user = await UserAuthenticationService.GetUserByIdAsync(userId);
-            
+
             if (user != null)
             {
                 await WriteJsonResponse(context, 200, new ApiResponse<UserInfoResponse>
@@ -205,7 +206,7 @@ public static class UserAuthApiService
             });
         }
     }
-    
+
     /// <summary>
     /// Handle change password request
     /// </summary>
@@ -215,7 +216,7 @@ public static class UserAuthApiService
         {
             var requestBody = await new StreamReader(context.Request.Body).ReadToEndAsync();
             var changePasswordRequest = JsonSerializer.Deserialize<ChangePasswordRequest>(requestBody);
-            
+
             if (changePasswordRequest == null || changePasswordRequest.UserId <= 0 ||
                 string.IsNullOrEmpty(changePasswordRequest.CurrentPassword) ||
                 string.IsNullOrEmpty(changePasswordRequest.NewPassword))
@@ -227,13 +228,13 @@ public static class UserAuthApiService
                 });
                 return;
             }
-            
+
             // Verify current password
             var (authenticated, _, _) = await UserAuthenticationService.AuthenticateUserAsync(
                 changePasswordRequest.UserId.ToString(),
                 changePasswordRequest.CurrentPassword
             );
-            
+
             if (!authenticated)
             {
                 await WriteJsonResponse(context, 401, new ApiResponse<object>
@@ -243,13 +244,13 @@ public static class UserAuthApiService
                 });
                 return;
             }
-            
+
             // Update password
             var success = await UserAuthenticationService.UpdateUserPasswordAsync(
                 changePasswordRequest.UserId,
                 changePasswordRequest.NewPassword
             );
-            
+
             if (success)
             {
                 await WriteJsonResponse(context, 200, new ApiResponse<object>
@@ -276,7 +277,7 @@ public static class UserAuthApiService
             });
         }
     }
-    
+
     /// <summary>
     /// Handle get all users request (admin only)
     /// </summary>
@@ -291,7 +292,7 @@ public static class UserAuthApiService
                 Username = u.Username,
                 Priority = u.Priority
             }).ToList();
-            
+
             await WriteJsonResponse(context, 200, new ApiResponse<List<UserInfoResponse>>
             {
                 Success = true,
@@ -308,7 +309,7 @@ public static class UserAuthApiService
             });
         }
     }
-    
+
     /// <summary>
     /// Handle delete user request (admin only)
     /// </summary>
@@ -317,7 +318,7 @@ public static class UserAuthApiService
         try
         {
             var userIdParam = context.Request.Query["userId"].ToString();
-            
+
             if (!int.TryParse(userIdParam, out var userId))
             {
                 await WriteJsonResponse(context, 400, new ApiResponse<object>
@@ -327,9 +328,9 @@ public static class UserAuthApiService
                 });
                 return;
             }
-            
+
             var success = await UserAuthenticationService.DeleteUserAsync(userId);
-            
+
             if (success)
             {
                 await WriteJsonResponse(context, 200, new ApiResponse<object>
@@ -356,7 +357,7 @@ public static class UserAuthApiService
             });
         }
     }
-    
+
     /// <summary>
     /// Write JSON response
     /// </summary>

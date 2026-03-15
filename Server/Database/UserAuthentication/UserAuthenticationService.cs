@@ -1,5 +1,5 @@
 using System.Security.Cryptography;
-using Common.Models;
+using Common.Models.Entities;
 using Server.Database.Services;
 using CustomSerilogImpl.InstanceVal.Service.Services;
 using MySqlConnector;

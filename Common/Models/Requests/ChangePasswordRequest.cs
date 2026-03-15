@@ -1,13 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Common.Models;
+namespace Common.Models.Requests;
 
 /// <summary>
 /// Change password request DTO
 /// </summary>
-/// <param name="UserId">User ID</param>
-/// <param name="CurrentPassword">Current password for verification</param>
-/// <param name="NewPassword">New password</param>
 public record ChangePasswordRequest(
     [property: Required(ErrorMessage = "User ID is required")]
     int UserId,

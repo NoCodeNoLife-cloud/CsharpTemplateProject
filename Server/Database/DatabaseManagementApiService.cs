@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using System.Text.Json;
-using Common.Models;
+using Common.Models.Responses;
 using CustomSerilogImpl.InstanceVal.Service.Services;
 
 namespace Server.Database;

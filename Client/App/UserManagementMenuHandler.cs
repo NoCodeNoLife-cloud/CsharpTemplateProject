@@ -2,6 +2,7 @@ using Client.App.Manu;
 using Client.App.Services;
 using Client.Database.UserAuthentication;
 using Common.Models;
+using Common.Models.Responses;
 using CustomSerilogImpl.InstanceVal.Service.Services;
 
 namespace Client.App;
@@ -12,7 +13,6 @@ namespace Client.App;
 internal static class UserManagementMenuHandler
 {
     private const string UserIdField = "User ID";
-    private const int AutoContinueDelayMs = 1500;
     private const int StatisticsBriefPauseMs = 1000;
 
     /// <summary>
