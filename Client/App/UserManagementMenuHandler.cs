@@ -12,6 +12,8 @@ namespace Client.App;
 internal static class UserManagementMenuHandler
 {
     private const string UserIdField = "User ID";
+    private const int AutoContinueDelayMs = 1500;
+    private const int StatisticsBriefPauseMs = 1000;
 
     /// <summary>
     /// Displays the user management submenu
@@ -21,25 +23,25 @@ internal static class UserManagementMenuHandler
         LoggingFactory.Instance.LogInformation("Displaying user management submenu");
         Console.WriteLine("\n=== User Management Operations ===");
         Console.Write("[1] ");
-        Console.WriteLine($"View all users");
+        Console.WriteLine("View all users");
 
         Console.Write("[2] ");
-        Console.WriteLine($"Find user by ID");
+        Console.WriteLine("Find user by ID");
 
         Console.Write("[3] ");
-        Console.WriteLine($"Find user by username");
+        Console.WriteLine("Find user by username");
 
         Console.Write("[4] ");
-        Console.WriteLine($"Update user password");
+        Console.WriteLine("Update user password");
 
         Console.Write("[5] ");
-        Console.WriteLine($"Delete user account");
+        Console.WriteLine("Delete user account");
 
         Console.Write("[6] ");
-        Console.WriteLine($"View statistics");
+        Console.WriteLine("View statistics");
 
         Console.Write("[7] ");
-        Console.WriteLine($"Back to main menu");
+        Console.WriteLine("Back to main menu");
         Console.WriteLine("==================================");
     }
 
@@ -99,6 +101,8 @@ internal static class UserManagementMenuHandler
         catch (Exception ex)
         {
             LoggingFactory.Instance.LogError($"Error in user management menu: {ex.Message}", ex);
+            Console.WriteLine("Press Enter to continue...");
+            Console.ReadLine();
         }
     }
 
@@ -135,7 +139,6 @@ internal static class UserManagementMenuHandler
         catch (Exception ex)
         {
             LoggingFactory.Instance.LogError($"Error viewing all users: {ex.Message}", ex);
-            LoggingFactory.Instance.LogError($"Error: {ex.Message}");
             Console.WriteLine("Press Enter to continue...");
             Console.ReadLine();
         }
@@ -162,18 +165,18 @@ internal static class UserManagementMenuHandler
                 LoggingFactory.Instance.LogInformation("User found:");
                 LoggingFactory.Instance.LogInformation($"ID: {user.Id}");
                 LoggingFactory.Instance.LogInformation($"Username: {user.Username}");
-                await Task.Delay(1500); // Auto continue after showing user info
             }
             else
             {
                 LoggingFactory.Instance.LogWarning($"User with ID {userId} not found.");
-                await Task.Delay(1500); // Auto continue after showing not found message
             }
+
+            Console.WriteLine("Press Enter to continue...");
+            Console.ReadLine();
         }
         catch (Exception ex)
         {
             LoggingFactory.Instance.LogError($"Error finding user by ID: {ex.Message}", ex);
-            LoggingFactory.Instance.LogError($"Error: {ex.Message}");
             Console.WriteLine("Press Enter to continue...");
             Console.ReadLine();
         }
@@ -201,18 +204,17 @@ internal static class UserManagementMenuHandler
                 LoggingFactory.Instance.LogInformation("User found:");
                 LoggingFactory.Instance.LogInformation($"ID: {user.Id}");
                 LoggingFactory.Instance.LogInformation($"Username: {user.Username}");
-                await Task.Delay(1500); // Auto continue after showing user info
             }
             else
             {
                 LoggingFactory.Instance.LogWarning($"User with username '{username}' not found.");
-                await Task.Delay(1500); // Auto continue after showing not found message
             }
+
+            await Task.Delay(1500); // Auto continue after showing user info
         }
         catch (Exception ex)
         {
             LoggingFactory.Instance.LogError($"Error finding user by username: {ex.Message}", ex);
-            LoggingFactory.Instance.LogError($"Error: {ex.Message}");
             Console.WriteLine("Press Enter to continue...");
             Console.ReadLine();
         }
@@ -266,7 +268,6 @@ internal static class UserManagementMenuHandler
         catch (Exception ex)
         {
             LoggingFactory.Instance.LogError($"Error updating user password: {ex.Message}", ex);
-            LoggingFactory.Instance.LogError($"Error: {ex.Message}");
             Console.WriteLine("Press Enter to continue...");
             Console.ReadLine();
         }
@@ -293,9 +294,9 @@ internal static class UserManagementMenuHandler
                 return;
             }
 
-            LoggingFactory.Instance.LogWarning($"WARNING: This will permanently delete user '{user.Username}' (ID: {userId})");
-            LoggingFactory.Instance.LogWarning("This action cannot be undone!");
-            LoggingFactory.Instance.LogDebug("\nAre you absolutely sure? Type 'DELETE' to confirm: ");
+            LoggingFactory.Instance.LogInformation($"WARNING: This will permanently delete user '{user.Username}' (ID: {userId})");
+            LoggingFactory.Instance.LogInformation("This action cannot be undone!");
+            LoggingFactory.Instance.LogInformation("\nAre you absolutely sure? Type 'DELETE' to confirm: ");
             Console.Write("\nAre you absolutely sure? Type 'DELETE' to confirm: ");
             var confirmation = Console.ReadLine()?.Trim();
 
@@ -311,19 +312,18 @@ internal static class UserManagementMenuHandler
             if (success)
             {
                 LoggingFactory.Instance.LogInformation($"Server API User '{user.Username}' (ID: {userId}) deleted successfully");
-                await Task.Delay(1500); // Auto continue after success
             }
             else
             {
                 LoggingFactory.Instance.LogError($"Server API failed to delete user ID {userId}");
-                Console.WriteLine("Press Enter to continue...");
-                Console.ReadLine(); // Error case still needs confirmation
             }
+
+            Console.WriteLine("Press Enter to continue...");
+            Console.ReadLine();
         }
         catch (Exception ex)
         {
             LoggingFactory.Instance.LogError($"Error deleting user: {ex.Message}", ex);
-            LoggingFactory.Instance.LogError($"Error: {ex.Message}");
             Console.WriteLine("Press Enter to continue...");
             Console.ReadLine();
         }
@@ -345,14 +345,14 @@ internal static class UserManagementMenuHandler
             var enumerable = totalUsers?.ToArray() ?? Array.Empty<UserInfo>();
             var totalUsersCount = enumerable.Length;
 
-            LoggingFactory.Instance.LogInformation($"\n📊 User Statistics:");
+            LoggingFactory.Instance.LogInformation($"\n User Statistics:");
             LoggingFactory.Instance.LogInformation($"   Total Users: {totalUsersCount}");
-            await Task.Delay(1000); // Brief pause before showing user list
+            await Task.Delay(StatisticsBriefPauseMs); // Brief pause before showing user list
 
             // Show all users
-            if (enumerable.Any())
+            if (enumerable.Length != 0)
             {
-                LoggingFactory.Instance.LogInformation($"\n📋 All Users:");
+                LoggingFactory.Instance.LogInformation($"\n All Users:");
                 LoggingFactory.Instance.LogInformation($"{"ID",-5} {"Username",-20}");
                 LoggingFactory.Instance.LogInformation(new string('-', 30));
                 foreach (var user in enumerable)
@@ -364,7 +364,6 @@ internal static class UserManagementMenuHandler
         catch (Exception ex)
         {
             LoggingFactory.Instance.LogError($"Error viewing statistics: {ex.Message}", ex);
-            LoggingFactory.Instance.LogError($"Error: {ex.Message}");
             Console.WriteLine("Press Enter to continue...");
             Console.ReadLine();
         }

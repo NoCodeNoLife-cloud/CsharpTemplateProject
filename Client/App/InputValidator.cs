@@ -13,7 +13,7 @@ internal static class InputValidator
     /// <param name="fieldName">Name of the field for display</param>
     /// <param name="minLength">Minimum length requirement</param>
     /// <param name="maxLength">Maximum length requirement</param>
-    /// <returns>Validated input or null if canceled</returns>
+    /// <returns>Validated input</returns>
     public static string GetUserInput(string fieldName, int minLength, int maxLength)
     {
         while (true)
@@ -24,53 +24,47 @@ internal static class InputValidator
             if (string.IsNullOrWhiteSpace(input))
             {
                 LoggingFactory.Instance.LogWarning($"{fieldName} cannot be empty.");
-                LoggingFactory.Instance.LogDebug($"Press Ctrl+C to exit or try again.");
                 continue;
             }
 
             if (input.Length < minLength)
             {
                 LoggingFactory.Instance.LogWarning($"{fieldName} must be at least {minLength} characters long.");
-                LoggingFactory.Instance.LogDebug($"Current length: {input.Length} characters");
                 continue;
             }
 
             if (input.Length <= maxLength) return input.Trim();
             LoggingFactory.Instance.LogWarning($"{fieldName} cannot exceed {maxLength} characters.");
-            LoggingFactory.Instance.LogDebug($"Current length: {input.Length} characters");
         }
     }
 
     /// <summary>
     /// Gets password input securely with validation
     /// </summary>
-    /// <param name="minPasswordLength">Minimum password length</param>
-    /// <param name="maxPasswordLength">Maximum password length</param>
-    /// <returns>Validated password or null if canceled</returns>
-    public static string GetPasswordInput(int minPasswordLength, int maxPasswordLength)
+    /// <param name="minLength">Minimum password length</param>
+    /// <param name="maxLength">Maximum password length</param>
+    /// <returns>Validated password</returns>
+    public static string GetPasswordInput(int minLength, int maxLength)
     {
         while (true)
         {
-            Console.Write($"Password ({minPasswordLength}-{maxPasswordLength} characters): ");
+            Console.Write($"Password ({minLength}-{maxLength} characters): ");
             var password = ReadPasswordSecurely();
 
             if (string.IsNullOrEmpty(password))
             {
-                LoggingFactory.Instance.LogWarning($"Password cannot be empty.");
-                LoggingFactory.Instance.LogDebug($"Press Ctrl+C to exit or try again.");
+                LoggingFactory.Instance.LogWarning("Password cannot be empty.");
                 continue;
             }
 
-            if (password.Length < minPasswordLength)
+            if (password.Length < minLength)
             {
-                LoggingFactory.Instance.LogWarning($"Password must be at least {minPasswordLength} characters long.");
-                LoggingFactory.Instance.LogDebug($"Current length: {password.Length} characters");
+                LoggingFactory.Instance.LogWarning($"Password must be at least {minLength} characters long.");
                 continue;
             }
 
-            if (password.Length <= maxPasswordLength) return password;
-            LoggingFactory.Instance.LogWarning($"Password cannot exceed {maxPasswordLength} characters.");
-            LoggingFactory.Instance.LogDebug($"Current length: {password.Length} characters");
+            if (password.Length <= maxLength) return password;
+            LoggingFactory.Instance.LogWarning($"Password cannot exceed {maxLength} characters.");
         }
     }
 

@@ -8,6 +8,8 @@ namespace Client.App.Manu;
 /// </summary>
 internal static class MenuNavigator
 {
+    private const int LogoutDelayMs = 1500;
+
     /// <summary>
     /// Navigate through the main menu interactively
     /// </summary>
@@ -66,7 +68,7 @@ internal static class MenuNavigator
                                 // Regular user menu - Logout
                                 UserAuthenticationService.Logout();
                                 LoggingFactory.Instance.LogInformation("You have been logged out successfully.");
-                                await Task.Delay(1500); // Brief pause to show logout message
+                                await Task.Delay(LogoutDelayMs);
                             }
                             break;
                         case "3":
@@ -76,7 +78,7 @@ internal static class MenuNavigator
                                 // Administrator menu - Logout
                                 UserAuthenticationService.Logout();
                                 LoggingFactory.Instance.LogInformation("You have been logged out successfully.");
-                                await Task.Delay(1500); // Brief pause to show logout message
+                                await Task.Delay(LogoutDelayMs);
                             }
                             else
                             {
@@ -87,15 +89,14 @@ internal static class MenuNavigator
                             break;
                         case "4":
                             // Only administrators have 4 options
-                            if (UserAuthenticationService.IsUserAdministrator())
+                            if (!UserAuthenticationService.IsUserAdministrator())
                             {
-                                LoggingFactory.Instance.LogInformation("Thank you for using our application. Goodbye!");
-                                return; // Exit application
+                                // Invalid choice for regular users
+                                goto default;
                             }
-                            else
-                            {
-                                goto default; // Invalid choice for regular users
-                            }
+                            
+                            LoggingFactory.Instance.LogInformation("Thank you for using our application. Goodbye!");
+                            return; // Exit application
                         default:
                             LoggingFactory.Instance.LogWarning("Invalid choice. Please select a valid option.");
                             Console.WriteLine("Press Enter to continue...");
@@ -109,7 +110,6 @@ internal static class MenuNavigator
         catch (Exception ex)
         {
             LoggingFactory.Instance.LogError($"Error in main menu navigation: {ex.Message}", ex);
-            LoggingFactory.Instance.LogError($"Navigation error: {ex.Message}");
             Console.WriteLine("Press Enter to continue...");
             Console.ReadLine();
         }

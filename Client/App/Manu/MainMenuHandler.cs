@@ -14,6 +14,8 @@ internal static class MainMenuHandler
     private const int MaxUsernameLength = 50;
     private const int MinPasswordLength = 6;
     private const int MaxPasswordLength = 100;
+    private const int PasswordMismatchDelayMs = 2000;
+    private const int RegistrationCompleteDelayMs = 2000;
     /// <summary>
     /// Displays the main menu based on current login status
     /// </summary>
@@ -27,41 +29,41 @@ internal static class MainMenuHandler
         {
             // User not logged in - show login and registration options
             Console.Write("[1] ");
-            Console.WriteLine($"Login with existing account");
+            Console.WriteLine("Login with existing account");
 
             Console.Write("[2] ");
-            Console.WriteLine($"Register new account");
+            Console.WriteLine("Register new account");
 
             Console.Write("[3] ");
-            Console.WriteLine($"Exit application");
+            Console.WriteLine("Exit application");
         }
         else
         {
             // User logged in - show account management for all users
             Console.Write("[1] ");
-            Console.WriteLine($"Account Management");
+            Console.WriteLine("Account Management");
 
             // Show additional options based on permission level
             if (UserAuthenticationService.IsUserAdministrator())
             {
                 // Administrator or Super Administrator - show admin operations
                 Console.Write("[2] ");
-                Console.WriteLine($"User Management (Admin Operations)");
+                Console.WriteLine("User Management (Admin Operations)");
 
                 Console.Write("[3] ");
-                Console.WriteLine($"Logout");
+                Console.WriteLine("Logout");
 
                 Console.Write("[4] ");
-                Console.WriteLine($"Exit application");
+                Console.WriteLine("Exit application");
             }
             else
             {
                 // Regular user - show logout and exit
                 Console.Write("[2] ");
-                Console.WriteLine($"Logout");
+                Console.WriteLine("Logout");
 
                 Console.Write("[3] ");
-                Console.WriteLine($"Exit application");
+                Console.WriteLine("Exit application");
             }
         }
 
@@ -74,7 +76,6 @@ internal static class MainMenuHandler
     /// <returns>User's menu choice</returns>
     public static string GetUserMenuChoice()
     {
-        LoggingFactory.Instance.LogDebug("Waiting for user menu choice input");
         Console.Write("Enter your choice: ");
         var choice = Console.ReadLine()?.Trim();
 
@@ -102,7 +103,6 @@ internal static class MainMenuHandler
             if (string.IsNullOrEmpty(password)) return;
 
             // Show processing indicator
-            LoggingFactory.Instance.LogDebug($"Calling Server API for user '{username}'...");
             var (success, userId, foundUsername, status) = await ServerAuthService.LoginAsync(username, password);
 
             if (success && userId.HasValue)
@@ -110,26 +110,24 @@ internal static class MainMenuHandler
                 // Update local authentication state
                 UserAuthenticationService.SetLoggedInUser(userId.Value, foundUsername ?? username, status ?? "LoggedIn");
                 
-                LoggingFactory.Instance.LogInformation($"Server API Login successful: ID={userId}, Username={foundUsername}");
+                LoggingFactory.Instance.LogInformation($"Login successful: ID={userId}, Username={foundUsername}");
                 LoggingFactory.Instance.LogInformation($"Welcome back, {foundUsername}! (User ID: {userId})");
             }
             else
             {
-                LoggingFactory.Instance.LogWarning($"Server API Login failed: Invalid credentials for '{username}'");
                 LoggingFactory.Instance.LogWarning("Authentication failed. Please check your credentials.");
             }
         }
         catch (HttpRequestException httpEx)
         {
             LoggingFactory.Instance.LogError($"HTTP request error during login: {httpEx.Message}", httpEx);
-            LoggingFactory.Instance.LogError("Please ensure the Server is running on http://localhost:5000");
+            Console.WriteLine("Please ensure the Server is running on http://localhost:5000");
             Console.WriteLine("Press Enter to continue...");
             Console.ReadLine();
         }
         catch (Exception ex)
         {
             LoggingFactory.Instance.LogError($"Unexpected error during user login: {ex.Message}", ex);
-            LoggingFactory.Instance.LogError($"Unexpected error: {ex.Message}");
             Console.WriteLine("Press Enter to continue...");
             Console.ReadLine();
         }
@@ -167,42 +165,38 @@ internal static class MainMenuHandler
 
             if (password != confirmPassword)
             {
-                LoggingFactory.Instance.LogError($"Passwords do not match!");
-                LoggingFactory.Instance.LogWarning("Passwords do not match! Please try again.");
-                await Task.Delay(2000); // Auto continue after showing error
+                LoggingFactory.Instance.LogError("Passwords do not match!");
+                Console.WriteLine("Error: Passwords do not match!");
+                await Task.Delay(PasswordMismatchDelayMs);
                 return;
             }
 
             // Show registration progress
-            LoggingFactory.Instance.LogDebug($"Calling Server API to register new user '{username}' with {priority} permissions...");
             var (success, userId, errorMessage) = await ServerAuthService.RegisterAsync(username, password, priority);
 
             if (success && userId.HasValue)
             {
-                LoggingFactory.Instance.LogInformation($"Server API Registration successful: ID={userId}, Username={username}");
+                LoggingFactory.Instance.LogInformation($"Registration successful: ID={userId}, Username={username}");
                 LoggingFactory.Instance.LogInformation("Registration successful!");
                 LoggingFactory.Instance.LogInformation($"Your account has been created. (User ID: {userId})");
                 LoggingFactory.Instance.LogInformation("You can now login with your new account.");
-                // Auto continue to main menu
-                await Task.Delay(2000); // Give user time to read the message
+                await Task.Delay(RegistrationCompleteDelayMs);
             }
             else
             {
-                LoggingFactory.Instance.LogWarning($"Server API Registration failed: {errorMessage}");
-                LoggingFactory.Instance.LogWarning($"Registration failed! {errorMessage}");
+                LoggingFactory.Instance.LogWarning($"Registration failed: {errorMessage}");
             }
         }
         catch (HttpRequestException httpEx)
         {
             LoggingFactory.Instance.LogError($"HTTP request error during registration: {httpEx.Message}", httpEx);
-            LoggingFactory.Instance.LogError("Please ensure the Server is running on http://localhost:5000");
+            Console.WriteLine("Please ensure the Server is running on http://localhost:5000");
             Console.WriteLine("Press Enter to continue...");
             Console.ReadLine();
         }
         catch (Exception ex)
         {
             LoggingFactory.Instance.LogError($"Unexpected error during user registration: {ex.Message}", ex);
-            LoggingFactory.Instance.LogError($"Unexpected error: {ex.Message}");
             Console.WriteLine("Press Enter to continue...");
             Console.ReadLine();
         }

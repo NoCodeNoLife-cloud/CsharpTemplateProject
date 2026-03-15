@@ -11,6 +11,12 @@ namespace Client.App;
 /// </summary>
 internal static class ApplicationInitializer
 {
+    private const int EnvironmentConfigDelayMs = 500;
+    private const int DatabaseSetupDelayMs = 800;
+    private const int ConnectionTestDelayMs = 300;
+    private const int FinalInitializationDelayMs = 200;
+    private const int CompletionDisplayDelayMs = 1000;
+
     /// <summary>
     /// Initialize application components with progress indication
     /// </summary>
@@ -18,13 +24,12 @@ internal static class ApplicationInitializer
     public static async Task InitializeAsync()
     {
         LoggingFactory.Instance.LogDebug($"Project Root Directory: {EnvironmentPath.GetProjectRootDirectory()}");
-        await Task.Delay(500); // Simulate work
+        await Task.Delay(EnvironmentConfigDelayMs);
         LoggingFactory.Instance.LogInformation("Environment configured");
 
         // Step 2: Database setup via Server API
-        LoggingFactory.Instance.LogDebug("Requesting database setup from Server...");
         var (setupSuccess, setupMessage) = await ServerAuthService.SetupDatabaseAsync();
-        await Task.Delay(800); // Simulate work
+        await Task.Delay(DatabaseSetupDelayMs);
 
         if (setupSuccess)
         {
@@ -37,9 +42,8 @@ internal static class ApplicationInitializer
         }
 
         // Step 3: Connection test via Server API
-        LoggingFactory.Instance.LogDebug("Requesting database connection test from Server...");
         var (testSuccess, isConnected, databaseName, testedAt, testMessage) = await ServerAuthService.TestDatabaseConnectionAsync();
-        await Task.Delay(300); // Simulate work
+        await Task.Delay(ConnectionTestDelayMs);
 
         if (testSuccess && isConnected == true)
         {
@@ -51,8 +55,8 @@ internal static class ApplicationInitializer
         }
 
         // Step 4: Final initialization
-        await Task.Delay(200); // Simulate work
+        await Task.Delay(FinalInitializationDelayMs);
         LoggingFactory.Instance.LogInformation("System initialization complete! Application is ready for use!");
-        await Task.Delay(1000);
+        await Task.Delay(CompletionDisplayDelayMs);
     }
 }

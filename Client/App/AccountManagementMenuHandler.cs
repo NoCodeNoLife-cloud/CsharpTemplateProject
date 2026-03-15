@@ -14,6 +14,8 @@ internal static class AccountManagementMenuHandler
     private const int MaxPasswordLength = 100;
     private const int MinUsernameLength = 3;
     private const int MaxUsernameLength = 50;
+    private const int AutoContinueDelayMs = 2000;
+    private const int CancelDelayMs = 1500;
 
     /// <summary>
     /// Displays the account management submenu
@@ -23,16 +25,16 @@ internal static class AccountManagementMenuHandler
         LoggingFactory.Instance.LogInformation("Displaying account management submenu");
         Console.WriteLine("\n=== Account Management ===");
         Console.Write("[1] ");
-        Console.WriteLine($"Change Password");
+        Console.WriteLine("Change Password");
         
         Console.Write("[2] ");
-        Console.WriteLine($"Change Username");
+        Console.WriteLine("Change Username");
         
         Console.Write("[3] ");
-        Console.WriteLine($"Delete Account");
+        Console.WriteLine("Delete Account");
         
         Console.Write("[4] ");
-        Console.WriteLine($"Back to main menu");
+        Console.WriteLine("Back to main menu");
         Console.WriteLine("==========================");
     }
 
@@ -73,6 +75,8 @@ internal static class AccountManagementMenuHandler
         catch (Exception ex)
         {
             LoggingFactory.Instance.LogError($"Error in account management menu: {ex.Message}", ex);
+            Console.WriteLine("Press Enter to continue...");
+            Console.ReadLine();
         }
     }
 
@@ -132,7 +136,7 @@ internal static class AccountManagementMenuHandler
             {
                 LoggingFactory.Instance.LogWarning("New passwords do not match");
                 Console.WriteLine("Error: New passwords do not match!");
-                await Task.Delay(2000);
+                await Task.Delay(AutoContinueDelayMs);
                 return;
             }
 
@@ -143,7 +147,6 @@ internal static class AccountManagementMenuHandler
             {
                 LoggingFactory.Instance.LogInformation($"Server API Password changed successfully for user '{currentUser.Username}' (ID: {currentUserId})");
                 Console.WriteLine("Password changed successfully!");
-                await Task.Delay(2000); // Auto continue after success
             }
             else
             {
@@ -209,7 +212,7 @@ internal static class AccountManagementMenuHandler
             {
                 LoggingFactory.Instance.LogWarning("New username is the same as current username");
                 Console.WriteLine("Error: New username must be different from current username.");
-                await Task.Delay(2000);
+                await Task.Delay(AutoContinueDelayMs);
                 return;
             }
 
@@ -224,7 +227,6 @@ internal static class AccountManagementMenuHandler
                 
             LoggingFactory.Instance.LogInformation($"Username changed successfully from '{currentUser.Username}' to '{newUsername}' (ID: {currentUserId})");
             Console.WriteLine($"Username changed successfully to: {newUsername}");
-            await Task.Delay(2000); // Auto continue after success
         }
         catch (Exception ex)
         {
@@ -244,7 +246,7 @@ internal static class AccountManagementMenuHandler
         try
         {
             Console.Clear();
-            LoggingFactory.Instance.LogWarning("=== Delete Account ===");
+            LoggingFactory.Instance.LogInformation("=== Delete Account ===");
 
             // Verify current user is logged in
             if (!UserAuthenticationService.IsUserLoggedIn() || 
@@ -285,7 +287,7 @@ internal static class AccountManagementMenuHandler
             {
                 LoggingFactory.Instance.LogInformation("Account deletion cancelled by user");
                 Console.WriteLine("Account deletion cancelled.");
-                await Task.Delay(1500);
+                await Task.Delay(CancelDelayMs);
                 return;
             }
 
@@ -297,7 +299,7 @@ internal static class AccountManagementMenuHandler
             {
                 LoggingFactory.Instance.LogInformation("Account deletion cancelled at final confirmation");
                 Console.WriteLine("Account deletion cancelled.");
-                await Task.Delay(1500);
+                await Task.Delay(CancelDelayMs);
                 return;
             }
 
@@ -312,7 +314,6 @@ internal static class AccountManagementMenuHandler
                 
                 // Auto logout after account deletion
                 UserAuthenticationService.Logout();
-                await Task.Delay(2000);
             }
             else
             {

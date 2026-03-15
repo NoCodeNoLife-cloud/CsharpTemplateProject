@@ -27,22 +27,13 @@ internal static class Startup
             await ApplicationInitializer.InitializeAsync();
 
             // Interactive user management
-            await InteractiveUserManagementAsync();
+            await MenuNavigator.NavigateMainMenuAsync();
         }
         catch (Exception ex)
         {
             LoggingFactory.Instance.LogError($"Application startup failed: {ex.Message}", ex);
-            LoggingFactory.Instance.LogDebug("Press Enter to exit...");
+            Console.WriteLine("Press Enter to exit...");
             Console.ReadLine();
         }
-    }
-
-    /// <summary>
-    /// Interactive user management - delegates to menu navigator
-    /// </summary>
-    [Obsolete("Obsolete")]
-    private static async Task InteractiveUserManagementAsync()
-    {
-        await MenuNavigator.NavigateMainMenuAsync();
     }
 }
